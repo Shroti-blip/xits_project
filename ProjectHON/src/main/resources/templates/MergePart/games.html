@@ -1,0 +1,1398 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thyeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rate Photos - HotOrNot</title>
+  <meta name="_csrf" th:content="${_csrf.token}">
+  <meta name="_csrf_header" th:content="${_csrf.headerName}">
+
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css"
+        rel="stylesheet">
+  <style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        background: #ffffff;
+        color: #2d2d2d;
+        min-height: 100vh;
+        position: relative;
+        overflow-x: hidden;
+        padding-bottom: 80px;
+    }
+
+    @media (min-width: 768px) {
+        body {
+            padding-bottom: 0;
+        }
+    }
+
+    .bg-gradient {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        overflow: hidden;
+        background: linear-gradient(135deg, #FFF5F0 0%, #FFE8F0 50%, #FFF0F5 100%);
+    }
+
+    .bg-gradient::before,
+    .bg-gradient::after,
+    .bg-gradient span {
+        content: '';
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(100px);
+    }
+
+    .bg-gradient::before {
+        width: 600px;
+        height: 600px;
+        background: rgba(250, 130, 49, 0.15);
+        animation: float1 20s ease-in-out infinite;
+    }
+
+    .bg-gradient::after {
+        width: 700px;
+        height: 700px;
+        background: rgba(255, 107, 157, 0.12);
+        animation: float2 25s ease-in-out infinite;
+    }
+
+    .bg-gradient span {
+        width: 500px;
+        height: 500px;
+        background: rgba(249, 127, 81, 0.1);
+        animation: float3 18s ease-in-out infinite;
+    }
+
+    @keyframes float1 {
+
+        0%,
+        100% {
+            transform: translate(10vw, 20vh) scale(1);
+        }
+
+        25% {
+            transform: translate(60vw, 70vh) scale(1.3);
+        }
+
+        50% {
+            transform: translate(80vw, 30vh) scale(0.9);
+        }
+
+        75% {
+            transform: translate(30vw, 80vh) scale(1.2);
+        }
+    }
+
+    @keyframes float2 {
+
+        0%,
+        100% {
+            transform: translate(70vw, 60vh) scale(1);
+        }
+
+        33% {
+            transform: translate(20vw, 20vh) scale(1.4);
+        }
+
+        66% {
+            transform: translate(50vw, 80vh) scale(0.8);
+        }
+    }
+
+    @keyframes float3 {
+
+        0%,
+        100% {
+            transform: translate(40vw, 10vh) scale(1);
+        }
+
+        30% {
+            transform: translate(10vw, 70vh) scale(1.3);
+        }
+
+        60% {
+            transform: translate(75vw, 50vh) scale(0.9);
+        }
+
+        90% {
+            transform: translate(55vw, 15vh) scale(1.2);
+        }
+    }
+
+    .navbar-desktop {
+        background: rgba(255, 255, 255, 0.95) !important;
+        backdrop-filter: blur(20px);
+        border-bottom: 2px solid rgba(250, 130, 49, 0.2);
+        box-shadow: 0 4px 20px rgba(250, 130, 49, 0.1);
+        display: none;
+    }
+
+    @media (min-width: 768px) {
+        .navbar-desktop {
+            display: block !important;
+        }
+    }
+
+    .navbar-brand {
+        font-size: 1.8rem;
+        font-weight: 900;
+        letter-spacing: -1px;
+    }
+
+    .logo-hot {
+        background: linear-gradient(135deg, #FA8231 0%, #F97F51 50%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .logo-not {
+        color: #FF6B9D;
+    }
+
+    .nav-link {
+        color: #555 !important;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        position: relative;
+        margin: 0 0.5rem;
+    }
+
+    .nav-link:hover {
+        color: #FA8231 !important;
+        transform: translateY(-2px);
+    }
+
+    .nav-link.active {
+        color: #FA8231 !important;
+    }
+
+    .btn-neon {
+        background: linear-gradient(135deg, #FA8231 0%, #F97F51 50%, #FF6B9D 100%);
+        color: white;
+        border: none;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        box-shadow: 0 4px 15px rgba(250, 130, 49, 0.4);
+        transition: all 0.3s ease;
+    }
+
+    .btn-neon:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 25px rgba(250, 130, 49, 0.6);
+        color: white;
+    }
+
+    .bottom-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(20px);
+        border-top: 2px solid rgba(250, 130, 49, 0.2);
+        box-shadow: 0 -4px 20px rgba(250, 130, 49, 0.1);
+        z-index: 1000;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        padding: 8px 0;
+        height: 70px;
+    }
+
+    @media (min-width: 768px) {
+        .bottom-nav {
+            display: none;
+        }
+    }
+
+    .bottom-nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        color: #888;
+        transition: all 0.3s ease;
+        padding: 8px 12px;
+        border-radius: 12px;
+        min-width: 60px;
+    }
+
+    .bottom-nav-item i {
+        font-size: 24px;
+        margin-bottom: 4px;
+        transition: all 0.3s ease;
+    }
+
+    .bottom-nav-item span {
+        font-size: 11px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .bottom-nav-item.active {
+        color: #FA8231;
+    }
+
+    .bottom-nav-item.active i {
+        transform: scale(1.1);
+    }
+
+    .bottom-nav-item:hover {
+        color: #FA8231;
+        background: rgba(250, 130, 49, 0.1);
+    }
+
+    .mobile-logo {
+        position: fixed;
+        top: 15px;
+        left: 15px;
+        z-index: 999;
+        font-size: 1.3rem;
+        font-weight: 900;
+        letter-spacing: -1px;
+        display: block;
+    }
+
+    @media (min-width: 768px) {
+        .mobile-logo {
+            display: none;
+        }
+    }
+
+    .main-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 1rem;
+    }
+
+    @media (max-width: 767px) {
+        .main-container {
+            padding-top: 60px;
+        }
+    }
+
+    .crush-tabs button {
+        font-size: 14px;
+        padding: 10px 6px;
+        white-space: nowrap;
+    }
+
+    .crush-tabs {
+        overflow-x: auto;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .crush-tabs::-webkit-scrollbar {
+        display: none;
+    }
+
+    @media (max-width: 480px) {
+        .crush-tabs button {
+            font-size: 13px;
+            padding: 8px 12px;
+        }
+    }
+
+    .wheel-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 20px 10px;
+        min-height: 500px;
+    }
+
+    #result {
+        font-size: 20px;
+        font-weight: bold;
+        color: green;
+        margin-bottom: 20px;
+      /*  text-shadow: 2px 2px 6px #000;  */
+        text-align: center;
+        min-height: 30px;
+    }
+
+    @media (max-width: 480px) {
+        #result {
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+    }
+
+    .main {
+        position: relative;
+        width: 100%;
+        max-width: 350px;
+        aspect-ratio: 1;
+        margin: 0 auto;
+    }
+
+    @media (min-width: 480px) {
+        .main {
+            max-width: 400px;
+        }
+    }
+
+    @media (min-width: 768px) {
+        .main {
+            max-width: 450px;
+        }
+    }
+
+    .wheel {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        border: 8px solid gold;
+        overflow: hidden;
+        transition: transform 4s ease-out;
+        box-shadow: 0 0 25px rgba(255, 215, 0, 0.7);
+    }
+
+    @media (min-width: 768px) {
+        .wheel {
+            border-width: 10px;
+        }
+    }
+
+    .pointer {
+        position: absolute;
+        top: -5px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 0;
+        height: 0;
+        border-left: 20px solid transparent;
+        border-right: 20px solid transparent;
+        border-top: 40px solid khaki;
+        z-index: 10;
+        filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.3));
+    }
+
+    @media (min-width: 768px) {
+        .pointer {
+            border-left-width: 25px;
+            border-right-width: 25px;
+            border-top-width: 50px;
+        }
+    }
+
+    .slice {
+        position: absolute;
+        width: 50%;
+        height: 50%;
+        transform-origin: 100% 100%;
+        clip-path: polygon(0 0, 100% 0, 100% 100%);
+    }
+
+    .c1 {
+        background: #ff1f1f;
+    }
+
+    .c2 {
+        background: #19e3cf;
+    }
+
+    .c3 {
+        background: #9e0bf3;
+    }
+
+    .c4 {
+        background: #15b600;
+    }
+
+    .c5 {
+        background: #ffb700;
+    }
+
+    .c6 {
+        background: #ff5a5a;
+    }
+
+    .c7 {
+        background: #57fff1;
+    }
+
+    .c8 {
+        background: #ff9612;
+    }
+
+    .label {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transform-origin: center;
+    }
+
+    .label span {
+        position: absolute;
+        top: 22%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 20px;
+        font-weight: bold;
+        color: #fff;
+        text-shadow: 2px 2px 6px #000;
+        pointer-events: none;
+    }
+
+    @media (min-width: 480px) {
+        .label span {
+            font-size: 22px;
+        }
+    }
+
+    @media (min-width: 768px) {
+        .label span {
+            font-size: 26px;
+        }
+    }
+
+    .spin {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        border: solid 2px #fff;
+        background-color: gold;
+        color: #000;
+        font-weight: bold;
+        font-size: 16px;
+        cursor: pointer;
+        box-shadow: 0 5px 20px rgba(255, 215, 0, 0.6);
+        z-index: 5;
+        transition: all 0.3s ease;
+    }
+
+    @media (min-width: 768px) {
+        .spin {
+            width: 80px;
+            height: 80px;
+            font-size: 20px;
+        }
+    }
+
+    .spin:hover:not(:disabled) {
+        transform: translate(-50%, -50%) scale(1.1);
+        box-shadow: 0 8px 30px rgba(255, 215, 0, 0.8);
+    }
+
+    .spin:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    #result1 {
+        margin-top: 20px;
+        font-size: 18px;
+        font-weight: bold;
+        color: #FFD700;
+        text-shadow: 2px 2px 6px #000;
+        text-align: center;
+    }
+
+    @media (min-width: 768px) {
+        #result1 {
+            font-size: 22px;
+        }
+    }
+
+    .confetti {
+        position: fixed;
+        width: 10px;
+        height: 10px;
+        background: #ffd700;
+        animation: confetti-fall 3s linear;
+        pointer-events: none;
+    }
+
+    @keyframes confetti-fall {
+        to {
+            transform: translateY(100vh) rotate(360deg);
+            opacity: 0;
+        }
+    }
+
+    .firework {
+        position: fixed;
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        animation: firework-burst 1s ease-out forwards;
+        pointer-events: none;
+    }
+
+    @keyframes firework-burst {
+        0% {
+            transform: translate(0, 0);
+            opacity: 1;
+        }
+
+        100% {
+            transform: translate(var(--x), var(--y));
+            opacity: 0;
+        }
+    }
+
+    .celebration-text {
+        position: fixed;
+        font-size: 50px;
+        font-weight: bold;
+        color: #ffd700;
+        text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.5);
+        animation: celebration-pop 2s ease-out forwards;
+        pointer-events: none;
+        z-index: 1000;
+    }
+
+    @media (min-width: 768px) {
+        .celebration-text {
+            font-size: 70px;
+        }
+    }
+
+    @keyframes celebration-pop {
+        0% {
+            transform: scale(0) rotate(-10deg);
+            opacity: 0;
+        }
+
+        50% {
+            transform: scale(1.2) rotate(5deg);
+            opacity: 1;
+        }
+
+        100% {
+            transform: scale(1) rotate(0deg) translateY(-50px);
+            opacity: 0;
+        }
+    }
+
+    .points-shower {
+        position: fixed;
+        font-size: 24px;
+        font-weight: bold;
+        animation: points-fall 2s linear forwards;
+        pointer-events: none;
+        z-index: 999;
+    }
+
+    @media (min-width: 768px) {
+        .points-shower {
+            font-size: 30px;
+        }
+    }
+
+    @keyframes points-fall {
+        0% {
+            transform: translateY(-50px) rotate(0deg);
+            opacity: 1;
+        }
+
+        100% {
+            transform: translateY(100vh) rotate(720deg);
+            opacity: 0;
+        }
+    }
+
+    .popup-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.4s ease;
+    }
+
+    .popup-overlay.show {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .popup {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 248, 240, 0.95));
+        padding: 30px 40px;
+        border-radius: 25px;
+        text-align: center;
+        color: #2d2d2d;
+        box-shadow: 0 10px 50px rgba(250, 130, 49, 0.4);
+        border: 3px solid rgba(250, 130, 49, 0.3);
+        position: relative;
+        overflow: hidden;
+        animation: popupScale 0.6s ease-out;
+        max-width: 90%;
+    }
+
+    @media (min-width: 768px) {
+        .popup {
+            padding: 40px 60px;
+        }
+    }
+
+    @keyframes popupScale {
+        0% {
+            transform: scale(0.8);
+            opacity: 0;
+        }
+
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    .badge-wrapper {
+        position: relative;
+        margin-bottom: 15px;
+    }
+
+    .badge {
+        background: linear-gradient(135deg, #FA8231, #F97F51, #FF6B9D);
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        position: relative;
+        box-shadow: 0 0 40px rgba(250, 130, 49, 0.6);
+        animation: pulse 1.5s infinite;
+    }
+
+    @media (min-width: 768px) {
+        .badge {
+            width: 120px;
+            height: 120px;
+        }
+    }
+
+    .badge-text {
+        font-size: 2em;
+        font-weight: bold;
+        color: #fff;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    @media (min-width: 768px) {
+        .badge-text {
+            font-size: 2.5em;
+        }
+    }
+
+    .shine {
+        position: absolute;
+        top: 0;
+        left: -75%;
+        width: 50%;
+        height: 100%;
+        background: linear-gradient(120deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0));
+        transform: skewX(-25deg);
+        animation: shine 2s infinite;
+    }
+
+    @keyframes shine {
+        0% {
+            left: -75%;
+        }
+
+        100% {
+            left: 125%;
+        }
+    }
+
+    .points-earned {
+        font-size: 1.1em;
+        margin-top: 15px;
+        color: #FA8231;
+        font-weight: 700;
+    }
+
+    @media (min-width: 768px) {
+        .points-earned {
+            font-size: 1.2em;
+        }
+    }
+
+    @keyframes pulse {
+
+        0%,
+        100% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.08);
+        }
+    }
+
+    .close-btn {
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        font-size: 28px;
+        color: #999;
+        background: none;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        z-index: 1001;
+    }
+
+    @media (min-width: 768px) {
+        .close-btn {
+            top: 15px;
+            right: 20px;
+            font-size: 32px;
+        }
+    }
+
+    .close-btn:hover {
+        color: #FA8231;
+        transform: rotate(90deg);
+    }
+
+    .casino-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 20px 10px;
+        min-height: 500px;
+    }
+
+    #casinoResult {
+        font-size: 20px;
+        font-weight: bold;
+        color: #FFD700;
+        margin-bottom: 20px;
+        text-shadow: 2px 2px 6px #000;
+        text-align: center;
+        min-height: 30px;
+    }
+
+    @media (max-width: 480px) {
+        #casinoResult {
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+    }
+
+    .slot-machine {
+        background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%);
+        border: 8px solid gold;
+        border-radius: 20px;
+        padding: 30px 20px;
+        box-shadow: 0 10px 40px rgba(255, 215, 0, 0.5);
+        max-width: 450px;
+        width: 100%;
+    }
+
+    @media (max-width: 480px) {
+        .slot-machine {
+            padding: 20px 15px;
+            border-width: 6px;
+        }
+    }
+
+    .slots-wrapper {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    @media (max-width: 480px) {
+        .slots-wrapper {
+            gap: 10px;
+        }
+    }
+
+    .slot-column {
+        background: linear-gradient(180deg, #fff 0%, #f0f0f0 100%);
+        border: 4px solid #333;
+        border-radius: 15px;
+        width: 100px;
+        height: 120px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        position: relative;
+        box-shadow: inset 0 4px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    @media (max-width: 480px) {
+        .slot-column {
+            width: 80px;
+            height: 100px;
+            border-width: 3px;
+        }
+    }
+
+    @media (min-width: 768px) {
+        .slot-column {
+            width: 120px;
+            height: 140px;
+        }
+    }
+
+    .slot-symbol {
+        font-size: 60px;
+        animation: none;
+    }
+
+    @media (max-width: 480px) {
+        .slot-symbol {
+            font-size: 48px;
+        }
+    }
+
+    @media (min-width: 768px) {
+        .slot-symbol {
+            font-size: 70px;
+        }
+    }
+
+    .slot-column.spinning .slot-symbol {
+        animation: slot-spin 0.1s linear infinite;
+    }
+
+    @keyframes slot-spin {
+        0% {
+            transform: translateY(0);
+        }
+
+        100% {
+            transform: translateY(-300%);
+        }
+    }
+
+    .lever-btn {
+        background: linear-gradient(135deg, #FA8231 0%, #F97F51 50%, #FF6B9D 100%);
+        color: white;
+        border: 3px solid #fff;
+        font-weight: 900;
+        font-size: 18px;
+        cursor: pointer;
+        padding: 15px 40px;
+        border-radius: 50px;
+        margin-top: 20px;
+        box-shadow: 0 6px 25px rgba(250, 130, 49, 0.6);
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+    }
+
+    @media (max-width: 480px) {
+        .lever-btn {
+            font-size: 16px;
+            padding: 12px 30px;
+        }
+    }
+
+    .lever-btn:hover:not(:disabled) {
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 8px 35px rgba(250, 130, 49, 0.8);
+    }
+
+    .lever-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    #casinoResult1 {
+        margin-top: 20px;
+        font-size: 18px;
+        font-weight: bold;
+        color: #FFD700;
+        text-shadow: 2px 2px 6px #000;
+        text-align: center;
+    }
+
+    @media (min-width: 768px) {
+        #casinoResult1 {
+            font-size: 22px;
+        }
+    }
+
+    /* Medium Circle Badge */
+        .badge-circle-md {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+  </style>
+</head>
+
+<body>
+<div class="bg-gradient"><span></span></div>
+<a href="#" class="mobile-logo"><span class="logo-hot">Hot</span><span class="logo-not">Or</span><span
+        class="logo-hot">Not</span></a>
+<nav class="navbar-desktop navbar navbar-expand-lg navbar-light sticky-top">
+  <div class="container-fluid px-4">
+    <a class="navbar-brand" href="#"><span class="logo-hot">Hot</span><span class="logo-not">Or</span><span
+            class="logo-hot">Not</span></a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"><span
+            class="navbar-toggler-icon"></span></button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto align-items-center">
+        <li class="nav-item"><a class="nav-link" href="/user/dashboard">Dashboard</a></li>
+        <li class="nav-item"><a class="nav-link" href="/user/rating">Rate</a></li>
+        <li class="nav-item"><a class="nav-link" href="/user/add-new-post">Add Post</a></li>
+        <li class="nav-item"><a class="nav-link active" href="/user/games">Games</a></li>
+        <li class="nav-item"><a class="nav-link" href="/user/mutual-crush">Mutual Crush</a></li>
+        <li class="nav-item ms-3"><a href="/logout" class="btn btn-neon btn-sm rounded-pill px-4">Logout</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+<nav class="bottom-nav">
+  <a href="/user/rating" class="bottom-nav-item"><i class="bi bi-fire"></i><span>Rate</span></a>
+  <a href="/user/games" class="bottom-nav-item active"><i class="bi bi-controller"></i><span>Games</span></a>
+  <a href="/user/add-new-post" class="bottom-nav-item"><i class="bi bi-plus-circle-fill"></i><span>Add
+                Post</span></a>
+  <a href="/user/mutual-crush" class="bottom-nav-item"><i class="bi bi-heart-fill"></i><span>Crush</span></a>
+  <a href="/user/dashboard" class="bottom-nav-item"><i
+          class="bi bi-house-door-fill"></i><span>Dashboard</span></a>
+</nav>
+<div class="main-container">
+  <div class="card shadow-sm p-3 rounded-4">
+    <ul class="nav nav-tabs nav-fill mb-3 crush-tabs" id="crushTab" role="tablist"
+        style="display:flex; gap:6px;">
+      <li class="nav-item flex-fill" role="presentation"><button class="nav-link active fw-bold text-danger"
+                                                                 id="whisper-tab" data-bs-toggle="tab" data-bs-target="#wheel1" type="button"
+                                                                 role="tab">Wheel</button></li>
+      <li class="nav-item flex-fill" role="presentation"><button class="nav-link fw-bold text-danger"
+                                                                 id="mutual-tab" data-bs-toggle="tab" data-bs-target="#casino" type="button"
+                                                                 role="tab">Casino</button></li>
+    </ul>
+    <div class="tab-content" id="gamesTabContent">
+      <div class="tab-pane fade show active" id="wheel1" role="tabpanel">
+        <span class="badge bg-dark badge-circle-md " th:text="${wheelLimitCounter}" ></span>
+        <div class="wheel-container">
+          <div th:if="${wheelLimit==false}" id="result" >Ready to spin? you have <span th:text="${wheelLimitCounter}" id="wheelChance"></span> Chances</div>
+          <div th:if="${wheelLimit==true}" class="text-danger fw-bolder my-4" >Your 3 spins for this week are finished!</div>
+          <div class="main">
+            <div class="pointer"></div>
+            <div id="wheel" class="wheel">
+              <div class="slice c1" style="transform: rotate(0deg) skewY(-45deg);"></div>
+              <div class="slice c2" style="transform: rotate(45deg) skewY(-45deg);"></div>
+              <div class="slice c3" style="transform: rotate(90deg) skewY(-45deg);"></div>
+              <div class="slice c4" style="transform: rotate(135deg) skewY(-45deg);"></div>
+              <div class="slice c5" style="transform: rotate(180deg) skewY(-45deg);"></div>
+              <div class="slice c6" style="transform: rotate(225deg) skewY(-45deg);"></div>
+              <div class="slice c7" style="transform: rotate(270deg) skewY(-45deg);"></div>
+              <div class="slice c8" style="transform: rotate(315deg) skewY(-45deg);"></div>
+              <div class="label" style="transform: rotate(22.5deg);"><span>5</span></div>
+              <div class="label" style="transform: rotate(67.5deg);"><span>10</span></div>
+              <div class="label" style="transform: rotate(112.5deg);"><span>Free</span></div>
+              <div class="label" style="transform: rotate(157.5deg);"><span>20</span></div>
+              <div class="label" style="transform: rotate(202.5deg);"><span>30</span></div>
+              <div class="label" style="transform: rotate(247.5deg);"><span>50</span></div>
+              <div class="label" style="transform: rotate(292.5deg);"><span>Free</span></div>
+              <div class="label" style="transform: rotate(337.5deg);"><span>2</span></div>
+            </div>
+            <button th:disabled="${wheelLimit} ? true : false" class="spin" id="spinBtn" onclick="letsSpin()">SPIN</button>
+          </div>
+          <div id="result1"></div>
+        </div>
+      </div>
+      <div class="tab-pane fade" id="casino" role="tabpanel">
+        <span class="badge bg-dark badge-circle-md " th:text="${casinoLimitCounter}" ></span>
+        <div class="casino-container">
+          <div th:if="${casinoLimit==false}" id="casinoResult">Pull the lever! you have <span th:text="${casinoLimitCounter}" id="casinoChance"></span> Chances</div>
+          <div th:if="${casinoLimit==true}" class="text-danger fw-bolder my-4">Your 3 pulls for this week are finished!</div>
+          <div class="slot-machine">
+            <div class="slots-wrapper">
+              <div class="slot-column" id="slot1">
+                <div class="slot-symbol">❤️</div>
+              </div>
+              <div class="slot-column" id="slot2">
+                <div class="slot-symbol">🌸</div>
+              </div>
+              <div class="slot-column" id="slot3">
+                <div class="slot-symbol">💍</div>
+              </div>
+            </div>
+          </div>
+          <button th:disabled="${casinoLimit} ? true : false" class="lever-btn" id="leverBtn" onclick="pullLever()">PULL LEVER</button>
+          <div id="casinoResult1"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="popup-overlay" id="popupOverlay">
+  <div class="popup">
+    <button class="close-btn" onclick="closePopup()">&times;</button>
+    <div class="badge-wrapper">
+      <div class="badge">
+        <div class="shine"></div>
+        <div class="badge-text">+<span id="badgePoints">50</span></div>
+      </div>
+    </div>
+    <div class="points-earned"><span id="pointsText">You earned 50 points!</span></div>
+  </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const currentPath = window.location.pathname;
+    const navItems = document.querySelectorAll('.bottom-nav-item');
+
+    navItems.forEach(item => {
+      if (item.getAttribute('href') === currentPath) {
+        item.classList.add('active');
+      }
+    });
+  });
+
+  const rewardOptions = [5, 10, "free", 20, 30, 50, "free", 2];
+  const segmentAngle = 360 / rewardOptions.length;
+  let spinning = false;
+
+  function createConfetti() {
+    for (let i = 0; i < 100; i++) {
+      setTimeout(() => {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.left = Math.random() * window.innerWidth + 'px';
+        confetti.style.top = '-10px';
+        confetti.style.background = ['#FF6B6B', '#4ECDC4', '#FFD93D', '#AA96DA', '#F38181', '#95E1D3'][Math.floor(Math.random() * 6)];
+        confetti.style.width = (Math.random() * 10 + 5) + 'px';
+        confetti.style.height = (Math.random() * 10 + 5) + 'px';
+        document.body.appendChild(confetti);
+
+        setTimeout(() => confetti.remove(), 3000);
+      }, i * 20);
+    }
+  }
+
+  function createFireworks() {
+    const colors = ['#FF6B6B', '#4ECDC4', '#FFD93D', '#AA96DA', '#F38181', '#95E1D3'];
+
+    for (let i = 0; i < 5; i++) {
+      setTimeout(() => {
+        const x = Math.random() * window.innerWidth;
+        const y = Math.random() * (window.innerHeight * 0.5);
+
+        for (let j = 0; j < 30; j++) {
+          const firework = document.createElement('div');
+          firework.className = 'firework';
+          firework.style.left = x + 'px';
+          firework.style.top = y + 'px';
+          firework.style.background = colors[Math.floor(Math.random() * colors.length)];
+
+          const angle = (Math.PI * 2 * j) / 30;
+          const velocity = 50 + Math.random() * 100;
+
+          firework.style.setProperty('--x', Math.cos(angle) * velocity + 'px');
+          firework.style.setProperty('--y', Math.sin(angle) * velocity + 'px');
+
+          document.body.appendChild(firework);
+          setTimeout(() => firework.remove(), 1000);
+        }
+      }, i * 300);
+    }
+  }
+
+  function createCelebrationText() {
+    const messages = ['🎉 AMAZING! 🎉', '⭐ FANTASTIC! ⭐', '🔥 ON FIRE! 🔥', '💫 SPECTACULAR! 💫', '🎊 INCREDIBLE! 🎊'];
+    const message = messages[Math.floor(Math.random() * messages.length)];
+
+    const celebText = document.createElement('div');
+    celebText.className = 'celebration-text';
+    celebText.textContent = message;
+    celebText.style.left = '50%';
+    celebText.style.top = '30%';
+    celebText.style.transform = 'translateX(-50%)';
+
+    document.body.appendChild(celebText);
+    setTimeout(() => celebText.remove(), 2000);
+  }
+
+  function createPointsShower(points) {
+    const colors = ['#FFD700', '#FFA500', '#FF6B6B', '#4ECDC4'];
+
+    for (let i = 0; i < 20; i++) {
+      setTimeout(() => {
+        const el = document.createElement('div');
+        el.className = 'points-shower';
+        el.textContent = '+' + points;
+        el.style.left = (Math.random() * window.innerWidth) + 'px';
+        el.style.top = '-50px';
+        el.style.color = colors[Math.floor(Math.random() * colors.length)];
+
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 2000);
+      }, i * 100);
+    }
+  }
+
+  function closePopup() {
+    document.getElementById('popupOverlay').classList.remove('show');
+  }
+
+  function letsSpin() {
+    if (spinning) return;
+
+    const wheel = document.getElementById('wheel');
+    const result = document.getElementById('result');
+    const spinBtn = document.getElementById('spinBtn');
+
+    spinning = true;
+    spinBtn.disabled = true;
+    result.innerText = "Spinning... 🎡";
+
+    const randomIndex = Math.floor(Math.random() * rewardOptions.length);
+    const reward = rewardOptions[randomIndex];
+    const spins = 10;
+
+    const stopAngle = randomIndex * segmentAngle + segmentAngle / 2;
+    const totalRotation = spins * 360 + stopAngle;
+
+    wheel.style.transition = "transform 3.8s cubic-bezier(0.17, 0.67, 0.12, 0.99)";
+    wheel.style.transform = `rotate(-${totalRotation}deg)`;
+
+    setTimeout(() => {
+      if (reward === "free") {
+        result.innerHTML = `🎉 You got a <b>FREE SPIN</b>! Click spin again! 🎉`;
+
+        wheel.style.transition = "none";
+        wheel.style.transform = "rotate(0deg)";
+
+        setTimeout(() => {
+          spinning = false;
+          spinBtn.disabled = false;
+        }, 200);
+
+        return;
+      }
+
+      result.innerHTML = `🎊 You won <b>${reward}</b> points! 🎊`;
+
+      createConfetti();
+      createFireworks();
+      createCelebrationText();
+      createPointsShower(reward);
+      saveRewardToServer(reward,"WHEEL");
+
+
+      document.getElementById('badgePoints').textContent = reward;
+      document.getElementById('pointsText').textContent = `You earned ${reward} points!`;
+      document.getElementById('popupOverlay').classList.add('show');
+
+      wheel.style.transition = "none";
+      wheel.style.transform = `rotate(-${stopAngle}deg)`;
+
+      setTimeout(() => {
+        spinning = false;
+     //   spinBtn.disabled = false;
+      }, 500);
+
+    }, 4000);
+  }
+
+  const casinoSymbols = ['❤️', '🌸', '💍'];
+  let casinoSpinning = false;
+
+  function getRandomSymbol() {
+    return casinoSymbols[Math.floor(Math.random() * casinoSymbols.length)];
+  }
+
+  function animateSlot(slotElement, finalSymbol, duration) {
+    const symbolEl = slotElement.querySelector('.slot-symbol');
+    slotElement.classList.add('spinning');
+
+    let elapsed = 0;
+    const interval = setInterval(() => {
+      symbolEl.textContent = getRandomSymbol();
+      elapsed += 100;
+
+      if (elapsed >= duration) {
+        clearInterval(interval);
+        slotElement.classList.remove('spinning');
+        symbolEl.textContent = finalSymbol;
+      }
+    }, 100);
+
+    return new Promise(resolve => setTimeout(resolve, duration));
+  }
+
+  function pullLever() {
+    if (casinoSpinning) return;
+
+    const slot1 = document.getElementById('slot1');
+    const slot2 = document.getElementById('slot2');
+    const slot3 = document.getElementById('slot3');
+    const casinoResult = document.getElementById('casinoResult');
+    const leverBtn = document.getElementById('leverBtn');
+
+    casinoSpinning = true;
+    leverBtn.disabled = true;
+    casinoResult.innerText = "Spinning... 🎰";
+
+    const final1 = getRandomSymbol();
+    const final2 = getRandomSymbol();
+    const final3 = getRandomSymbol();
+
+    Promise.all([
+      animateSlot(slot1, final1, 1000),
+      animateSlot(slot2, final2, 1500),
+      animateSlot(slot3, final3, 2000)
+    ]).then(() => {
+      let points = 0;
+      let message = '';
+
+      if (final1 === final2 && final2 === final3) {
+        if (final1 === '💍') {
+          points = 100;
+          message = '💍 JACKPOT! Triple Rings! 💍';
+
+        } else if (final1 === '❤️') {
+          points = 75;
+          message = '❤️ AMAZING! Triple Hearts! ❤️';
+        } else {
+          points = 50;
+          message = '🌸 GREAT! Triple Flowers! 🌸';
+        }
+      } else if (final1 === final2 || final2 === final3 || final1 === final3) {
+        points = 20;
+        message = '🎊 Nice! Two matching symbols! 🎊';
+      } else {
+        points = 5;
+        message = '✨ Keep trying! Here are 5 points! ✨';
+      }
+
+      casinoResult.innerHTML = `${message}<br><b>+${points} Points!</b>`;
+
+      createConfetti();
+      createFireworks();
+      createCelebrationText();
+      createPointsShower(points);
+      saveRewardToServer(points,"CASINO");
+
+      document.getElementById('badgePoints').textContent = points;
+      document.getElementById('pointsText').textContent = `You earned ${points} points!`;
+      document.getElementById('popupOverlay').classList.add('show');
+
+      setTimeout(() => {
+        casinoSpinning = false;
+      //  leverBtn.disabled = false;
+      }, 1000);
+
+    });
+  }
+</script>
+<script>
+  function saveRewardToServer(reward, category) {
+
+    const formData = new URLSearchParams();
+    formData.append("reward", reward);
+    formData.append("category", category);
+
+    const csrfToken = document.querySelector("meta[name='_csrf']").content;
+    const csrfHeader = document.querySelector("meta[name='_csrf_header']").content;
+
+    const spinBtn = document.getElementById('spinBtn');
+    const leverBtn = document.getElementById('leverBtn');
+    const result= document.getElementById('result');
+    const casinoResult = document.getElementById('casinoResult');
+
+
+
+    fetch('/user/spinWheel', {
+        method: 'POST',
+        headers: {
+            [csrfHeader]: csrfToken,
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(res => {
+
+        console.log("SERVER RESPONSE:", res);
+
+        // --------- WHEEL DISABLE LOGIC ---------
+        if (res.wheelSpins >= 2) {
+            spinBtn.disabled = true;
+          //  result.innerHTML = "Your 3 wheel chances have been finished!";
+          //  result.style.color="red";
+         //   result.style.fontWeight = "bold" ;
+          //  console.log("Wheel disabled (limit reached)");
+        } else {
+            spinBtn.disabled = false;
+          //  console.log("Wheel enabled");
+        }
+
+        // --------- CASINO DISABLE LOGIC ---------
+        if (res.casinoSpins >= 2) {
+            leverBtn.disabled = true;
+         //   casinoResult.innerHTML="Your 3 casino chances have been finished!";
+         //   casinoResult.style.color="red";
+         //   casinoResult.style.fontWeight = "bold" ;
+          //  console.log("Casino disabled (limit reached)");
+        } else {
+            leverBtn.disabled = false;
+            console.log("Casino enabled");
+        }
+
+        // Optional: If status is limit for the current category
+        if (res.status === "limit") {
+            if (category === "WHEEL") spinBtn.disabled = true;
+            if (category === "CASINO") leverBtn.disabled = true;
+            return;
+        }
+
+    })
+    .catch(err => {
+        console.error("ERROR:", err);
+        alert("Something went wrong!");
+    });
+}
+
+</script>
+
+</body>
+
+</html>

@@ -1,0 +1,2107 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rate Photos - HotOrNot</title>
+  <meta name="_csrf" th:content="${_csrf.token}" />
+  <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css" rel="stylesheet">
+  <style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        background: #ffffff;
+        color: #2d2d2d;
+        min-height: 100vh;
+        position: relative;
+        overflow-x: hidden;
+        padding-bottom: 80px; /* Space for mobile bottom nav */
+    }
+
+    @media (min-width: 768px) {
+        body {
+            padding-bottom: 0;
+        }
+    }
+
+    .bg-gradient {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        overflow: hidden;
+        background: linear-gradient(135deg, #FFF5F0 0%, #FFE8F0 50%, #FFF0F5 100%);
+    }
+
+    .bg-gradient::before,
+    .bg-gradient::after,
+    .bg-gradient span {
+        content: '';
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(100px);
+    }
+
+    .bg-gradient::before {
+        width: 600px;
+        height: 600px;
+        background: rgba(250, 130, 49, 0.15);
+        animation: float1 20s ease-in-out infinite;
+    }
+
+    .bg-gradient::after {
+        width: 700px;
+        height: 700px;
+        background: rgba(255, 107, 157, 0.12);
+        animation: float2 25s ease-in-out infinite;
+    }
+
+    .bg-gradient span {
+        width: 500px;
+        height: 500px;
+        background: rgba(249, 127, 81, 0.1);
+        animation: float3 18s ease-in-out infinite;
+    }
+
+    @keyframes float1 {
+        0%, 100% { transform: translate(10vw, 20vh) scale(1); }
+        25% { transform: translate(60vw, 70vh) scale(1.3); }
+        50% { transform: translate(80vw, 30vh) scale(0.9); }
+        75% { transform: translate(30vw, 80vh) scale(1.2); }
+    }
+
+    @keyframes float2 {
+        0%, 100% { transform: translate(70vw, 60vh) scale(1); }
+        33% { transform: translate(20vw, 20vh) scale(1.4); }
+        66% { transform: translate(50vw, 80vh) scale(0.8); }
+    }
+
+    @keyframes float3 {
+        0%, 100% { transform: translate(40vw, 10vh) scale(1); }
+        30% { transform: translate(10vw, 70vh) scale(1.3); }
+        60% { transform: translate(75vw, 50vh) scale(0.9); }
+        90% { transform: translate(55vw, 15vh) scale(1.2); }
+    }
+
+    /* Desktop Navigation */
+    .navbar-desktop {
+        background: rgba(255, 255, 255, 0.95) !important;
+        backdrop-filter: blur(20px);
+        border-bottom: 2px solid rgba(250, 130, 49, 0.2);
+        box-shadow: 0 4px 20px rgba(250, 130, 49, 0.1);
+        display: none;
+    }
+
+    @media (min-width: 768px) {
+        .navbar-desktop {
+            display: block !important;
+        }
+    }
+
+    .navbar-brand {
+        font-size: 1.8rem;
+        font-weight: 900;
+        letter-spacing: -1px;
+    }
+
+    .logo-hot {
+        background: linear-gradient(135deg, #FA8231 0%, #F97F51 50%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .logo-not {
+        color: #FF6B9D;
+    }
+
+    .nav-link {
+        color: #555 !important;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        position: relative;
+        margin: 0 0.5rem;
+    }
+
+    .nav-link:hover {
+        color: #FA8231 !important;
+        transform: translateY(-2px);
+    }
+
+    .nav-link.active {
+        color: #FA8231 !important;
+    }
+
+    .btn-neon {
+        background: linear-gradient(135deg, #FA8231 0%, #F97F51 50%, #FF6B9D 100%);
+        color: white;
+        border: none;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        box-shadow: 0 4px 15px rgba(250, 130, 49, 0.4);
+        transition: all 0.3s ease;
+    }
+
+    .btn-neon:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 25px rgba(250, 130, 49, 0.6);
+        color: white;
+    }
+
+    /* Mobile Bottom Navigation */
+    .bottom-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(20px);
+        border-top: 2px solid rgba(250, 130, 49, 0.2);
+        box-shadow: 0 -4px 20px rgba(250, 130, 49, 0.1);
+        z-index: 1000;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        padding: 8px 0;
+        height: 70px;
+    }
+
+    @media (min-width: 768px) {
+        .bottom-nav {
+            display: none;
+        }
+    }
+
+    .bottom-nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        color: #888;
+        transition: all 0.3s ease;
+        padding: 8px 12px;
+        border-radius: 12px;
+        min-width: 60px;
+    }
+
+    .bottom-nav-item i {
+        font-size: 24px;
+        margin-bottom: 4px;
+        transition: all 0.3s ease;
+    }
+
+    .bottom-nav-item span {
+        font-size: 11px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .bottom-nav-item.active {
+        color: #FA8231;
+    }
+
+    .bottom-nav-item.active i {
+        transform: scale(1.1);
+    }
+
+    .bottom-nav-item:hover {
+        color: #FA8231;
+        background: rgba(250, 130, 49, 0.1);
+    }
+
+    /* Logo for mobile (top-left corner) */
+    .mobile-logo {
+        position: fixed;
+        top: 15px;
+        left: 15px;
+        z-index: 999;
+        font-size: 1.3rem;
+        font-weight: 900;
+        letter-spacing: -1px;
+        display: block;
+    }
+
+    @media (min-width: 768px) {
+        .mobile-logo {
+            display: none;
+        }
+    }
+
+    .main-container {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 1rem;
+    }
+
+    @media (max-width: 767px) {
+        .main-container {
+            padding-top: 10px;
+        }
+    }
+
+
+
+
+
+
+
+    @keyframes sparkle {
+        0%, 100% { opacity: 0.8; filter: blur(8px) brightness(1); }
+        50% { opacity: 1; filter: blur(12px) brightness(1.3); }
+    }
+
+
+
+    @keyframes pulse-glow {
+        0%, 100% {
+            opacity: 0.6;
+            transform: translate(50%, -50%) scale(1);
+        }
+        50% {
+            opacity: 1;
+            transform: translate(50%, -50%) scale(1.3);
+        }
+    }
+
+
+
+
+
+    @keyframes popIn {
+        0% { transform: scale(0); }
+        50% { transform: scale(1.2); }
+        100% { transform: scale(1); }
+    }
+
+
+    .popup-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.4s ease;
+    }
+
+    .popup-overlay.show {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .popup {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 248, 240, 0.95));
+        padding: 40px 60px;
+        border-radius: 25px;
+        text-align: center;
+        color: #2d2d2d;
+        box-shadow: 0 10px 50px rgba(250, 130, 49, 0.4);
+        border: 3px solid rgba(250, 130, 49, 0.3);
+        position: relative;
+        overflow: hidden;
+        animation: popupScale 0.6s ease-out;
+    }
+
+    @keyframes popupScale {
+        0% { transform: scale(0.8); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+
+    .badge-wrapper {
+        position: relative;
+        margin-bottom: 15px;
+    }
+
+    .badge {
+        background: linear-gradient(135deg, #FA8231, #F97F51, #FF6B9D);
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        position: relative;
+        box-shadow: 0 0 40px rgba(250, 130, 49, 0.6);
+        animation: pulse 1.5s infinite;
+    }
+
+    .badge-text {
+        font-size: 2.5em;
+        font-weight: bold;
+        color: #fff;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .shine {
+        position: absolute;
+        top: 0;
+        left: -75%;
+        width: 50%;
+        height: 100%;
+        background: linear-gradient(120deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0));
+        transform: skewX(-25deg);
+        animation: shine 2s infinite;
+    }
+
+    @keyframes shine {
+        0% { left: -75%; }
+        100% { left: 125%; }
+    }
+
+    .points-earned {
+        font-size: 1.2em;
+        margin-top: 15px;
+        color: #FA8231;
+        font-weight: 700;
+    }
+
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.08); }
+    }
+
+    .close-btn {
+        position: absolute;
+        top: 15px;
+        right: 20px;
+        font-size: 32px;
+        color: #999;
+        background: none;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        z-index: 1001;
+    }
+
+    .close-btn:hover {
+        color: #FA8231;
+        transform: rotate(90deg);
+    }
+
+    @media (max-width: 576px) {
+
+
+        .popup {
+            padding: 30px 40px;
+        }
+
+        .badge {
+            width: 100px;
+            height: 100px;
+        }
+
+        .badge-text {
+            font-size: 2em;
+        }
+    }
+
+
+    /* Add New Post CSS
+    .container-fluid {
+            background: linear-gradient(to right, #9333ea, #2563eb);
+            color: white;
+            padding: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+         .container-fluid h1 {
+                font-size: 1.5rem;
+                font-weight: bold;
+            }
+
+            .container-fluid p {
+                font-size: 0.875rem;
+                color: #e9d5ff;
+            }
+*/
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem 1rem 5rem 1rem;
+        }
+
+        .container {
+            max-width: 48rem;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1f2937;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .upload-area {
+            border: 3px dashed #d8b4fe;
+            border-radius: 0.75rem;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .upload-area:hover {
+            border-color: #a855f7;
+            background: #faf5ff;
+        }
+
+        .upload-icon {
+            background: #f3e8ff;
+            width: 5rem;
+            height: 5rem;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        .upload-text {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-subtext {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .preview-container {
+            position: relative;
+        }
+
+        .preview-image {
+            max-height: 24rem;
+            max-width: 100%;
+            border-radius: 0.5rem;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .remove-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 2.5rem;
+            height: 2.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s;
+        }
+
+        .remove-btn:hover {
+            background: #dc2626;
+        }
+
+        .form-group {
+            margin-top: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #d1d5db;
+            border-radius: 0.5rem;
+            font-family: inherit;
+            font-size: 1rem;
+            resize: none;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #a855f7;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(to right, #9333ea, #2563eb);
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            font-size: 1.125rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 1.5rem;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            background: linear-gradient(to right, #7e22ce, #1d4ed8);
+            box-shadow: 0 20px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .submit-btn:disabled {
+           opacity: 0.5;
+           cursor: not-allowed;
+        }
+
+        .placeholder-screen {
+            text-align: center;
+            padding: 3rem 0;
+        }
+
+        .placeholder-icon {
+            width: 4rem;
+            height: 4rem;
+            margin: 0 auto 1rem;
+            color: #d1d5db;
+        }
+
+        .placeholder-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .placeholder-text {
+            color: #6b7280;
+        }
+
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            padding: 1rem;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 1rem;
+            max-width: 56rem;
+            width: 100%;
+            max-height: 90vh;
+            overflow: auto;
+            padding: 1.5rem;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1f2937;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            font-size: 1.75rem;
+        }
+
+        .close-btn:hover {
+            color: #6b7280;
+        }
+
+        .crop-container {
+            position: relative;
+            display: inline-block;
+            max-width: 100%;
+        }
+
+        .crop-image {
+            max-width: 100%;
+            max-height: 60vh;
+            border-radius: 0.5rem;
+            display: block;
+        }
+
+        .crop-overlay {
+            position: absolute;
+            border: 4px solid #9333ea;
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+            cursor: move;
+        }
+
+        .crop-handle {
+            position: absolute;
+            right: -12px;
+            bottom: -12px;
+            width: 24px;
+            height: 24px;
+            background: #9333ea;
+            border-radius: 50%;
+            cursor: nwse-resize;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 0.75rem;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .btn-cancel {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .btn-cancel:hover {
+            background: #d1d5db;
+        }
+
+        .btn-confirm {
+            background: linear-gradient(to right, #9333ea, #2563eb);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-confirm:hover {
+            background: linear-gradient(to right, #7e22ce, #1d4ed8);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .hashtag-suggestions{
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.45rem;
+                margin-top: 0.75rem;
+            }
+
+            .hashtag-btn{
+                background: #f3e8ff;
+                color: #7e22ce;
+                padding: 0.5rem 1rem;
+                border: #e9d5ff solid 2px;
+                border-radius: 2rem;
+                font-size: 0.9rem;
+                font-weight: 700;
+                cursor: pointer;
+                transition:all 0.3s;
+            }
+            .hashtag-btn:hover{
+             background-color: #e8d3ff;
+             border-color: #a855f7;
+             transform: translateY(-3px);
+            }
+
+        svg {
+            width: 24px;
+            height: 24px;
+        }
+
+          .overlay{
+               height: 100%;
+                width: 100%;
+                position: fixed;
+                left: 0%;
+                top: 0%;
+                background-color: rgba(0,0,0,0.5);
+                display:none;
+
+            }
+            .overlay.active{
+               display : block;
+               z-index:100;
+            }
+
+
+            .warning-container {
+                background-color: white;
+                position: fixed;
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%,-50%);
+                border-radius: 16px;
+                padding: 32px;
+                max-width: 420px;
+                width: 100%;
+                box-shadow: 0 20px 60px rgba(241, 239, 239, 0.3);
+                animation: slideIn 0.3s ease-out;
+                position: relative;
+            }
+
+            .close-btn {
+                position: absolute;
+                top: 16px;
+                right: 16px;
+                width: 32px;
+                height: 32px;
+                border: none;
+                background: #e2e8f0;
+                border-radius: 50%;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.2s ease;
+            }
+
+            .close-btn:hover {
+                background: #cbd5e0;
+            }
+
+            .close-btn svg {
+                width: 18px;
+                height: 18px;
+            }
+            .warning-header {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 12px;
+                margin-bottom: 24px;
+                padding: 10px;
+                background-color: rgb(160, 42, 42);
+                border-radius: 12px;
+            }
+
+            .warning-icon {
+                width: 48px;
+                height: 48px;
+                animation: pulse 2s infinite;
+            }
+
+
+
+            .warning-title {
+                font-size: 1.75rem;
+                font-weight: 700;
+                color: #1a1a1a;
+                letter-spacing: 0.5px;
+            }
+
+            .warning-message {
+                color: #4a5568;
+                font-size: 1.125rem;
+                line-height: 1.6;
+                text-align: center;
+            }
+
+         .overlay2 {
+            position: fixed;
+            top: 8%;
+            left: 50%;
+            transform: translateX(-50%);
+            display: none;
+            z-index: 9999;
+            width: 100%;
+            max-width: 400px;
+            padding: 0 15px;
+        }
+
+        .overlay2.show {
+            display: block;
+        }
+
+        .successMessage {
+            background-color: rgb(61, 181, 61);
+            color: white;
+            font-size: 1.1rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem 1.5rem;
+            gap: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            width: 100%;
+        }
+
+        .text {
+            color: rgb(255, 255, 255);
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0;
+        }
+
+        .text img {
+            height: 28px;
+            width: 28px;
+            flex-shrink: 0;
+        }
+
+          @media (max-width: 768px) {
+              .overlay2 {
+                max-width: 350px;
+            }
+
+            .successMessage {
+                font-size: 1rem;
+                padding: 0.9rem 1.2rem;
+            }
+
+            .text {
+                font-size: 1rem;
+            }
+
+            .text img {
+                height: 26px;
+                width: 26px;
+            }
+
+            .header h1 {
+                font-size: 1.25rem;
+            }
+
+            .card {
+                padding: 1rem;
+            }
+
+            .card-title {
+                font-size: 1.25rem;
+            }
+
+            .upload-area {
+                padding: 1.5rem 1rem;
+            }
+
+            .upload-icon {
+                width: 4rem;
+                height: 4rem;
+            }
+
+            .upload-text {
+                font-size: 1rem;
+            }
+
+            .modal-content {
+                padding: 1rem;
+            }
+
+            .modal-title {
+                font-size: 1.25rem;
+            }
+
+            .crop-image {
+                max-height: 50vh;
+            }
+
+            .crop-handle {
+                width: 32px;
+                height: 32px;
+                right: -16px;
+                bottom: -16px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .content {
+                padding: 0.5rem 0.5rem 1.3rem 0.5rem;
+            }
+
+            .upload-icon {
+                width: 3.5rem;
+                height: 3.5rem;
+            }
+
+            .nav-label {
+                font-size: 0.65rem;
+            }
+
+              .overlay2 {
+                top: 10%;
+                max-width: 320px;
+            }
+
+            .successMessage {
+                font-size: 0.95rem;
+                padding: 0.8rem 1rem;
+            }
+
+            .text {
+                font-size: 0.95rem;
+                gap: 8px;
+            }
+
+            .text img {
+                height: 24px;
+                width: 24px;
+            }
+        }
+
+
+        /* Very small screens */
+        @media (max-width: 400px) {
+            .overlay2 {
+                max-width: 280px;
+            }
+
+            .successMessage {
+                font-size: 0.9rem;
+                padding: 0.75rem 0.9rem;
+            }
+
+            .text {
+                font-size: 0.9rem;
+            }
+
+            .text img {
+                height: 22px;
+                width: 22px;
+            }
+        }
+
+    /* <!--   ==============================       Birthday Popup       ============================================= --> */
+     .birthdayoverlay{
+          position: fixed;
+          height : 100%;
+          width : 100%;
+          background: rgba(0, 0, 0, 0.3);
+          display: none;
+          align-items: center;
+          justify-content: center;
+          padding: 10px;
+          z-index : 9999;
+        }
+
+        .popup {
+          background: linear-gradient(135deg, #667eea 0%, #ec4899 50%, #f97316 100%);
+          border-radius: 30px;
+          max-width: 600px;
+          width: 80%;
+          padding: 50px 30px 40px;
+          text-align: center;
+          position: relative;
+          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+          animation: popIn 0.5s ease-out;
+          max-height: 85vh;
+          overflow-y: auto;
+        }
+
+        @keyframes popIn {
+          0% {
+            transform: scale(0.5);
+            opacity: 0;
+          }
+          100% {
+            transform: scale(1);
+            opacity: 1;
+          }
+        }
+
+        .gift-icon {
+          font-size: 70px;
+          margin-bottom: 15px;
+          animation: bounce 2s infinite;
+          filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.3));
+        }
+
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-20px); }
+        }
+
+        .party-emoji {
+          position: absolute;
+          font-size: 50px;
+          animation: spin 2s linear infinite;
+        }
+
+        .party-left {
+          top: 60px;
+          left: 60px;
+        }
+
+        .party-right {
+          top: 60px;
+          right: 60px;
+          animation-direction: reverse;
+        }
+
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+
+        .sparkle {
+          position: absolute;
+          color: #ffd700;
+          font-size: 30px;
+          animation: pulse 1.5s infinite;
+        }
+
+        .sparkle-1 { top: 40px; left: 80px; }
+        .sparkle-2 { top: 80px; right: 100px; animation-delay: 0.5s; }
+        .sparkle-3 { bottom: 100px; left: 100px; animation-delay: 1s; }
+
+        @keyframes pulse {
+          0%, 100% { opacity: 0.3; transform: scale(1); }
+          50% { opacity: 1; transform: scale(1.2); }
+        }
+
+        h1 {
+          color: white;
+          font-size: 36px;
+          margin-bottom: 10px;
+          text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .subtitle {
+          color: white;
+          font-size: 18px;
+          margin-bottom: 25px;
+          font-weight: 500;
+        }
+
+        .bonus-card {
+          background: rgba(255, 255, 255, 0.2);
+          backdrop-filter: blur(10px);
+          border-radius: 20px;
+          padding: 20px;
+          width: 350px;
+          max-width: 100%;
+          margin: 0 auto 20px;
+          border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .bonus-icon {
+          font-size: 50px;
+          margin-bottom: 10px;
+        }
+
+        .bonus-title {
+          color: white;
+          font-size: 22px;
+          font-weight: bold;
+          margin-bottom: 10px;
+        }
+
+        .bonus-points {
+          color: #ffd700;
+          font-size: 38px;
+          font-weight: 900;
+          margin-bottom: 10px;
+          text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .bonus-duration {
+          color: white;
+          font-size: 16px;
+          font-weight: 600;
+        }
+
+        .cta-btn {
+          background: white;
+          color: #667eea;
+          border: none;
+          padding: 18px 40px;
+          font-size: 20px;
+          font-weight: bold;
+          border-radius: 50px;
+          cursor: pointer;
+          transition: all 0.3s;
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .cta-btn:hover {
+          transform: scale(1.05);
+          box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .confetti {
+          position: absolute;
+          width: 10px;
+          height: 10px;
+          animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+          0% {
+            transform: translateY(-100px) rotate(0deg);
+            opacity: 1;
+          }
+          100% {
+            transform: translateY(100vh) rotate(720deg);
+            opacity: 0;
+          }
+        }
+
+        .hidden {
+          display: none;
+        }
+
+        /* Tablet and small desktop */
+        @media (max-width: 768px) {
+          .popup {
+            padding: 40px 25px 35px;
+          }
+
+          .party-emoji {
+            font-size: 40px;
+          }
+
+          .party-left {
+            top: 50px;
+            left: 40px;
+          }
+
+          .party-right {
+            top: 50px;
+            right: 40px;
+          }
+
+          .sparkle {
+            font-size: 25px;
+          }
+
+          .sparkle-1 { top: 35px; left: 60px; }
+          .sparkle-2 { top: 70px; right: 70px; }
+          .sparkle-3 { bottom: 80px; left: 70px; }
+        }
+
+        /* Mobile */
+        @media (max-width: 576px) {
+          .popup {
+            padding: 35px 20px 30px;
+            border-radius: 25px;
+            max-width: 90%;
+          }
+
+          h1 {
+            font-size: 28px;
+          }
+
+          .subtitle {
+            font-size: 16px;
+            margin-bottom: 20px;
+          }
+
+          .gift-icon {
+            font-size: 60px;
+            margin-bottom: 12px;
+          }
+
+          .bonus-card {
+            width: 100%;
+            padding: 18px 15px;
+          }
+
+          .bonus-icon {
+            font-size: 45px;
+            margin-bottom: 8px;
+          }
+
+          .bonus-title {
+            font-size: 20px;
+            margin-bottom: 8px;
+          }
+
+          .bonus-points {
+            font-size: 34px;
+            margin-bottom: 8px;
+          }
+
+          .bonus-duration {
+            font-size: 15px;
+          }
+
+          .party-emoji {
+            font-size: 35px;
+          }
+
+          .party-left {
+            top: 40px;
+            left: 20px;
+          }
+
+          .party-right {
+            top: 40px;
+            right: 20px;
+          }
+
+          .sparkle {
+            font-size: 20px;
+          }
+
+          .sparkle-1 { top: 30px; left: 35px; }
+          .sparkle-2 { top: 60px; right: 40px; }
+          .sparkle-3 { bottom: 70px; left: 40px; }
+
+          .close-btn {
+            width: 35px;
+            height: 35px;
+            font-size: 22px;
+            top: 12px;
+            right: 12px;
+            z-index : 100;
+          }
+
+          .cta-btn {
+            padding: 15px 35px;
+            font-size: 18px;
+          }
+        }
+
+        /* Very small screens */
+        @media (max-width: 400px) {
+          .popup {
+            padding: 30px 15px 25px;
+            border-radius: 20px;
+            max-width: 85%;
+          }
+
+          h1 {
+            font-size: 24px;
+            margin-bottom: 8px;
+          }
+
+          .subtitle {
+            font-size: 15px;
+            margin-bottom: 18px;
+          }
+
+          .gift-icon {
+            font-size: 50px;
+            margin-bottom: 10px;
+          }
+
+          .bonus-card {
+            padding: 15px 12px;
+            border-radius: 18px;
+          }
+
+          .bonus-icon {
+            font-size: 40px;
+            margin-bottom: 6px;
+          }
+
+          .bonus-title {
+            font-size: 18px;
+            margin-bottom: 6px;
+          }
+
+          .bonus-points {
+            font-size: 30px;
+            margin-bottom: 6px;
+          }
+
+          .bonus-duration {
+            font-size: 14px;
+          }
+
+          .party-emoji {
+            font-size: 30px;
+          }
+
+          .party-left {
+            top: 35px;
+            left: 15px;
+          }
+
+          .party-right {
+            top: 35px;
+            right: 15px;
+          }
+
+          .sparkle {
+            font-size: 18px;
+          }
+
+          .sparkle-1 { top: 25px; left: 30px; }
+          .sparkle-2 { top: 50px; right: 35px; }
+          .sparkle-3 { bottom: 60px; left: 35px; }
+
+          .cta-btn {
+            padding: 14px 30px;
+            font-size: 17px;
+          }
+        }
+
+        /* Extra small screens */
+        @media (max-width: 320px) {
+          .birthdayoverlay {
+            padding: 5px;
+          }
+
+          .popup {
+            padding: 25px 12px 20px;
+            border-radius: 18px;
+            max-width: 90%;
+          }
+
+          h1 {
+            font-size: 22px;
+            margin-bottom: 6px;
+          }
+
+          .subtitle {
+            font-size: 14px;
+            margin-bottom: 15px;
+          }
+
+          .gift-icon {
+            font-size: 45px;
+            margin-bottom: 8px;
+          }
+
+          .bonus-card {
+            padding: 12px 10px;
+            border-radius: 16px;
+            margin-bottom: 15px;
+          }
+
+          .bonus-icon {
+            font-size: 35px;
+            margin-bottom: 5px;
+          }
+
+          .bonus-title {
+            font-size: 16px;
+            margin-bottom: 5px;
+          }
+
+          .bonus-points {
+            font-size: 26px;
+            margin-bottom: 5px;
+          }
+
+          .bonus-duration {
+            font-size: 13px;
+          }
+
+          .party-emoji {
+            font-size: 25px;
+          }
+
+          .party-left {
+            top: 28px;
+            left: 10px;
+          }
+
+          .party-right {
+            top: 28px;
+            right: 10px;
+          }
+
+          .sparkle {
+            font-size: 16px;
+          }
+
+          .sparkle-1 { top: 22px; left: 25px; }
+          .sparkle-2 { top: 45px; right: 28px; }
+          .sparkle-3 { bottom: 50px; left: 28px; }
+
+          .close-btn {
+            width: 32px;
+            height: 32px;
+            font-size: 20px;
+            top: 10px;
+            right: 10px;
+          }
+
+          .cta-btn {
+            padding: 12px 25px;
+            font-size: 16px;
+          }
+        }
+
+
+  </style>
+</head>
+<body>
+<div class="bg-gradient">
+  <span></span>
+</div>
+
+<!-- Mobile Logo (top-left corner) -->
+<a href="#" class="mobile-logo">
+  <span class="logo-hot">Hot</span><span class="logo-not">Or</span><span class="logo-hot">Not</span>
+</a>
+
+<!-- Desktop Navigation -->
+<nav class="navbar-desktop navbar navbar-expand-lg navbar-light sticky-top">
+  <div class="container-fluid px-4">
+    <a class="navbar-brand" href="#">
+      <span class="logo-hot">Hot</span><span class="logo-not">Or</span><span class="logo-hot">Not</span>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto align-items-center">
+        <li class="nav-item">
+          <a class="nav-link" href="/user/dashboard">Dashboard</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/user/rating">Rate</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active" href="/user/add-new-post">Add Post</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/user/games">Games</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link " href="/user/mutual-crush">Mutual Crush</a>
+        </li>
+        <li class="nav-item ms-3">
+          <a href="/logout" class="btn btn-neon btn-sm rounded-pill px-4">Logout</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile Bottom Navigation -->
+<nav class="bottom-nav">
+  <a href="/user/rating" class="bottom-nav-item">
+    <i class="bi bi-fire"></i>
+    <span>Rate</span>
+  </a>
+  <a href="/user/games" class="bottom-nav-item">
+    <i class="bi bi-controller"></i>
+    <span>Games</span>
+  </a>
+  <a href="/user/add-new-post" class="bottom-nav-item active">
+    <i class="bi bi-plus-circle-fill"></i>
+    <span>Add Post</span>
+  </a>
+  <a href="/user/mutual-crush" class="bottom-nav-item ">
+    <i class="bi bi-heart-fill"></i>
+    <span>Crush</span>
+  </a>
+  <a href="/user/dashboard" class="bottom-nav-item">
+    <i class="bi bi-house-door-fill"></i>
+    <span>Dashboard</span>
+  </a>
+</nav>
+
+<!--<div class="main-container">-->
+
+<script th:if="${PostUploaded}">
+  window.addEventListener('DOMContentLoaded', ()=> {
+  const message=document.getElementById('Overlay2');
+  if(message)
+  {
+   message.classList.add("show");
+  }
+ setTimeout(()=>{
+  message.classList.remove("show");
+ },5000);
+  });
+</script>
+
+<script th:if="${NotSafe}">
+  window.addEventListener('DOMContentLoaded', () => {
+         const show = document.getElementById('Overlay1');
+         const message =document.getElementById('warningMessage');
+         if (show) {
+              message.innerHTML='Upload rejected: explicit or restricted content detected.';
+              show.classList.add("active");
+         }
+
+     setTimeout(()=>{
+      show.classList.remove("active");
+     },5000);
+     });
+</script>
+
+<script th:if="${AiCreated}">
+  window.addEventListener('DOMContentLoaded', () => {
+  const show = document.getElementById('Overlay1');
+  const message =document.getElementById('warningMessage');
+  if (show) {
+  message.innerHTML='Upload rejected: Ai image content detected.';
+  show.classList.add("active");
+  }
+  });
+</script>
+
+<!--Upload Message-->
+<div class="overlay2" id="Overlay2">
+  <div class="successMessage">
+    <p class="text">
+      <img src="/check.png" style="height: 30px ; width : 30px;" alt=""/>
+      Post Uploaded
+    </p>
+  </div>
+</div>
+
+
+<!--Error Message -->
+<div class="overlay" id="Overlay1">
+  <div class="warning-container">
+    <button class="close-btn" onclick="closeWarning()">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M18 6L6 18M6 6l12 12" stroke="#4a5568" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>
+    </button>
+
+    <div class="warning-header">
+      <svg class="warning-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2L2 20h20L12 2z" fill="#1a1a1a"/>
+        <path d="M12 9v5M12 16h.01" stroke="white" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <h1 class="warning-title">WARNING</h1>
+    </div>
+
+    <p class="warning-message" id="warningMessage">
+    </p>
+  </div>
+</div>
+
+<script>
+  function closeWarning() {
+      document.querySelector('.warning-container').style.animation = 'slideOut 0.3s ease-out';
+      setTimeout(() => {
+          let error =document.getElementById('Overlay1');
+  error.style.visibility = 'hidden';
+      }, 10);
+  }
+</script>
+
+
+
+<!-- Main Content -->
+<div class="content">
+  <div class="container">
+    <!-- Upload Tab -->
+    <div id="uploadTab" class="card">
+      <div class="card-title">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color: #9333ea;">
+          <path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+        </svg>
+        Upload Picture
+      </div>
+      <form th:action="@{/user/add-post}" method="post" enctype="multipart/form-data">
+        <input type="file" id="fileInput" name="photo" accept="image/*" class="hidden">
+
+        <input type="hidden" name="userId" id="userId" th:value="${user_master.userId}">
+
+        <div id="uploadArea" class="upload-area">
+          <div class="upload-icon">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color: #9333ea; width: 2.5rem; height: 2.5rem;">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <circle cx="8.5" cy="8.5" r="1.5"></circle>
+              <polyline points="21 15 16 10 5 21"></polyline>
+            </svg>
+          </div>
+          <div class="upload-text">Click to upload image</div>
+          <div class="upload-subtext">PNG, JPG, GIF up to 10MB</div>
+        </div>
+
+        <div id="previewArea" class="hidden preview-container" style="margin-top: 1.5rem;">
+          <img id="previewImage"  class="preview-image">
+          <button id="removeBtn" class="remove-btn">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width: 1.25rem; height: 1.25rem;">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Caption (Optional)</label>
+          <textarea id="caption" name="caption" rows="4" placeholder="Share your thoughts..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Hashtags (Optional)</label>
+          <textarea id="hashtags" name="hashtags" placeholder="Add Mood like ... #Crazy #Happy"></textarea>
+
+          <div class="hashtag-suggestions" id="hashtagSuggestions">
+            <button type="button" class="hashtag-btn" data-tag="#Happy">#Happy</button>
+            <button type="button" class="hashtag-btn" data-tag="#Crazy">#Crazy</button>
+            <button type="button" class="hashtag-btn" data-tag="#Love">#Love</button>
+            <button type="button" class="hashtag-btn" data-tag="#Sad">#Sad</button>
+            <button type="button" class="hashtag-btn" data-tag="#Excited">#Excited</button>
+            <button type="button" class="hashtag-btn" data-tag="#Chill">#Chill</button>
+            <button type="button" class="hashtag-btn" data-tag="#Blessed">#Blessed</button>
+            <button type="button" class="hashtag-btn" data-tag="#Motivated">#Motivated</button>
+          </div>
+
+        </div>
+
+        <input type="submit" id="submitBtn" class="submit-btn" value="Upload image" disabled/>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<div id="cropModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color: #9333ea;">
+          <path d="M23 3H1v18h22V3zM1 3l6 6m10 10l6 6"></path>
+        </svg>
+        Adjust Your Image
+      </div>
+      <button id="closeModal" class="close-btn">×</button>
+    </div>
+    <div class="crop-container" id="cropContainer">
+      <img id="cropImage" class="crop-image">
+      <div id="cropOverlay" class="crop-overlay">
+        <div class="crop-handle" id="cropHandle"></div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-cancel" id="cancelCrop">Cancel</button>
+      <button class="btn btn-confirm" id="confirmCrop">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width: 1.25rem; height: 1.25rem;">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        NEXT
+      </button>
+    </div>
+  </div>
+  <canvas id="cropCanvas" style="display: none;"></canvas>
+</div>
+
+
+
+<script>
+  let selectedImage = null;
+  let croppedImage = null;
+  let cropArea = { x: 0, y: 0, width: 100, height: 100 };
+
+  // Elements
+  const fileInput = document.getElementById('fileInput');
+  const uploadArea = document.getElementById('uploadArea');
+  const previewArea = document.getElementById('previewArea');
+  const previewImage = document.getElementById('previewImage');
+  const removeBtn = document.getElementById('removeBtn');
+  const submitBtn = document.getElementById('submitBtn');
+  const caption = document.getElementById('caption');
+  const cropModal = document.getElementById('cropModal');
+  const cropImage = document.getElementById('cropImage');
+  const cropOverlay = document.getElementById('cropOverlay');
+  const cropHandle = document.getElementById('cropHandle');
+  const cropCanvas = document.getElementById('cropCanvas');
+  const closeModal = document.getElementById('closeModal');
+  const cancelCrop = document.getElementById('cancelCrop');
+  const confirmCrop = document.getElementById('confirmCrop');
+
+  // Tab switching
+  const tabs = {
+      home: document.getElementById('homeTab'),
+      upload: document.getElementById('uploadTab'),
+      messages: document.getElementById('messagesTab'),
+      notifications: document.getElementById('notificationsTab')
+  };
+
+  document.querySelectorAll('.nav-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+          var tab = btn.dataset.tab;
+
+          // Update active nav button
+          document.querySelectorAll('.nav-btn').forEach(function(b) {
+              b.classList.remove('active');
+          });
+          btn.classList.add('active');
+
+          // Show correct tab
+          Object.keys(tabs).forEach(function(key) {
+              tabs[key].classList.add('hidden');
+          });
+          tabs[tab].classList.remove('hidden');
+      });
+  });
+
+  // Upload area click
+  uploadArea.addEventListener('click', function() {
+      fileInput.click();
+  });
+
+  // File selection
+  fileInput.addEventListener('change', function(e) {
+      var file = e.target.files[0];
+      if (file) {
+          var reader = new FileReader();
+          reader.onload = function(e) {
+              selectedImage = e.target.result;
+              cropImage.src = selectedImage;
+              cropModal.classList.add('active');
+          };
+          reader.readAsDataURL(file);
+      }
+  });
+
+  // Initialize crop area after image loads - FIXED FOR MOBILE
+  cropImage.addEventListener('load', function() {
+      var rect = cropImage.getBoundingClientRect();
+      var width = rect.width;
+      var height = rect.height;
+      var size = Math.min(width, height) * 0.8;
+      cropArea = {
+          x: (width - size) / 2,
+          y: (height - size) / 2,
+          width: size,
+          height: size
+      };
+      updateCropOverlay();
+  });
+
+  function updateCropOverlay() {
+      cropOverlay.style.left = cropArea.x + 'px';
+      cropOverlay.style.top = cropArea.y + 'px';
+      cropOverlay.style.width = cropArea.width + 'px';
+      cropOverlay.style.height = cropArea.height + 'px';
+  }
+
+  // Drag crop overlay
+  var isDragging = false;
+  var dragStartX, dragStartY;
+
+  cropOverlay.addEventListener('mousedown', function(e) {
+      if (e.target === cropHandle) return;
+      isDragging = true;
+      dragStartX = e.clientX - cropArea.x;
+      dragStartY = e.clientY - cropArea.y;
+      e.preventDefault();
+  });
+
+  // Touch support for mobile
+  cropOverlay.addEventListener('touchstart', function(e) {
+      if (e.target === cropHandle) return;
+      isDragging = true;
+      var touch = e.touches[0];
+      dragStartX = touch.clientX - cropArea.x;
+      dragStartY = touch.clientY - cropArea.y;
+      e.preventDefault();
+  });
+
+  document.addEventListener('mousemove', function(e) {
+      if (isDragging) {
+          var imgRect = cropImage.getBoundingClientRect();
+          var newX = e.clientX - dragStartX - imgRect.left;
+          var newY = e.clientY - dragStartY - imgRect.top;
+
+          var displayWidth = imgRect.width;
+          var displayHeight = imgRect.height;
+
+          newX = Math.max(0, Math.min(newX, displayWidth - cropArea.width));
+          newY = Math.max(0, Math.min(newY, displayHeight - cropArea.height));
+
+          cropArea.x = newX;
+          cropArea.y = newY;
+          updateCropOverlay();
+      }
+  });
+
+  // Touch move for mobile
+  document.addEventListener('touchmove', function(e) {
+      if (isDragging) {
+          var touch = e.touches[0];
+          var imgRect = cropImage.getBoundingClientRect();
+          var newX = touch.clientX - dragStartX - imgRect.left;
+          var newY = touch.clientY - dragStartY - imgRect.top;
+
+          var displayWidth = imgRect.width;
+          var displayHeight = imgRect.height;
+
+          newX = Math.max(0, Math.min(newX, displayWidth - cropArea.width));
+          newY = Math.max(0, Math.min(newY, displayHeight - cropArea.height));
+
+          cropArea.x = newX;
+          cropArea.y = newY;
+          updateCropOverlay();
+      }
+  });
+
+  document.addEventListener('mouseup', function() {
+      isDragging = false;
+  });
+
+  document.addEventListener('touchend', function() {
+      isDragging = false;
+  });
+
+  // Resize crop overlay
+  var isResizing = false;
+  var resizeStartWidth, resizeStartHeight, resizeStartX, resizeStartY;
+
+  cropHandle.addEventListener('mousedown', function(e) {
+      isResizing = true;
+      resizeStartWidth = cropArea.width;
+      resizeStartHeight = cropArea.height;
+      resizeStartX = e.clientX;
+      resizeStartY = e.clientY;
+      e.stopPropagation();
+      e.preventDefault();
+  });
+
+  cropHandle.addEventListener('touchstart', function(e) {
+      isResizing = true;
+      var touch = e.touches[0];
+      resizeStartWidth = cropArea.width;
+      resizeStartHeight = cropArea.height;
+      resizeStartX = touch.clientX;
+      resizeStartY = touch.clientY;
+      e.stopPropagation();
+      e.preventDefault();
+  });
+
+  document.addEventListener('mousemove', function(e) {
+      if (isResizing) {
+          var deltaX = e.clientX - resizeStartX;
+          var deltaY = e.clientY - resizeStartY;
+          var delta = Math.max(deltaX, deltaY);
+
+          var newWidth = resizeStartWidth + delta;
+          var newHeight = resizeStartHeight + delta;
+
+          var imgRect = cropImage.getBoundingClientRect();
+          var displayWidth = imgRect.width;
+          var displayHeight = imgRect.height;
+
+          newWidth = Math.min(newWidth, displayWidth - cropArea.x);
+          newHeight = Math.min(newHeight, displayHeight - cropArea.y);
+          var newSize = Math.min(newWidth, newHeight);
+
+          cropArea.width = Math.max(50, newSize);
+          cropArea.height = Math.max(50, newSize);
+          updateCropOverlay();
+      }
+  });
+
+  document.addEventListener('touchmove', function(e) {
+      if (isResizing) {
+          var touch = e.touches[0];
+          var deltaX = touch.clientX - resizeStartX;
+          var deltaY = touch.clientY - resizeStartY;
+          var delta = Math.max(deltaX, deltaY);
+
+          var newWidth = resizeStartWidth + delta;
+          var newHeight = resizeStartHeight + delta;
+
+          var imgRect = cropImage.getBoundingClientRect();
+          var displayWidth = imgRect.width;
+          var displayHeight = imgRect.height;
+
+          newWidth = Math.min(newWidth, displayWidth - cropArea.x);
+          newHeight = Math.min(newHeight, displayHeight - cropArea.y);
+          var newSize = Math.min(newWidth, newHeight);
+
+          cropArea.width = Math.max(50, newSize);
+          cropArea.height = Math.max(50, newSize);
+          updateCropOverlay();
+      }
+  });
+
+  document.addEventListener('mouseup', function() {
+      isResizing = false;
+  });
+
+  document.addEventListener('touchend', function() {
+      isResizing = false;
+  });
+
+  // Close modal
+  closeModal.addEventListener('click', function() {
+      cropModal.classList.remove('active');
+      selectedImage = null;
+      fileInput.value = '';
+  });
+
+  cancelCrop.addEventListener('click', function() {
+      cropModal.classList.remove('active');
+      selectedImage = null;
+      fileInput.value = '';
+  });
+
+  // Confirm crop - FIXED FOR MOBILE
+  confirmCrop.addEventListener('click', function() {
+      var canvas = cropCanvas;
+      var ctx = canvas.getContext('2d');
+
+      var naturalWidth = cropImage.naturalWidth;
+      var naturalHeight = cropImage.naturalHeight;
+      var imgRect = cropImage.getBoundingClientRect();
+      var scaleX = naturalWidth / imgRect.width;
+      var scaleY = naturalHeight / imgRect.height;
+
+      canvas.width = cropArea.width * scaleX;
+      canvas.height = cropArea.height * scaleY;
+
+      ctx.drawImage(
+          cropImage,
+          cropArea.x * scaleX,
+          cropArea.y * scaleY,
+          cropArea.width * scaleX,
+          cropArea.height * scaleY,
+          0,
+          0,
+          canvas.width,
+          canvas.height
+      );
+
+      croppedImage = canvas.toDataURL('image/png');
+      previewImage.src = croppedImage;
+      uploadArea.classList.add('hidden');
+      previewArea.classList.remove('hidden');
+      submitBtn.disabled = false;
+      cropModal.classList.remove('active');
+  });
+
+  // Hashtag buttons
+  const hashtags = document.querySelectorAll('.hashtag-btn');
+  const inputText = document.getElementById('hashtags');
+
+  hashtags.forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+          var tag = e.target.dataset.tag;
+          inputText.value += tag + ' ';
+      });
+  });
+
+  // Remove image
+  removeBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      selectedImage = null;
+      croppedImage = null;
+      uploadArea.classList.remove('hidden');
+      previewArea.classList.add('hidden');
+      submitBtn.disabled = true;
+      fileInput.value = '';
+  });
+</script>
+<!--</div>-->
+
+<div class="popup-overlay" id="popupOverlay">
+  <div class="popup">
+    <button class="close-btn" onclick="closePopup()">&times;</button>
+
+    <div class="badge-wrapper">
+      <div class="badge">
+        <div class="shine"></div>
+        <div class="badge-text">+<span id="badgePoints">50</span></div>
+      </div>
+    </div>
+
+    <div class="points-earned" style="font-size:13px;"><span id="pointsText">You earned 50 points!</span></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+
+<script>
+
+  // Active nav state management for mobile
+  document.addEventListener('DOMContentLoaded', function() {
+      const currentPath = window.location.pathname;
+      const navItems = document.querySelectorAll('.bottom-nav-item');
+
+      navItems.forEach(item => {
+          if (item.getAttribute('href') === currentPath) {
+              item.classList.add('active');
+          }
+      });
+  });
+</script>
+
+<!--<script>-->
+<!--  // Form submission-->
+<!--  document.getElementById('addPostForm').addEventListener('submit', (e) => {-->
+<!--    e.preventDefault();-->
+
+
+<!--    const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute("content");-->
+<!--   const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute("content");-->
+
+
+<!--    const formData = new FormData();-->
+<!--    formData.append('userId', document.getElementById('userId').value);-->
+<!--    formData.append('photo', document.getElementById('photoInput').files[0]);-->
+<!--    formData.append('hashtags', document.getElementById('hashtagInput').value);-->
+<!--    formData.append('caption', document.getElementById('captionInput').value);-->
+
+<!--    fetch('/user/add-post', {-->
+<!--      method: 'POST',-->
+<!--       headers: {-->
+<!--            [csrfHeader]: csrfToken-->
+<!--        },-->
+<!--      body: formData-->
+<!--    })-->
+<!--      .then(response => response.json())-->
+<!--      .then(data => {-->
+<!--        console.log('Server Response:', data);-->
+<!--        alert('Post created successfully! 🎉');-->
+<!--        addPostForm.reset();-->
+<!--        themeOptions.forEach(opt => opt.classList.remove('selected'));-->
+<!--        themeOptions[1].classList.add('selected'); // Default to vibrant-->
+<!--      })-->
+<!--      .catch(error => console.error('Error:', error));-->
+<!--  });-->
+
+<!--</script>-->
+
+</body>
+</html>

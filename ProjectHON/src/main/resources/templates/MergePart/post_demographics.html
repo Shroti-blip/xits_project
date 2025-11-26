@@ -1,0 +1,1596 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Post Demographics</title>
+
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
+
+  <style>
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        background: #ffffff;
+        color: #2d2d2d;
+        min-height: 100vh;
+        position: relative;
+        overflow-x: hidden;
+        margin: 0;
+        padding: 0;
+    }
+
+    .bg-gradient {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        overflow: hidden;
+        background: linear-gradient(135deg, #FFF5F0 0%, #FFE8F0 50%, #FFF0F5 100%);
+    }
+
+    .bg-gradient::before,
+    .bg-gradient::after,
+    .bg-gradient span {
+        content: '';
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(100px);
+    }
+
+    .bg-gradient::before {
+        width: 600px;
+        height: 600px;
+        background: rgba(250, 130, 49, 0.15);
+        animation: float1 20s ease-in-out infinite;
+    }
+
+    .bg-gradient::after {
+        width: 700px;
+        height: 700px;
+        background: rgba(255, 107, 157, 0.12);
+        animation: float2 25s ease-in-out infinite;
+    }
+
+    .bg-gradient span {
+        width: 500px;
+        height: 500px;
+        background: rgba(249, 127, 81, 0.1);
+        animation: float3 18s ease-in-out infinite;
+    }
+
+    @keyframes float1 {
+        0%, 100% { transform: translate(10vw, 20vh) scale(1); }
+        25% { transform: translate(60vw, 70vh) scale(1.3); }
+        50% { transform: translate(80vw, 30vh) scale(0.9); }
+        75% { transform: translate(30vw, 80vh) scale(1.2); }
+    }
+
+    @keyframes float2 {
+        0%, 100% { transform: translate(70vw, 60vh) scale(1); }
+        33% { transform: translate(20vw, 20vh) scale(1.4); }
+        66% { transform: translate(50vw, 80vh) scale(0.8); }
+    }
+
+    @keyframes float3 {
+        0%, 100% { transform: translate(40vw, 10vh) scale(1); }
+        30% { transform: translate(10vw, 70vh) scale(1.3); }
+        60% { transform: translate(75vw, 50vh) scale(0.9); }
+        90% { transform: translate(55vw, 15vh) scale(1.2); }
+    }
+
+    .navbar {
+        background: rgba(255, 255, 255, 0.95) !important;
+        backdrop-filter: blur(20px);
+        border-bottom: 2px solid rgba(250, 130, 49, 0.2);
+        box-shadow: 0 4px 20px rgba(250, 130, 49, 0.1);
+    }
+
+    .navbar-brand {
+        font-size: 1.8rem;
+        font-weight: 900;
+        letter-spacing: -1px;
+    }
+
+    .gradient-text {
+        background: linear-gradient(135deg, #FA8231 0%, #F97F51 50%, #FF6B9D 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .nav-link {
+        color: #555 !important;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        position: relative;
+        margin: 0 0.5rem;
+    }
+
+    .nav-link:hover {
+        color: #FA8231 !important;
+        transform: translateY(-2px);
+    }
+
+    .nav-link.active {
+        color: #FA8231 !important;
+    }
+
+    .nav-link.active::after {
+        content: '';
+        position: absolute;
+        bottom: -5px;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: linear-gradient(135deg, #FA8231 0%, #F97F51 50%, #FF6B9D 100%);
+        border-radius: 3px;
+    }
+
+    .container-main {
+        padding: 40px 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .post-header {
+        text-align: center;
+        margin-bottom: 40px;
+        padding: 40px;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border: 2px solid rgba(250, 130, 49, 0.2);
+        border-radius: 30px;
+        box-shadow: 0 10px 40px rgba(250, 130, 49, 0.15);
+    }
+
+    .post-header img {
+        max-width: 300px;
+        width: 100%;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(250, 130, 49, 0.3);
+        border: 3px solid #FA8231;
+        transition: all 0.3s ease;
+    }
+
+    .post-header img:hover {
+        transform: scale(1.03);
+        box-shadow: 0 15px 40px rgba(250, 130, 49, 0.5);
+    }
+
+    .post-header h4 {
+        font-size: 1.8rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #FA8231 0%, #F97F51 50%, #FF6B9D 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-top: 20px;
+        margin-bottom: 10px;
+    }
+
+    .post-header .text-info {
+        color: #F97F51 !important;
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+
+    .stats-box {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border: 2px solid rgba(250, 130, 49, 0.2);
+        border-radius: 25px;
+        padding: 30px;
+        margin-bottom: 25px;
+        box-shadow: 0 8px 25px rgba(250, 130, 49, 0.12);
+        transition: all 0.3s ease;
+    }
+
+    .stats-box:hover {
+        border-color: rgba(250, 130, 49, 0.5);
+        box-shadow: 0 12px 35px rgba(250, 130, 49, 0.25);
+        transform: translateY(-3px);
+    }
+
+    .stats-title {
+        background: linear-gradient(135deg, #FA8231 0%, #FF6B9D 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 800;
+        text-transform: uppercase;
+        font-size: 1.2rem;
+        margin-bottom: 15px;
+        letter-spacing: 1px;
+    }
+
+    .stats-box p {
+        color: #555;
+        margin-bottom: 12px;
+        font-size: 1rem;
+        line-height: 1.6;
+    }
+
+    .stats-box strong {
+        color: #FA8231;
+        font-weight: 800;
+    }
+
+    .badge-soft {
+        background: linear-gradient(135deg, #FA8231 0%, #FF6B9D 100%);
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 0.95rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        box-shadow: 0 4px 15px rgba(250, 130, 49, 0.4);
+        display: inline-block;
+    }
+
+    .chart-tools {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .chart-tools label {
+        color: #666;
+        font-size: 0.9rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    #granularity {
+        background: rgba(255, 255, 255, 0.95);
+        border: 2px solid rgba(250, 130, 49, 0.3);
+        color: #FA8231;
+        font-weight: 700;
+        border-radius: 10px;
+        padding: 8px 16px;
+        transition: all 0.2s ease;
+        font-size: 0.9rem;
+        cursor: pointer;
+    }
+
+    #granularity:hover,
+    #granularity:focus {
+        background: rgba(250, 130, 49, 0.1);
+        border-color: rgba(250, 130, 49, 0.6);
+        outline: none;
+        color: #FA8231;
+        box-shadow: 0 0 15px rgba(250, 130, 49, 0.3);
+    }
+
+    #granularity option {
+        background: #ffffff;
+        color: #FA8231;
+    }
+
+    .chart-canvas {
+        width: 100%;
+        height: 110px;
+    }
+
+    .chart-container {
+        position: relative;
+        width: 100%;
+        height: 110px;
+    }
+
+    .grid-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 25px;
+        margin-top: 25px;
+    }
+
+    .table-dark-custom {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .table-dark-custom thead th {
+        color: #2d2d2d;
+        border-bottom: 3px solid rgba(250, 130, 49, 0.3);
+        padding: 12px 10px;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 1px;
+        font-weight: 800;
+    }
+
+    .table-dark-custom tbody td {
+        color: #555;
+        padding: 12px 10px;
+        border-bottom: 1px solid rgba(250, 130, 49, 0.1);
+    }
+
+    .table-dark-custom tbody tr:hover {
+        background: rgba(250, 130, 49, 0.08);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .container-main {
+            padding: 20px 12px;
+        }
+
+        .post-header {
+            padding: 25px;
+        }
+
+        .post-header img {
+            max-width: 250px;
+        }
+
+        .post-header h4 {
+            font-size: 1.5rem;
+        }
+
+        .stats-box {
+            padding: 25px;
+        }
+
+        .grid-container {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .chart-canvas {
+            height: 110px;
+        }
+
+        .chart-container {
+            height: 110px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .navbar-brand {
+            font-size: 1.5rem;
+        }
+
+        .post-header {
+            padding: 20px;
+        }
+
+        .post-header img {
+            max-width: 200px;
+        }
+
+        .post-header h4 {
+            font-size: 1.3rem;
+        }
+
+        .stats-title {
+            font-size: 1.1rem;
+        }
+
+        .stats-box {
+            padding: 20px;
+        }
+
+        .chart-canvas {
+            height: 110px;
+        }
+
+        .chart-container {
+            height: 110px;
+        }
+    }
+  </style>
+</head>
+
+<body>
+<div class="bg-gradient">
+  <span></span>
+</div>
+
+<nav class="navbar navbar-expand-lg navbar-light sticky-top">
+  <div class="container-fluid px-4">
+    <a class="navbar-brand" href="#">
+      <span class="gradient-text">HotOrNot</span>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto align-items-center">
+        <li class="nav-item">
+          <a class="nav-link" href="/user/dashboard">Discover</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/user/rating">Rating</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Leaderboard</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active" href="#">Demographics</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container-main">
+  <div class="post-header">
+    <div th:if="${photoDataUrl != null}">
+      <img th:src="${photoDataUrl}" alt="Post Image" />
+    </div>
+    <h4 th:text="${post.caption}">Post Caption</h4>
+    <p class="text-info" th:text="${post.hashtag}">#hashtag</p>
+    <div th:if="${performanceBadge != null}">
+      <span class="badge-soft" th:text="${performanceBadge}">Trending Post</span>
+    </div>
+  </div>
+
+  <div class="stats-box">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="stats-title m-0">Engagement Over Time</h5>
+      <div class="chart-tools">
+        <label for="granularity">View</label>
+        <select id="granularity">
+          <option value="weekly">Weekly</option>
+          <option value="monthly" selected>Monthly</option>
+          <option value="yearly">Yearly</option>
+        </select>
+      </div>
+    </div>
+    <div class="chart-container">
+      <canvas id="timelineChart"></canvas>
+    </div>
+  </div>
+
+  <div class="grid-container">
+    <div class="stats-box">
+      <h5 class="stats-title">Post Overview</h5>
+      <p th:text="${'Average Rating: '+#numbers.formatDecimal(postAvgRating, 1, 1)}"><strong>Average Rating:</strong> 8.5</p>
+      <p th:text="${'Highest Rating: '+highestRating}"><strong>Highest Rating:</strong> 10</p>
+      <p th:text="${'Users Visited: ' + oppositeGenderVotes}"><strong>Users Visited:</strong> 245</p>
+      <p th:text="${'Average User: ' + avgVoterAge}"><strong>Average User:</strong> 28 years</p>
+    </div>
+
+    <div class="stats-box">
+      <h5 class="stats-title">Top 5 Locations</h5>
+      <div class="chart-container">
+        <canvas id="locationChart"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script th:inline="javascript">
+  /*<![CDATA[*/
+  const locationLabels = [[${locationLabels}]];
+  const locationValues = [[${locationValues}]];
+  const timelineLabelsRaw = [[${timelineLabels}]];
+  const timelineValuesRaw = [[${timelineValues}]];
+
+  const toDate = (s) => new Date(s + 'T00:00:00');
+  function buildColorArray(n, alpha = 0.85) {
+    const baseColors = [
+      '#FA8231',
+      '#F97F51',
+      '#FF6B9D',
+      '#FF8C42',
+      '#FFA07A',
+      '#FF7F9E',
+      '#FFB347',
+      '#FF9A76',
+      '#FE6B8B',
+      '#FF8E53'
+    ];
+    return baseColors.slice(0, n);
+  }
+
+  function toISOWeek(date) {
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    return { year: d.getUTCFullYear(), week: weekNo };
+  }
+
+  function sortPeriodKeys(type) {
+    if (type === 'yearly') return (a, b) => Number(a) - Number(b);
+    if (type === 'monthly') return (a, b) => a.localeCompare(b);
+    return (a, b) => a.localeCompare(b);
+  }
+
+  function aggregateTimeline(labels, values, granularity) {
+    const map = new Map();
+    const now = new Date();
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(now.getDate() - 6);
+
+    for (let i = 0; i < labels.length; i++) {
+      const d = toDate(labels[i]);
+
+      // Filter only the current 7-day window when "weekly" is selected
+      if (granularity === 'weekly' && (d < sevenDaysAgo || d > now)) continue;
+
+      let key;
+      if (granularity === 'yearly') {
+        key = String(d.getFullYear());
+      } else if (granularity === 'monthly') {
+        key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      } else {
+        // Weekly -> show each of the 7 days
+        key = d.toISOString().split('T')[0];
+      }
+      map.set(key, (map.get(key) || 0) + (values[i] || 0));
+    }
+
+    const keys = Array.from(map.keys()).sort(sortPeriodKeys(granularity));
+    return { labels: keys, values: keys.map(k => map.get(k)) };
+  }
+
+  const locationCtx = document.getElementById('locationChart').getContext('2d');
+  const timelineCtx = document.getElementById('timelineChart').getContext('2d');
+
+  const locationColors = buildColorArray(locationValues.length);
+  new Chart(locationCtx, {
+    type: 'bar',
+    data: {
+      labels: locationLabels,
+      datasets: [{
+        label: 'Ratings by Location',
+        data: locationValues,
+        backgroundColor: locationColors,
+        borderColor: 'rgba(250, 130, 49, 0.5)',
+        borderWidth: 2,
+        borderRadius: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { color: '#555', stepSize: 1, font: { weight: 600 } },
+          grid: { color: 'rgba(250, 130, 49, 0.1)' }
+        },
+        x: {
+          ticks: { color: '#555', font: { weight: 600 } },
+          grid: { color: 'rgba(250, 130, 49, 0.08)' }
+        }
+      }
+    }
+  });
+
+  let currentGranularity = 'monthly';
+  function buildTimelineChart(granularity) {
+    const agg = aggregateTimeline(timelineLabelsRaw, timelineValuesRaw, granularity);
+    return new Chart(timelineCtx, {
+      type: 'line',
+      data: {
+        labels: agg.labels,
+        datasets: [{
+          label: `Votes (${granularity})`,
+          data: agg.values,
+          tension: 0.4,
+          borderWidth: 3,
+          borderColor: '#FA8231',
+          backgroundColor: 'rgba(250, 130, 49, 0.15)',
+          fill: true,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          pointBackgroundColor: '#FF6B9D',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { color: '#555', stepSize: 1, font: { weight: 600 } },
+            grid: { color: 'rgba(250, 130, 49, 0.1)' }
+          },
+          x: {
+            ticks: { color: '#555', maxRotation: 0, font: { weight: 600 } },
+            grid: { color: 'rgba(250, 130, 49, 0.08)' }
+          }
+        }
+      }
+    });
+  }
+  let timelineChart = buildTimelineChart(currentGranularity);
+  document.getElementById('granularity').addEventListener('change', (e) => {
+    currentGranularity = e.target.value;
+    timelineChart.destroy();
+    timelineChart = buildTimelineChart(currentGranularity);
+  });
+  /*]]>*/
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
+<!--<!DOCTYPE html>-->
+<!--<html lang="en" xmlns:th="http://www.thymeleaf.org">-->
+<!--<head>-->
+<!--  <meta charset="UTF-8">-->
+<!--  <meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+<!--  <title>Rate Photos - HotOrNot</title>-->
+<!--  <meta name="_csrf" th:content="${_csrf.token}" />-->
+<!--  <meta name="_csrf_header" th:content="${_csrf.headerName}" />-->
+<!--  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">-->
+<!--  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css" rel="stylesheet">-->
+<!--  <style>-->
+<!--    * {-->
+<!--        margin: 0;-->
+<!--        padding: 0;-->
+<!--        box-sizing: border-box;-->
+<!--    }-->
+
+<!--    body {-->
+<!--        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;-->
+<!--        background: #ffffff;-->
+<!--        color: #2d2d2d;-->
+<!--        min-height: 100vh;-->
+<!--        position: relative;-->
+<!--        overflow-x: hidden;-->
+<!--        padding-bottom: 80px; /* Space for mobile bottom nav */-->
+<!--    }-->
+
+<!--    @media (min-width: 768px) {-->
+<!--        body {-->
+<!--            padding-bottom: 0;-->
+<!--        }-->
+<!--    }-->
+
+<!--    .bg-gradient {-->
+<!--        position: fixed;-->
+<!--        top: 0;-->
+<!--        left: 0;-->
+<!--        width: 100%;-->
+<!--        height: 100%;-->
+<!--        z-index: -1;-->
+<!--        overflow: hidden;-->
+<!--        background: linear-gradient(135deg, #FFF5F0 0%, #FFE8F0 50%, #FFF0F5 100%);-->
+<!--    }-->
+
+<!--    .bg-gradient::before,-->
+<!--    .bg-gradient::after,-->
+<!--    .bg-gradient span {-->
+<!--        content: '';-->
+<!--        position: absolute;-->
+<!--        border-radius: 50%;-->
+<!--        filter: blur(100px);-->
+<!--    }-->
+
+<!--    .bg-gradient::before {-->
+<!--        width: 600px;-->
+<!--        height: 600px;-->
+<!--        background: rgba(250, 130, 49, 0.15);-->
+<!--        animation: float1 20s ease-in-out infinite;-->
+<!--    }-->
+
+<!--    .bg-gradient::after {-->
+<!--        width: 700px;-->
+<!--        height: 700px;-->
+<!--        background: rgba(255, 107, 157, 0.12);-->
+<!--        animation: float2 25s ease-in-out infinite;-->
+<!--    }-->
+
+<!--    .bg-gradient span {-->
+<!--        width: 500px;-->
+<!--        height: 500px;-->
+<!--        background: rgba(249, 127, 81, 0.1);-->
+<!--        animation: float3 18s ease-in-out infinite;-->
+<!--    }-->
+
+<!--    @keyframes float1 {-->
+<!--        0%, 100% { transform: translate(10vw, 20vh) scale(1); }-->
+<!--        25% { transform: translate(60vw, 70vh) scale(1.3); }-->
+<!--        50% { transform: translate(80vw, 30vh) scale(0.9); }-->
+<!--        75% { transform: translate(30vw, 80vh) scale(1.2); }-->
+<!--    }-->
+
+<!--    @keyframes float2 {-->
+<!--        0%, 100% { transform: translate(70vw, 60vh) scale(1); }-->
+<!--        33% { transform: translate(20vw, 20vh) scale(1.4); }-->
+<!--        66% { transform: translate(50vw, 80vh) scale(0.8); }-->
+<!--    }-->
+
+<!--    @keyframes float3 {-->
+<!--        0%, 100% { transform: translate(40vw, 10vh) scale(1); }-->
+<!--        30% { transform: translate(10vw, 70vh) scale(1.3); }-->
+<!--        60% { transform: translate(75vw, 50vh) scale(0.9); }-->
+<!--        90% { transform: translate(55vw, 15vh) scale(1.2); }-->
+<!--    }-->
+
+<!--    /* Desktop Navigation */-->
+<!--    .navbar-desktop {-->
+<!--        background: rgba(255, 255, 255, 0.95) !important;-->
+<!--        backdrop-filter: blur(20px);-->
+<!--        border-bottom: 2px solid rgba(250, 130, 49, 0.2);-->
+<!--        box-shadow: 0 4px 20px rgba(250, 130, 49, 0.1);-->
+<!--        display: none;-->
+<!--    }-->
+
+<!--    @media (min-width: 768px) {-->
+<!--        .navbar-desktop {-->
+<!--            display: block !important;-->
+<!--        }-->
+<!--    }-->
+
+<!--    .navbar-brand {-->
+<!--        font-size: 1.8rem;-->
+<!--        font-weight: 900;-->
+<!--        letter-spacing: -1px;-->
+<!--    }-->
+
+<!--    .logo-hot {-->
+<!--        background: linear-gradient(135deg, #FA8231 0%, #F97F51 50%);-->
+<!--        -webkit-background-clip: text;-->
+<!--        -webkit-text-fill-color: transparent;-->
+<!--        background-clip: text;-->
+<!--    }-->
+
+<!--    .logo-not {-->
+<!--        color: #FF6B9D;-->
+<!--    }-->
+
+<!--    .nav-link {-->
+<!--        color: #555 !important;-->
+<!--        font-weight: 600;-->
+<!--        transition: all 0.3s ease;-->
+<!--        position: relative;-->
+<!--        margin: 0 0.5rem;-->
+<!--    }-->
+
+<!--    .nav-link:hover {-->
+<!--        color: #FA8231 !important;-->
+<!--        transform: translateY(-2px);-->
+<!--    }-->
+
+<!--    .nav-link.active {-->
+<!--        color: #FA8231 !important;-->
+<!--    }-->
+
+<!--    .btn-neon {-->
+<!--        background: linear-gradient(135deg, #FA8231 0%, #F97F51 50%, #FF6B9D 100%);-->
+<!--        color: white;-->
+<!--        border: none;-->
+<!--        font-weight: 700;-->
+<!--        text-transform: uppercase;-->
+<!--        letter-spacing: 1px;-->
+<!--        box-shadow: 0 4px 15px rgba(250, 130, 49, 0.4);-->
+<!--        transition: all 0.3s ease;-->
+<!--    }-->
+
+<!--    .btn-neon:hover {-->
+<!--        transform: translateY(-3px);-->
+<!--        box-shadow: 0 6px 25px rgba(250, 130, 49, 0.6);-->
+<!--        color: white;-->
+<!--    }-->
+
+<!--    /* Mobile Bottom Navigation */-->
+<!--    .bottom-nav {-->
+<!--        position: fixed;-->
+<!--        bottom: 0;-->
+<!--        left: 0;-->
+<!--        right: 0;-->
+<!--        background: rgba(255, 255, 255, 0.98);-->
+<!--        backdrop-filter: blur(20px);-->
+<!--        border-top: 2px solid rgba(250, 130, 49, 0.2);-->
+<!--        box-shadow: 0 -4px 20px rgba(250, 130, 49, 0.1);-->
+<!--        z-index: 1000;-->
+<!--        display: flex;-->
+<!--        justify-content: space-around;-->
+<!--        align-items: center;-->
+<!--        padding: 8px 0;-->
+<!--        height: 70px;-->
+<!--    }-->
+
+<!--    @media (min-width: 768px) {-->
+<!--        .bottom-nav {-->
+<!--            display: none;-->
+<!--        }-->
+<!--    }-->
+
+<!--    .bottom-nav-item {-->
+<!--        display: flex;-->
+<!--        flex-direction: column;-->
+<!--        align-items: center;-->
+<!--        justify-content: center;-->
+<!--        text-decoration: none;-->
+<!--        color: #888;-->
+<!--        transition: all 0.3s ease;-->
+<!--        padding: 8px 12px;-->
+<!--        border-radius: 12px;-->
+<!--        min-width: 60px;-->
+<!--    }-->
+
+<!--    .bottom-nav-item i {-->
+<!--        font-size: 24px;-->
+<!--        margin-bottom: 4px;-->
+<!--        transition: all 0.3s ease;-->
+<!--    }-->
+
+<!--    .bottom-nav-item span {-->
+<!--        font-size: 11px;-->
+<!--        font-weight: 600;-->
+<!--        transition: all 0.3s ease;-->
+<!--    }-->
+
+<!--    .bottom-nav-item.active {-->
+<!--        color: #FA8231;-->
+<!--    }-->
+
+<!--    .bottom-nav-item.active i {-->
+<!--        transform: scale(1.1);-->
+<!--    }-->
+
+<!--    .bottom-nav-item:hover {-->
+<!--        color: #FA8231;-->
+<!--        background: rgba(250, 130, 49, 0.1);-->
+<!--    }-->
+
+<!--    /* Logo for mobile (top-left corner) */-->
+<!--    .mobile-logo {-->
+<!--        position: fixed;-->
+<!--        top: 15px;-->
+<!--        left: 15px;-->
+<!--        z-index: 999;-->
+<!--        font-size: 1.3rem;-->
+<!--        font-weight: 900;-->
+<!--        letter-spacing: -1px;-->
+<!--        display: block;-->
+<!--    }-->
+
+<!--    @media (min-width: 768px) {-->
+<!--        .mobile-logo {-->
+<!--            display: none;-->
+<!--        }-->
+<!--    }-->
+
+<!--    .main-container {-->
+<!--        max-width: 500px;-->
+<!--        margin: 0 auto;-->
+<!--        padding: 1rem;-->
+<!--    }-->
+
+<!--    @media (max-width: 767px) {-->
+<!--        .main-container {-->
+<!--            padding-top: 10px;-->
+<!--        }-->
+<!--    }-->
+
+
+
+
+
+
+
+<!--    @keyframes sparkle {-->
+<!--        0%, 100% { opacity: 0.8; filter: blur(8px) brightness(1); }-->
+<!--        50% { opacity: 1; filter: blur(12px) brightness(1.3); }-->
+<!--    }-->
+
+
+
+<!--    @keyframes pulse-glow {-->
+<!--        0%, 100% {-->
+<!--            opacity: 0.6;-->
+<!--            transform: translate(50%, -50%) scale(1);-->
+<!--        }-->
+<!--        50% {-->
+<!--            opacity: 1;-->
+<!--            transform: translate(50%, -50%) scale(1.3);-->
+<!--        }-->
+<!--    }-->
+
+
+
+
+
+<!--    @keyframes popIn {-->
+<!--        0% { transform: scale(0); }-->
+<!--        50% { transform: scale(1.2); }-->
+<!--        100% { transform: scale(1); }-->
+<!--    }-->
+
+
+<!--    .popup-overlay {-->
+<!--        position: fixed;-->
+<!--        top: 0;-->
+<!--        left: 0;-->
+<!--        width: 100vw;-->
+<!--        height: 100vh;-->
+<!--        background: rgba(0, 0, 0, 0.7);-->
+<!--        display: flex;-->
+<!--        align-items: center;-->
+<!--        justify-content: center;-->
+<!--        z-index: 9999;-->
+<!--        opacity: 0;-->
+<!--        visibility: hidden;-->
+<!--        transition: opacity 0.4s ease;-->
+<!--    }-->
+
+<!--    .popup-overlay.show {-->
+<!--        opacity: 1;-->
+<!--        visibility: visible;-->
+<!--    }-->
+
+<!--    .popup {-->
+<!--        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 248, 240, 0.95));-->
+<!--        padding: 40px 60px;-->
+<!--        border-radius: 25px;-->
+<!--        text-align: center;-->
+<!--        color: #2d2d2d;-->
+<!--        box-shadow: 0 10px 50px rgba(250, 130, 49, 0.4);-->
+<!--        border: 3px solid rgba(250, 130, 49, 0.3);-->
+<!--        position: relative;-->
+<!--        overflow: hidden;-->
+<!--        animation: popupScale 0.6s ease-out;-->
+<!--    }-->
+
+<!--    @keyframes popupScale {-->
+<!--        0% { transform: scale(0.8); opacity: 0; }-->
+<!--        100% { transform: scale(1); opacity: 1; }-->
+<!--    }-->
+
+<!--    .badge-wrapper {-->
+<!--        position: relative;-->
+<!--        margin-bottom: 15px;-->
+<!--    }-->
+
+<!--    .badge {-->
+<!--        background: linear-gradient(135deg, #FA8231, #F97F51, #FF6B9D);-->
+<!--        width: 120px;-->
+<!--        height: 120px;-->
+<!--        border-radius: 50%;-->
+<!--        display: flex;-->
+<!--        align-items: center;-->
+<!--        justify-content: center;-->
+<!--        margin: 0 auto;-->
+<!--        position: relative;-->
+<!--        box-shadow: 0 0 40px rgba(250, 130, 49, 0.6);-->
+<!--        animation: pulse 1.5s infinite;-->
+<!--    }-->
+
+<!--    .badge-text {-->
+<!--        font-size: 2.5em;-->
+<!--        font-weight: bold;-->
+<!--        color: #fff;-->
+<!--        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);-->
+<!--    }-->
+
+<!--    .shine {-->
+<!--        position: absolute;-->
+<!--        top: 0;-->
+<!--        left: -75%;-->
+<!--        width: 50%;-->
+<!--        height: 100%;-->
+<!--        background: linear-gradient(120deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0));-->
+<!--        transform: skewX(-25deg);-->
+<!--        animation: shine 2s infinite;-->
+<!--    }-->
+
+<!--    @keyframes shine {-->
+<!--        0% { left: -75%; }-->
+<!--        100% { left: 125%; }-->
+<!--    }-->
+
+<!--    .points-earned {-->
+<!--        font-size: 1.2em;-->
+<!--        margin-top: 15px;-->
+<!--        color: #FA8231;-->
+<!--        font-weight: 700;-->
+<!--    }-->
+
+<!--    @keyframes pulse {-->
+<!--        0%, 100% { transform: scale(1); }-->
+<!--        50% { transform: scale(1.08); }-->
+<!--    }-->
+
+<!--    .close-btn {-->
+<!--        position: absolute;-->
+<!--        top: 15px;-->
+<!--        right: 20px;-->
+<!--        font-size: 32px;-->
+<!--        color: #999;-->
+<!--        background: none;-->
+<!--        border: none;-->
+<!--        cursor: pointer;-->
+<!--        transition: all 0.2s ease;-->
+<!--        z-index: 1001;-->
+<!--    }-->
+
+<!--    .close-btn:hover {-->
+<!--        color: #FA8231;-->
+<!--        transform: rotate(90deg);-->
+<!--    }-->
+
+<!--    @media (max-width: 576px) {-->
+
+
+<!--        .popup {-->
+<!--            padding: 30px 40px;-->
+<!--        }-->
+
+<!--        .badge {-->
+<!--            width: 100px;-->
+<!--            height: 100px;-->
+<!--        }-->
+
+<!--        .badge-text {-->
+<!--            font-size: 2em;-->
+<!--        }-->
+<!--    }-->
+
+<!--    /* Post CSS starts here */-->
+
+<!--    .container-main {-->
+<!--            padding: 40px 20px;-->
+<!--            max-width: 1200px;-->
+<!--            margin: 0 auto;-->
+<!--        }-->
+
+<!--        .post-header {-->
+<!--            text-align: center;-->
+<!--            margin-bottom: 40px;-->
+<!--            padding: 40px;-->
+<!--            background: rgba(255, 255, 255, 0.9);-->
+<!--            backdrop-filter: blur(10px);-->
+<!--            border: 2px solid rgba(250, 130, 49, 0.2);-->
+<!--            border-radius: 30px;-->
+<!--            box-shadow: 0 10px 40px rgba(250, 130, 49, 0.15);-->
+<!--        }-->
+
+<!--        .post-header img {-->
+<!--            max-width: 300px;-->
+<!--            width: 100%;-->
+<!--            border-radius: 20px;-->
+<!--            box-shadow: 0 10px 30px rgba(250, 130, 49, 0.3);-->
+<!--            border: 3px solid #FA8231;-->
+<!--            transition: all 0.3s ease;-->
+<!--        }-->
+
+<!--        .post-header img:hover {-->
+<!--            transform: scale(1.03);-->
+<!--            box-shadow: 0 15px 40px rgba(250, 130, 49, 0.5);-->
+<!--        }-->
+
+<!--        .post-header h4 {-->
+<!--            font-size: 1.8rem;-->
+<!--            font-weight: 800;-->
+<!--            background: linear-gradient(135deg, #FA8231 0%, #F97F51 50%, #FF6B9D 100%);-->
+<!--            -webkit-background-clip: text;-->
+<!--            -webkit-text-fill-color: transparent;-->
+<!--            background-clip: text;-->
+<!--            margin-top: 20px;-->
+<!--            margin-bottom: 10px;-->
+<!--        }-->
+
+<!--        .post-header .text-info {-->
+<!--            color: #F97F51 !important;-->
+<!--            font-weight: 700;-->
+<!--            font-size: 1.1rem;-->
+<!--        }-->
+
+<!--        .stats-box {-->
+<!--            background: rgba(255, 255, 255, 0.95);-->
+<!--            backdrop-filter: blur(10px);-->
+<!--            border: 2px solid rgba(250, 130, 49, 0.2);-->
+<!--            border-radius: 25px;-->
+<!--            padding: 30px;-->
+<!--            margin-bottom: 25px;-->
+<!--            box-shadow: 0 8px 25px rgba(250, 130, 49, 0.12);-->
+<!--            transition: all 0.3s ease;-->
+<!--        }-->
+
+<!--        .stats-box:hover {-->
+<!--            border-color: rgba(250, 130, 49, 0.5);-->
+<!--            box-shadow: 0 12px 35px rgba(250, 130, 49, 0.25);-->
+<!--            transform: translateY(-3px);-->
+<!--        }-->
+
+<!--        .stats-title {-->
+<!--            background: linear-gradient(135deg, #FA8231 0%, #FF6B9D 100%);-->
+<!--            -webkit-background-clip: text;-->
+<!--            -webkit-text-fill-color: transparent;-->
+<!--            background-clip: text;-->
+<!--            font-weight: 800;-->
+<!--            text-transform: uppercase;-->
+<!--            font-size: 1.2rem;-->
+<!--            margin-bottom: 15px;-->
+<!--            letter-spacing: 1px;-->
+<!--        }-->
+
+<!--        .stats-box p {-->
+<!--            color: #555;-->
+<!--            margin-bottom: 12px;-->
+<!--            font-size: 1rem;-->
+<!--            line-height: 1.6;-->
+<!--        }-->
+
+<!--        .stats-box strong {-->
+<!--            color: #FA8231;-->
+<!--            font-weight: 800;-->
+<!--        }-->
+
+<!--        .badge-soft {-->
+<!--            background: linear-gradient(135deg, #FA8231 0%, #FF6B9D 100%);-->
+<!--            border: none;-->
+<!--            color: white;-->
+<!--            padding: 10px 20px;-->
+<!--            border-radius: 999px;-->
+<!--            font-weight: 700;-->
+<!--            font-size: 0.95rem;-->
+<!--            text-transform: uppercase;-->
+<!--            letter-spacing: 1px;-->
+<!--            box-shadow: 0 4px 15px rgba(250, 130, 49, 0.4);-->
+<!--            display: inline-block;-->
+<!--        }-->
+
+<!--        .chart-tools {-->
+<!--            display: flex;-->
+<!--            align-items: center;-->
+<!--            gap: 10px;-->
+<!--        }-->
+
+<!--        .chart-tools label {-->
+<!--            color: #666;-->
+<!--            font-size: 0.9rem;-->
+<!--            font-weight: 700;-->
+<!--            text-transform: uppercase;-->
+<!--        }-->
+
+<!--        #granularity {-->
+<!--            background: rgba(255, 255, 255, 0.95);-->
+<!--            border: 2px solid rgba(250, 130, 49, 0.3);-->
+<!--            color: #FA8231;-->
+<!--            font-weight: 700;-->
+<!--            border-radius: 10px;-->
+<!--            padding: 8px 16px;-->
+<!--            transition: all 0.2s ease;-->
+<!--            font-size: 0.9rem;-->
+<!--            cursor: pointer;-->
+<!--        }-->
+
+<!--        #granularity:hover,-->
+<!--        #granularity:focus {-->
+<!--            background: rgba(250, 130, 49, 0.1);-->
+<!--            border-color: rgba(250, 130, 49, 0.6);-->
+<!--            outline: none;-->
+<!--            color: #FA8231;-->
+<!--            box-shadow: 0 0 15px rgba(250, 130, 49, 0.3);-->
+<!--        }-->
+
+<!--        #granularity option {-->
+<!--            background: #ffffff;-->
+<!--            color: #FA8231;-->
+<!--        }-->
+
+<!--        .chart-canvas {-->
+<!--            width: 100%;-->
+<!--            height: 110px;-->
+<!--        }-->
+
+<!--        .chart-container {-->
+<!--            position: relative;-->
+<!--            width: 100%;-->
+<!--            height: 110px;-->
+<!--        }-->
+
+<!--        .grid-container {-->
+<!--            display: grid;-->
+<!--            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));-->
+<!--            gap: 25px;-->
+<!--            margin-top: 25px;-->
+<!--        }-->
+
+<!--        .table-dark-custom {-->
+<!--            width: 100%;-->
+<!--            border-collapse: collapse;-->
+<!--        }-->
+
+<!--        .table-dark-custom thead th {-->
+<!--            color: #2d2d2d;-->
+<!--            border-bottom: 3px solid rgba(250, 130, 49, 0.3);-->
+<!--            padding: 12px 10px;-->
+<!--            text-transform: uppercase;-->
+<!--            font-size: 0.85rem;-->
+<!--            letter-spacing: 1px;-->
+<!--            font-weight: 800;-->
+<!--        }-->
+
+<!--        .table-dark-custom tbody td {-->
+<!--            color: #555;-->
+<!--            padding: 12px 10px;-->
+<!--            border-bottom: 1px solid rgba(250, 130, 49, 0.1);-->
+<!--        }-->
+
+<!--        .table-dark-custom tbody tr:hover {-->
+<!--            background: rgba(250, 130, 49, 0.08);-->
+<!--        }-->
+
+<!--        /* Responsive adjustments */-->
+<!--        @media (max-width: 768px) {-->
+<!--            .container-main {-->
+<!--                padding: 20px 12px;-->
+<!--            }-->
+
+<!--            .post-header {-->
+<!--                padding: 25px;-->
+<!--            }-->
+
+<!--            .post-header img {-->
+<!--                max-width: 250px;-->
+<!--            }-->
+
+<!--            .post-header h4 {-->
+<!--                font-size: 1.5rem;-->
+<!--            }-->
+
+<!--            .stats-box {-->
+<!--                padding: 25px;-->
+<!--            }-->
+
+<!--            .grid-container {-->
+<!--                grid-template-columns: 1fr;-->
+<!--                gap: 20px;-->
+<!--            }-->
+
+<!--            .chart-canvas {-->
+<!--                height: 110px;-->
+<!--            }-->
+
+<!--            .chart-container {-->
+<!--                height: 110px;-->
+<!--            }-->
+<!--        }-->
+
+<!--        @media (max-width: 480px) {-->
+<!--            .navbar-brand {-->
+<!--                font-size: 1.5rem;-->
+<!--            }-->
+
+<!--            .post-header {-->
+<!--                padding: 20px;-->
+<!--            }-->
+
+<!--            .post-header img {-->
+<!--                max-width: 200px;-->
+<!--            }-->
+
+<!--            .post-header h4 {-->
+<!--                font-size: 1.3rem;-->
+<!--            }-->
+
+<!--            .stats-title {-->
+<!--                font-size: 1.1rem;-->
+<!--            }-->
+
+<!--            .stats-box {-->
+<!--                padding: 20px;-->
+<!--            }-->
+
+<!--            .chart-canvas {-->
+<!--                height: 110px;-->
+<!--            }-->
+
+<!--            .chart-container {-->
+<!--                height: 110px;-->
+<!--            }-->
+<!--        }-->
+<!--  </style>-->
+<!--</head>-->
+<!--<body>-->
+<!--<div class="bg-gradient">-->
+<!--  <span></span>-->
+<!--</div>-->
+
+<!--&lt;!&ndash; Mobile Logo (top-left corner) &ndash;&gt;-->
+<!--<a href="#" class="mobile-logo">-->
+<!--  <span class="logo-hot">Hot</span><span class="logo-not">Or</span><span class="logo-hot">Not</span>-->
+<!--</a>-->
+
+<!--&lt;!&ndash; Desktop Navigation &ndash;&gt;-->
+<!--<nav class="navbar-desktop navbar navbar-expand-lg navbar-light sticky-top">-->
+<!--  <div class="container-fluid px-4">-->
+<!--    <a class="navbar-brand" href="#">-->
+<!--      <span class="logo-hot">Hot</span><span class="logo-not">Or</span><span class="logo-hot">Not</span>-->
+<!--    </a>-->
+<!--    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">-->
+<!--      <span class="navbar-toggler-icon"></span>-->
+<!--    </button>-->
+<!--    <div class="collapse navbar-collapse" id="navbarNav">-->
+<!--      <ul class="navbar-nav ms-auto align-items-center">-->
+<!--        <li class="nav-item">-->
+<!--          <a class="nav-link active" href="/user/dashboard">Dashboard</a>-->
+<!--        </li>-->
+<!--        <li class="nav-item">-->
+<!--          <a class="nav-link" href="/user/rating">Rate</a>-->
+<!--        </li>-->
+<!--        <li class="nav-item">-->
+<!--          <a class="nav-link" href="/user/add-new-post">Add Post</a>-->
+<!--        </li>-->
+<!--        <li class="nav-item">-->
+<!--          <a class="nav-link" href="/user/games">Games</a>-->
+<!--        </li>-->
+<!--        <li class="nav-item">-->
+<!--          <a class="nav-link " href="/user/mutual-crush">Mutual Crush</a>-->
+<!--        </li>-->
+<!--        <li class="nav-item ms-3">-->
+<!--          <a href="/logout" class="btn btn-neon btn-sm rounded-pill px-4">Logout</a>-->
+<!--        </li>-->
+<!--      </ul>-->
+<!--    </div>-->
+<!--  </div>-->
+<!--</nav>-->
+
+<!--&lt;!&ndash; Mobile Bottom Navigation &ndash;&gt;-->
+<!--<nav class="bottom-nav">-->
+<!--  <a href="/user/rating" class="bottom-nav-item">-->
+<!--    <i class="bi bi-fire"></i>-->
+<!--    <span>Rate</span>-->
+<!--  </a>-->
+<!--  <a href="/user/games" class="bottom-nav-item">-->
+<!--    <i class="bi bi-controller"></i>-->
+<!--    <span>Games</span>-->
+<!--  </a>-->
+<!--  <a href="/user/add-new-post" class="bottom-nav-item">-->
+<!--    <i class="bi bi-plus-circle-fill"></i>-->
+<!--    <span>Add Post</span>-->
+<!--  </a>-->
+<!--  <a href="/user/mutual-crush" class="bottom-nav-item ">-->
+<!--    <i class="bi bi-heart-fill"></i>-->
+<!--    <span>Crush</span>-->
+<!--  </a>-->
+<!--  <a href="/user/dashboard" class="bottom-nav-item active">-->
+<!--    <i class="bi bi-house-door-fill"></i>-->
+<!--    <span>Dashboard</span>-->
+<!--  </a>-->
+<!--</nav>-->
+
+<!--&lt;!&ndash;<div class="main-container">&ndash;&gt;-->
+<!--<div class="container-main">-->
+<!--  <div class="post-header">-->
+<!--    <div th:if="${photoDataUrl != null}">-->
+<!--      <img th:src="${photoDataUrl}" alt="Post Image" />-->
+<!--    </div>-->
+<!--    <h4 th:text="${post.caption}">Post Caption</h4>-->
+<!--    <p class="text-info" th:text="${post.hashtag}">#hashtag</p>-->
+<!--    <div th:if="${performanceBadge != null}">-->
+<!--      <span class="badge-soft" th:text="${performanceBadge}">Trending Post</span>-->
+<!--    </div>-->
+<!--  </div>-->
+
+<!--  <div class="stats-box">-->
+<!--    <div class="d-flex justify-content-between align-items-center mb-3">-->
+<!--      <h5 class="stats-title m-0">Engagement Over Time</h5>-->
+<!--      <div class="chart-tools">-->
+<!--        <label for="granularity">View</label>-->
+<!--        <select id="granularity">-->
+<!--          <option value="weekly">Weekly</option>-->
+<!--          <option value="monthly" selected>Monthly</option>-->
+<!--          <option value="yearly">Yearly</option>-->
+<!--        </select>-->
+<!--      </div>-->
+<!--    </div>-->
+<!--    <div class="chart-container">-->
+<!--      <canvas id="timelineChart"></canvas>-->
+<!--    </div>-->
+<!--  </div>-->
+
+<!--  <div class="grid-container">-->
+<!--    <div class="stats-box">-->
+<!--      <h5 class="stats-title">Post Overview</h5>-->
+<!--      <p th:text="${'Average Rating: '+#numbers.formatDecimal(postAvgRating, 1, 1)}"><strong>Average Rating:</strong> 8.5</p>-->
+<!--      <p th:text="${'Highest Rating: '+highestRating}"><strong>Highest Rating:</strong> 10</p>-->
+<!--      <p th:text="${'Users Visited: ' + oppositeGenderVotes}"><strong>Users Visited:</strong> 245</p>-->
+<!--      <p th:text="${'Average User: ' + avgVoterAge}"><strong>Average User:</strong> 28 years</p>-->
+<!--    </div>-->
+
+<!--    <div class="stats-box">-->
+<!--      <h5 class="stats-title">Top 5 Locations</h5>-->
+<!--      <div class="chart-container">-->
+<!--        <canvas id="locationChart"></canvas>-->
+<!--      </div>-->
+<!--    </div>-->
+<!--  </div>-->
+<!--</div>-->
+
+<!--<script th:inline="javascript">-->
+<!--  /*<![CDATA[*/-->
+<!--  const locationLabels = [[${locationLabels}]];-->
+<!--  const locationValues = [[${locationValues}]];-->
+<!--  const timelineLabelsRaw = [[${timelineLabels}]];-->
+<!--  const timelineValuesRaw = [[${timelineValues}]];-->
+
+<!--  const toDate = (s) => new Date(s + 'T00:00:00');-->
+<!--  function buildColorArray(n, alpha = 0.85) {-->
+<!--    const baseColors = [-->
+<!--      '#FA8231',-->
+<!--      '#F97F51',-->
+<!--      '#FF6B9D',-->
+<!--      '#FF8C42',-->
+<!--      '#FFA07A',-->
+<!--      '#FF7F9E',-->
+<!--      '#FFB347',-->
+<!--      '#FF9A76',-->
+<!--      '#FE6B8B',-->
+<!--      '#FF8E53'-->
+<!--    ];-->
+<!--    return baseColors.slice(0, n);-->
+<!--  }-->
+
+<!--  function toISOWeek(date) {-->
+<!--    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));-->
+<!--    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));-->
+<!--    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));-->
+<!--    const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);-->
+<!--    return { year: d.getUTCFullYear(), week: weekNo };-->
+<!--  }-->
+
+<!--  function sortPeriodKeys(type) {-->
+<!--    if (type === 'yearly') return (a, b) => Number(a) - Number(b);-->
+<!--    if (type === 'monthly') return (a, b) => a.localeCompare(b);-->
+<!--    return (a, b) => a.localeCompare(b);-->
+<!--  }-->
+
+<!--  function aggregateTimeline(labels, values, granularity) {-->
+<!--    const map = new Map();-->
+<!--    const now = new Date();-->
+<!--    const sevenDaysAgo = new Date();-->
+<!--    sevenDaysAgo.setDate(now.getDate() - 6);-->
+
+<!--    for (let i = 0; i < labels.length; i++) {-->
+<!--      const d = toDate(labels[i]);-->
+
+<!--      // Filter only the current 7-day window when "weekly" is selected-->
+<!--      if (granularity === 'weekly' && (d < sevenDaysAgo || d > now)) continue;-->
+
+<!--      let key;-->
+<!--      if (granularity === 'yearly') {-->
+<!--        key = String(d.getFullYear());-->
+<!--      } else if (granularity === 'monthly') {-->
+<!--        key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;-->
+<!--      } else {-->
+<!--        // Weekly -> show each of the 7 days-->
+<!--        key = d.toISOString().split('T')[0];-->
+<!--      }-->
+<!--      map.set(key, (map.get(key) || 0) + (values[i] || 0));-->
+<!--    }-->
+
+<!--    const keys = Array.from(map.keys()).sort(sortPeriodKeys(granularity));-->
+<!--    return { labels: keys, values: keys.map(k => map.get(k)) };-->
+<!--  }-->
+
+<!--  const locationCtx = document.getElementById('locationChart').getContext('2d');-->
+<!--  const timelineCtx = document.getElementById('timelineChart').getContext('2d');-->
+
+<!--  const locationColors = buildColorArray(locationValues.length);-->
+<!--  new Chart(locationCtx, {-->
+<!--    type: 'bar',-->
+<!--    data: {-->
+<!--      labels: locationLabels,-->
+<!--      datasets: [{-->
+<!--        label: 'Ratings by Location',-->
+<!--        data: locationValues,-->
+<!--        backgroundColor: locationColors,-->
+<!--        borderColor: 'rgba(250, 130, 49, 0.5)',-->
+<!--        borderWidth: 2,-->
+<!--        borderRadius: 8-->
+<!--      }]-->
+<!--    },-->
+<!--    options: {-->
+<!--      responsive: true,-->
+<!--      maintainAspectRatio: false,-->
+<!--      plugins: { legend: { display: false } },-->
+<!--      scales: {-->
+<!--        y: {-->
+<!--          beginAtZero: true,-->
+<!--          ticks: { color: '#555', stepSize: 1, font: { weight: 600 } },-->
+<!--          grid: { color: 'rgba(250, 130, 49, 0.1)' }-->
+<!--        },-->
+<!--        x: {-->
+<!--          ticks: { color: '#555', font: { weight: 600 } },-->
+<!--          grid: { color: 'rgba(250, 130, 49, 0.08)' }-->
+<!--        }-->
+<!--      }-->
+<!--    }-->
+<!--  });-->
+
+<!--  let currentGranularity = 'monthly';-->
+<!--  function buildTimelineChart(granularity) {-->
+<!--    const agg = aggregateTimeline(timelineLabelsRaw, timelineValuesRaw, granularity);-->
+<!--    return new Chart(timelineCtx, {-->
+<!--      type: 'line',-->
+<!--      data: {-->
+<!--        labels: agg.labels,-->
+<!--        datasets: [{-->
+<!--          label: `Votes (${granularity})`,-->
+<!--          data: agg.values,-->
+<!--          tension: 0.4,-->
+<!--          borderWidth: 3,-->
+<!--          borderColor: '#FA8231',-->
+<!--          backgroundColor: 'rgba(250, 130, 49, 0.15)',-->
+<!--          fill: true,-->
+<!--          pointRadius: 4,-->
+<!--          pointHoverRadius: 6,-->
+<!--          pointBackgroundColor: '#FF6B9D',-->
+<!--          pointBorderColor: '#fff',-->
+<!--          pointBorderWidth: 2-->
+<!--        }]-->
+<!--      },-->
+<!--      options: {-->
+<!--        responsive: true,-->
+<!--        maintainAspectRatio: false,-->
+<!--        plugins: { legend: { display: false } },-->
+<!--        scales: {-->
+<!--          y: {-->
+<!--            beginAtZero: true,-->
+<!--            ticks: { color: '#555', stepSize: 1, font: { weight: 600 } },-->
+<!--            grid: { color: 'rgba(250, 130, 49, 0.1)' }-->
+<!--          },-->
+<!--          x: {-->
+<!--            ticks: { color: '#555', maxRotation: 0, font: { weight: 600 } },-->
+<!--            grid: { color: 'rgba(250, 130, 49, 0.08)' }-->
+<!--          }-->
+<!--        }-->
+<!--      }-->
+<!--    });-->
+<!--  }-->
+<!--  let timelineChart = buildTimelineChart(currentGranularity);-->
+<!--  document.getElementById('granularity').addEventListener('change', (e) => {-->
+<!--    currentGranularity = e.target.value;-->
+<!--    timelineChart.destroy();-->
+<!--    timelineChart = buildTimelineChart(currentGranularity);-->
+<!--  });-->
+<!--  /*]]>*/-->
+<!--</script>-->
+
+<!--&lt;!&ndash;</div>&ndash;&gt;-->
+
+<!--<div class="popup-overlay" id="popupOverlay">-->
+<!--  <div class="popup">-->
+<!--    <button class="close-btn" onclick="closePopup()">&times;</button>-->
+
+<!--    <div class="badge-wrapper">-->
+<!--      <div class="badge">-->
+<!--        <div class="shine"></div>-->
+<!--        <div class="badge-text">+<span id="badgePoints">50</span></div>-->
+<!--      </div>-->
+<!--    </div>-->
+
+<!--    <div class="points-earned" style="font-size:13px;"><span id="pointsText">You earned 50 points!</span></div>-->
+<!--  </div>-->
+<!--</div>-->
+
+<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>-->
+
+<!--<script>-->
+
+<!--  // Active nav state management for mobile-->
+<!--  document.addEventListener('DOMContentLoaded', function() {-->
+<!--      const currentPath = window.location.pathname;-->
+<!--      const navItems = document.querySelectorAll('.bottom-nav-item');-->
+
+<!--      navItems.forEach(item => {-->
+<!--          if (item.getAttribute('href') === currentPath) {-->
+<!--              item.classList.add('active');-->
+<!--          }-->
+<!--      });-->
+<!--  });-->
+<!--</script>-->
+<!--</body>-->
+<!--</html>-->

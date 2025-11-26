@@ -1,0 +1,2038 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rate Photos - HotOrNot</title>
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #ffffff;
+            color: #2d2d2d;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+            padding-bottom: 80px; /* Space for mobile bottom nav */
+        }
+
+        @media (min-width: 768px) {
+            body {
+                padding-bottom: 0;
+            }
+        }
+
+        .bg-gradient {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+            background: linear-gradient(135deg, #FFF5F0 0%, #FFE8F0 50%, #FFF0F5 100%);
+        }
+
+        .bg-gradient::before,
+        .bg-gradient::after,
+        .bg-gradient span {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+        }
+
+        .bg-gradient::before {
+            width: 600px;
+            height: 600px;
+            background: rgba(250, 130, 49, 0.15);
+            animation: float1 20s ease-in-out infinite;
+        }
+
+        .bg-gradient::after {
+            width: 700px;
+            height: 700px;
+            background: rgba(255, 107, 157, 0.12);
+            animation: float2 25s ease-in-out infinite;
+        }
+
+        .bg-gradient span {
+            width: 500px;
+            height: 500px;
+            background: rgba(249, 127, 81, 0.1);
+            animation: float3 18s ease-in-out infinite;
+        }
+
+        @keyframes float1 {
+            0%, 100% { transform: translate(10vw, 20vh) scale(1); }
+            25% { transform: translate(60vw, 70vh) scale(1.3); }
+            50% { transform: translate(80vw, 30vh) scale(0.9); }
+            75% { transform: translate(30vw, 80vh) scale(1.2); }
+        }
+
+        @keyframes float2 {
+            0%, 100% { transform: translate(70vw, 60vh) scale(1); }
+            33% { transform: translate(20vw, 20vh) scale(1.4); }
+            66% { transform: translate(50vw, 80vh) scale(0.8); }
+        }
+
+        @keyframes float3 {
+            0%, 100% { transform: translate(40vw, 10vh) scale(1); }
+            30% { transform: translate(10vw, 70vh) scale(1.3); }
+            60% { transform: translate(75vw, 50vh) scale(0.9); }
+            90% { transform: translate(55vw, 15vh) scale(1.2); }
+        }
+
+        /* Desktop Navigation */
+        .navbar-desktop {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(20px);
+            border-bottom: 2px solid rgba(250, 130, 49, 0.2);
+            box-shadow: 0 4px 20px rgba(250, 130, 49, 0.1);
+            display: none;
+        }
+
+        @media (min-width: 768px) {
+            .navbar-desktop {
+                display: block !important;
+            }
+        }
+
+        .navbar-brand {
+            font-size: 1.8rem;
+            font-weight: 900;
+            letter-spacing: -1px;
+        }
+
+        .logo-hot {
+            background: linear-gradient(135deg, #FA8231 0%, #F97F51 50%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo-not {
+            color: #FF6B9D;
+        }
+
+        .nav-link {
+            color: #555 !important;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            position: relative;
+            margin: 0 0.5rem;
+        }
+
+        .nav-link:hover {
+            color: #FA8231 !important;
+            transform: translateY(-2px);
+        }
+
+        .nav-link.active {
+            color: #FA8231 !important;
+        }
+
+        .btn-neon {
+            background: linear-gradient(135deg, #FA8231 0%, #F97F51 50%, #FF6B9D 100%);
+            color: white;
+            border: none;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(250, 130, 49, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .btn-neon:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 25px rgba(250, 130, 49, 0.6);
+            color: white;
+        }
+
+        /* Mobile Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            border-top: 2px solid rgba(250, 130, 49, 0.2);
+            box-shadow: 0 -4px 20px rgba(250, 130, 49, 0.1);
+            z-index: 1000;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 8px 0;
+            height: 70px;
+        }
+
+        @media (min-width: 768px) {
+            .bottom-nav {
+                display: none;
+            }
+        }
+
+        .bottom-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: #888;
+            transition: all 0.3s ease;
+            padding: 8px 12px;
+            border-radius: 12px;
+            min-width: 60px;
+        }
+
+        .bottom-nav-item i {
+            font-size: 24px;
+            margin-bottom: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .bottom-nav-item span {
+            font-size: 11px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .bottom-nav-item.active {
+            color: #FA8231;
+        }
+
+        .bottom-nav-item.active i {
+            transform: scale(1.1);
+        }
+
+        .bottom-nav-item:hover {
+            color: #FA8231;
+            background: rgba(250, 130, 49, 0.1);
+        }
+
+        /* Logo for mobile (top-left corner) */
+        .mobile-logo {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 999;
+            font-size: 1.3rem;
+            font-weight: 900;
+            letter-spacing: -1px;
+            display: block;
+        }
+
+        @media (min-width: 768px) {
+            .mobile-logo {
+                display: none;
+            }
+        }
+
+        .main-container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        @media (max-width: 767px) {
+            .main-container {
+                padding-top: 10px;
+            }
+        }
+
+        .rating-card {
+            margin-bottom: 2rem;
+            position: relative;
+            scroll-snap-align: start;
+        }
+
+        .image-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            max-height: 700px;
+            border-radius: 30px;
+            overflow: hidden;
+            background: linear-gradient(135deg, rgba(250, 130, 49, 0.15), rgba(255, 107, 157, 0.15));
+        }
+
+        .phuljhari-border {
+            position: absolute;
+            top: -6px;
+            left: -6px;
+            right: -6px;
+            bottom: -6px;
+            border-radius: 36px;
+            background: linear-gradient(135deg, #FA8231, #F97F51, #FFD700, #00ff88, #FF6B9D);
+            z-index: 1;
+            opacity: 0;
+            filter: blur(8px);
+            animation: sparkle 1.5s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        .phuljhari-border.active {
+            opacity: 1;
+        }
+
+        @keyframes sparkle {
+            0%, 100% { opacity: 0.8; filter: blur(8px) brightness(1); }
+            50% { opacity: 1; filter: blur(12px) brightness(1.3); }
+        }
+
+        .image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: relative;
+            z-index: 2;
+            border-radius: 30px;
+        }
+
+        .image-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 30px 20px 20px;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.3), transparent);
+            z-index: 3;
+            border-radius: 0 0 30px 30px;
+        }
+
+        .overlay-content {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            padding: 20px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FA8231, #FF6B9D);
+            border: 3px solid rgba(255, 255, 255, 0.7);
+        }
+
+        .username {
+            font-weight: 700;
+            color: #ffffff;
+            font-size: 1.2rem;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .caption {
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 10px;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        .hashtags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .hashtag {
+            background: rgba(250, 130, 49, 0.3);
+            border: 1px solid rgba(250, 130, 49, 0.5);
+            color: #FFD700;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .timer-container {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 400px;
+            z-index: 10;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 12px;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 20px rgba(250, 130, 49, 0.3);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg,
+                #FA8231 0%,
+                #F97F51 20%,
+                #FF8C42 40%,
+                #FFD32A 60%,
+                #00ff88 80%,
+                #FF6B9D 100%
+            );
+            transition: width 1s linear;
+            box-shadow: 0 0 20px rgba(250, 130, 49, 0.8), 0 0 40px rgba(255, 107, 157, 0.6);
+            position: relative;
+            border-radius: 20px;
+        }
+
+        .progress-bar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.3), transparent);
+            border-radius: 20px 20px 0 0;
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: 0;
+            width: 30px;
+            height: 30px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.8) 40%, transparent 70%);
+            transform: translate(50%, -50%);
+            filter: blur(3px);
+            animation: pulse-glow 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% {
+                opacity: 0.6;
+                transform: translate(50%, -50%) scale(1);
+            }
+            50% {
+                opacity: 1;
+                transform: translate(50%, -50%) scale(1.3);
+            }
+        }
+
+        .thermometer-container {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 60px;
+            height: 40%;
+            max-height: 300px;
+            z-index: 10;
+        }
+
+        .thermometer {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: rgba(250, 130, 49, 0.1);
+            border: 3px solid #FA8231;
+            border-radius: 30px;
+            cursor: pointer;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(250, 130, 49, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .thermometer:hover {
+            background: rgba(250, 130, 49, 0.2);
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(250, 130, 49, 0.6);
+        }
+
+        .thermometer.disabled {
+            pointer-events: none;
+            opacity: 0.5;
+        }
+
+        .thermometer-fill {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, #FA8231, #F97F51, #FF8C42, #FFD32A, #00ff88);
+            transition: height 0.3s ease;
+            border-radius: 0 0 30px 30px;
+        }
+
+        .thermometer-bulb {
+            position: absolute;
+            bottom: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 50%;
+            box-shadow: 0 0 20px rgba(250, 130, 49, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+        }
+
+        .thermometer-bulb-inner {
+            width: 35px;
+            height: 35px;
+            background: linear-gradient(135deg, #FA8231, #F97F51);
+            border-radius: 50%;
+            transition: background 0.3s ease;
+        }
+
+        .scale-markers {
+            position: absolute;
+            left: 8px;
+            top: 10px;
+            bottom: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            font-size: 10px;
+            color: #2d2d2d;
+            font-weight: 700;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+            z-index: 300;
+        }
+
+        .rating-badge {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: linear-gradient(135deg, #FA8231 0%, #FF6B9D 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: 800;
+            font-size: 1.3rem;
+            box-shadow: 0 4px 20px rgba(250, 130, 49, 0.6);
+            z-index: 10;
+            display: none;
+        }
+
+        .rating-badge.show {
+            display: block;
+            animation: popIn 0.3s ease-out;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .locked-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(250, 130, 49, 0.3);
+            backdrop-filter: blur(5px);
+            border-radius: 30px;
+            z-index: 4;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .locked-overlay.show {
+            display: flex;
+        }
+
+        .locked-icon {
+            font-size: 4rem;
+            color: #FA8231;
+            text-shadow: 0 0 30px rgba(250, 130, 49, 0.8);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s ease;
+        }
+
+        .popup-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .popup {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 248, 240, 0.95));
+            padding: 40px 60px;
+            border-radius: 25px;
+            text-align: center;
+            color: #2d2d2d;
+            box-shadow: 0 10px 50px rgba(250, 130, 49, 0.4);
+            border: 3px solid rgba(250, 130, 49, 0.3);
+            position: relative;
+            overflow: hidden;
+            animation: popupScale 0.6s ease-out;
+        }
+
+        @keyframes popupScale {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .badge-wrapper {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .badge {
+            background: linear-gradient(135deg, #FA8231, #F97F51, #FF6B9D);
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            position: relative;
+            box-shadow: 0 0 40px rgba(250, 130, 49, 0.6);
+            animation: pulse 1.5s infinite;
+        }
+
+        .badge-text {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .shine {
+            position: absolute;
+            top: 0;
+            left: -75%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(120deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0));
+            transform: skewX(-25deg);
+            animation: shine 2s infinite;
+        }
+
+        @keyframes shine {
+            0% { left: -75%; }
+            100% { left: 125%; }
+        }
+
+        .points-earned {
+            font-size: 1.2em;
+            margin-top: 15px;
+            color: #FA8231;
+            font-weight: 700;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 32px;
+            color: #999;
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            z-index: 1001;
+        }
+
+        .close-btn:hover {
+            color: #FA8231;
+            transform: rotate(90deg);
+        }
+
+        @media (max-width: 576px) {
+            .thermometer-container {
+                width: 50px;
+                height: 50%;
+            }
+
+            .username {
+                font-size: 1rem;
+            }
+
+            .caption {
+                font-size: 0.9rem;
+            }
+
+            .popup {
+                padding: 30px 40px;
+            }
+
+            .badge {
+                width: 100px;
+                height: 100px;
+            }
+
+            .badge-text {
+                font-size: 2em;
+            }
+        }
+
+            /* Birthday Css */
+         .Birthdayoverlay {
+             position: fixed;
+             top: 0;
+             left: 0;
+             height: 100%;
+             width: 100%;
+             background: rgba(0, 0, 0, 0.3);
+             display: none;
+             justify-content: center;
+             align-items: center;
+             padding: 10px;
+             z-index: 9999;
+         }
+
+         .birthdaypopup {
+             background: linear-gradient(135deg, #667eea 0%, #ec4899 50%, #f97316 100%);
+             border-radius: 30px;
+             max-width: 600px;
+             width: 80%;
+             padding: 50px 30px 40px;
+             text-align: center;
+             position: relative;
+             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+             animation: popIn 0.5s ease-out;
+             max-height: 85vh;
+             overflow-y: auto;
+         }
+
+         .birthdayclose-btn {
+             position: absolute;
+             top: 16px;
+             right: 16px;
+             width: 32px;
+             height: 32px;
+             border: none;
+             background: #e2e8f0;
+             border-radius: 50%;
+             cursor: pointer;
+             display: flex;
+             align-items: center;
+             justify-content: center;
+             transition: all 0.2s ease;
+             z-index: 100;
+         }
+
+         .birthdayclose-btn:hover {
+             background: #cbd5e0;
+         }
+
+         .birthdayclose-btn svg {
+             width: 18px;
+             height: 18px;
+         }
+
+         .gift-icon {
+             font-size: 70px;
+             margin-bottom: 15px;
+             animation: bounce 2s infinite;
+             filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.3));
+         }
+
+         @keyframes bounce {
+             0%, 100% { transform: translateY(0); }
+             50% { transform: translateY(-20px); }
+         }
+
+         .party-emoji {
+             position: absolute;
+             font-size: 50px;
+             animation: spin 2s linear infinite;
+         }
+
+         .party-left {
+             top: 60px;
+             left: 60px;
+         }
+
+         .party-right {
+             top: 60px;
+             right: 60px;
+             animation-direction: reverse;
+         }
+
+         @keyframes spin {
+             from { transform: rotate(0deg); }
+             to { transform: rotate(360deg); }
+         }
+
+         .sparkle {
+             position: absolute;
+             color: #ffd700;
+             font-size: 30px;
+             animation: pulse 1.5s infinite;
+         }
+
+         .sparkle-1 { top: 40px; left: 80px; }
+         .sparkle-2 { top: 80px; right: 100px; animation-delay: 0.5s; }
+         .sparkle-3 { bottom: 100px; left: 100px; animation-delay: 1s; }
+
+         @keyframes pulse {
+             0%, 100% { opacity: 0.3; transform: scale(1); }
+             50% { opacity: 1; transform: scale(1.2); }
+         }
+
+         h1 {
+             color: white;
+             font-size: 36px;
+             margin-bottom: 10px;
+             text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
+         }
+
+         .subtitle {
+             color: white;
+             font-size: 18px;
+             margin-bottom: 25px;
+             font-weight: 500;
+         }
+
+         .bonus-card {
+             background: rgba(255, 255, 255, 0.2);
+             backdrop-filter: blur(10px);
+             border-radius: 20px;
+             padding: 20px;
+             width: 350px;
+             max-width: 100%;
+             margin: 0 auto 20px;
+             border: 2px solid rgba(255, 255, 255, 0.3);
+         }
+
+         .bonus-icon {
+             font-size: 50px;
+             margin-bottom: 10px;
+         }
+
+         .bonus-title {
+             color: white;
+             font-size: 22px;
+             font-weight: bold;
+             margin-bottom: 10px;
+         }
+
+         .bonus-points {
+             color: #ffd700;
+             font-size: 38px;
+             font-weight: 900;
+             margin-bottom: 10px;
+             text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
+         }
+
+         .bonus-duration {
+             color: white;
+             font-size: 16px;
+             font-weight: 600;
+         }
+
+         .cta-btn {
+             background: white;
+             color: #667eea;
+             border: none;
+             padding: 18px 40px;
+             font-size: 20px;
+             font-weight: bold;
+             border-radius: 50px;
+             cursor: pointer;
+             transition: all 0.3s;
+             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+         }
+
+         .cta-btn:hover {
+             transform: scale(1.05);
+             box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+         }
+
+         .confetti {
+             position: absolute;
+             width: 10px;
+             height: 10px;
+             animation: fall linear infinite;
+         }
+
+         @keyframes fall {
+             0% {
+                 transform: translateY(-100px) rotate(0deg);
+                 opacity: 1;
+             }
+             100% {
+                 transform: translateY(100vh) rotate(720deg);
+                 opacity: 0;
+             }
+         }
+
+         .hidden {
+             display: none;
+         }
+
+         /* Tablet and small desktop */
+         @media (max-width: 768px) {
+             .birthdaypopup {
+                 padding: 40px 25px 35px;
+             }
+
+             .party-emoji {
+                 font-size: 40px;
+             }
+
+             .party-left {
+                 top: 50px;
+                 left: 40px;
+             }
+
+             .party-right {
+                 top: 50px;
+                 right: 40px;
+             }
+
+             .sparkle {
+                 font-size: 25px;
+             }
+
+             .sparkle-1 { top: 35px; left: 60px; }
+             .sparkle-2 { top: 70px; right: 70px; }
+             .sparkle-3 { bottom: 80px; left: 70px; }
+         }
+
+         /* Mobile */
+         @media (max-width: 576px) {
+             .birthdaypopup {
+                 padding: 35px 20px 30px;
+                 border-radius: 25px;
+                 max-width: 90%;
+             }
+
+             h1 {
+                 font-size: 28px;
+             }
+
+             .subtitle {
+                 font-size: 16px;
+                 margin-bottom: 20px;
+             }
+
+             .gift-icon {
+                 font-size: 60px;
+                 margin-bottom: 12px;
+             }
+
+             .bonus-card {
+                 width: 100%;
+                 padding: 18px 15px;
+             }
+
+             .bonus-icon {
+                 font-size: 45px;
+                 margin-bottom: 8px;
+             }
+
+             .bonus-title {
+                 font-size: 20px;
+                 margin-bottom: 8px;
+             }
+
+             .bonus-points {
+                 font-size: 34px;
+                 margin-bottom: 8px;
+             }
+
+             .bonus-duration {
+                 font-size: 15px;
+             }
+
+             .party-emoji {
+                 font-size: 35px;
+             }
+
+             .party-left {
+                 top: 40px;
+                 left: 20px;
+             }
+
+             .party-right {
+                 top: 40px;
+                 right: 20px;
+             }
+
+             .sparkle {
+                 font-size: 20px;
+             }
+
+             .sparkle-1 { top: 30px; left: 35px; }
+             .sparkle-2 { top: 60px; right: 40px; }
+             .sparkle-3 { bottom: 70px; left: 40px; }
+
+             .birthdayclose-btn {
+                 width: 35px;
+                 height: 35px;
+                 font-size: 22px;
+                 top: 12px;
+                 right: 12px;
+                 z-index : 1000;
+             }
+
+             .cta-btn {
+                 padding: 15px 35px;
+                 font-size: 18px;
+             }
+         }
+
+         /* Very small screens */
+         @media (max-width: 400px) {
+             .birthdaypopup {
+                 padding: 30px 15px 25px;
+                 border-radius: 20px;
+                 max-width: 85%;
+             }
+
+             h1 {
+                 font-size: 24px;
+                 margin-bottom: 8px;
+             }
+
+             .subtitle {
+                 font-size: 15px;
+                 margin-bottom: 18px;
+             }
+
+             .gift-icon {
+                 font-size: 50px;
+                 margin-bottom: 10px;
+             }
+
+             .bonus-card {
+                 padding: 15px 12px;
+                 border-radius: 18px;
+             }
+
+             .bonus-icon {
+                 font-size: 40px;
+                 margin-bottom: 6px;
+             }
+
+             .bonus-title {
+                 font-size: 18px;
+                 margin-bottom: 6px;
+             }
+
+             .bonus-points {
+                 font-size: 30px;
+                 margin-bottom: 6px;
+             }
+
+             .bonus-duration {
+                 font-size: 14px;
+             }
+
+             .party-emoji {
+                 font-size: 30px;
+             }
+
+             .party-left {
+                 top: 35px;
+                 left: 15px;
+             }
+
+             .party-right {
+                 top: 35px;
+                 right: 15px;
+             }
+
+             .sparkle {
+                 font-size: 18px;
+             }
+
+             .sparkle-1 { top: 25px; left: 30px; }
+             .sparkle-2 { top: 50px; right: 35px; }
+             .sparkle-3 { bottom: 60px; left: 35px; }
+
+             .cta-btn {
+                 padding: 14px 30px;
+                 font-size: 17px;
+             }
+         }
+
+         /* Extra small screens */
+         @media (max-width: 320px) {
+             .Birthdayoverlay {
+                 padding: 5px;
+             }
+
+             .birthdaypopup {
+                 padding: 25px 12px 20px;
+                 border-radius: 18px;
+                 max-width: 90%;
+             }
+
+             h1 {
+                 font-size: 22px;
+                 margin-bottom: 6px;
+             }
+
+             .subtitle {
+                 font-size: 14px;
+                 margin-bottom: 15px;
+             }
+
+             .gift-icon {
+                 font-size: 45px;
+                 margin-bottom: 8px;
+             }
+
+             .bonus-card {
+                 padding: 12px 10px;
+                 border-radius: 16px;
+                 margin-bottom: 15px;
+             }
+
+             .bonus-icon {
+                 font-size: 35px;
+                 margin-bottom: 5px;
+             }
+
+             .bonus-title {
+                 font-size: 16px;
+                 margin-bottom: 5px;
+             }
+
+             .bonus-points {
+                 font-size: 26px;
+                 margin-bottom: 5px;
+             }
+
+             .bonus-duration {
+                 font-size: 13px;
+             }
+
+             .party-emoji {
+                 font-size: 25px;
+             }
+
+             .party-left {
+                 top: 28px;
+                 left: 10px;
+             }
+
+             .party-right {
+                 top: 28px;
+                 right: 10px;
+             }
+
+             .sparkle {
+                 font-size: 16px;
+             }
+
+             .sparkle-1 { top: 22px; left: 25px; }
+             .sparkle-2 { top: 45px; right: 28px; }
+             .sparkle-3 { bottom: 50px; left: 28px; }
+
+             .birthdayclose-btn {
+                 width: 32px;
+                 height: 32px;
+                 font-size: 20px;
+                 top: 10px;
+                 right: 10px;
+                 z-index : 1000;
+             }
+
+             .cta-btn {
+                 padding: 12px 25px;
+                 font-size: 16px;
+             }
+         }
+
+
+/* 3-dots at top right */
+.three-dots-menu {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 20;
+}
+
+.dots-icon {
+    font-size: 28px;
+    color: var(--accent);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(5px);
+    transition: 0.2s;
+}
+
+.dots-icon:hover {
+    color: var(--primary);
+    transform: scale(1.1);
+}
+
+/* Dropdown */
+.dots-dropdown {
+    position: absolute;
+    right: 0;
+    top: 50px;
+    width: 130px;
+    background: rgba(0,0,0,0.8);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 12px;
+    padding: 5px 0;
+    display: none;
+    backdrop-filter: blur(10px);
+}
+
+.dropdown-item {
+    padding: 10px;
+    color: var(--light);
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.dropdown-item:hover {
+    background: rgba(255, 107, 157, 0.25); /* var(--accent) with transparency */
+}
+
+/* Modal Overlay */
+.report-modal-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.7);
+    /* background-color: #fff; */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    visibility: hidden;
+    opacity: 0;
+    transition: 0.4s ease;
+    z-index: 99999;
+}
+
+.report-modal-overlay.show {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Modal */
+.report-modal {
+    width: 90%;
+    max-width: 420px;
+   /* background: linear-gradient(135deg, var(--dark), #000); */
+   background: #000;
+   color:#fff;
+    padding: 25px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--light);
+    box-shadow: 0 0 30px rgba(255, 107, 157, 0.4); /* accent shadow */
+    animation: popIn 0.4s ease;
+}
+
+.modal-title {
+    font-size: 1.6rem;
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 800;
+}
+
+.reason-option {
+    display: block;
+    padding: 8px 0;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.extra-comments {
+    width: 100%;
+    height: 90px;
+    background: rgba(255,255,255,0.1);
+    border: none;
+    border-radius: 10px;
+    padding: 10px;
+    color: var(--light);
+    margin-top: 10px;
+}
+
+.submit-report-btn {
+    width: 100%;
+    margin-top: 15px;
+    padding: 12px;
+    border: none;
+    border-radius: 12px;
+    background: teal;
+    color: white;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.submit-report-btn:hover {
+    transform: scale(1.03);
+}
+
+.close-report {
+    position: absolute;
+    right: 15px;
+    top: 12px;
+    font-size: 24px;
+    background: none;
+    border: none;
+    color: var(--light);
+    cursor: pointer;
+}
+
+        .report-modal {
+    position: relative;
+}
+
+.close-report {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: transparent;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #ff4d4d;
+}
+
+
+/* for popup */
+
+    .confirm-overlay,
+.success-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.6);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+}
+
+.confirm-box,
+.success-box {
+    background: white;
+    padding: 20px 30px;
+    border-radius: 8px;
+    text-align: center;
+    width: 320px;
+    animation: popupAnim 0.3s ease;
+}
+
+.confirm-buttons {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-around;
+}
+
+.yes-btn, .no-btn, .ok-btn {
+    margin-top: 10px;
+    padding: 8px 20px;
+   margin-right: 6px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.yes-btn { background: #ff4747; color: white; }
+.no-btn { background: #ccc; }
+.ok-btn { background: #4CAF50; color: white; }
+
+
+@keyframes popupAnim {
+    from { transform: scale(0.7); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+}
+
+    </style>
+</head>
+<body>
+<div class="bg-gradient">
+    <span></span>
+</div>
+
+<!-- Mobile Logo (top-left corner) -->
+<a href="#" class="mobile-logo">
+    <span class="logo-hot">Hot</span><span class="logo-not">Or</span><span class="logo-hot">Not</span>
+</a>
+
+<!-- Desktop Navigation -->
+<nav class="navbar-desktop navbar navbar-expand-lg navbar-light sticky-top">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand" href="#">
+            <span class="logo-hot">Hot</span><span class="logo-not">Or</span><span class="logo-hot">Not</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto align-items-center">
+                <li class="nav-item">
+                    <a class="nav-link" href="/user/dashboard">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="/user/rating">Rate</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/user/add-new-post">Add Post</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/user/games">Games</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/user/leaderboard">Leaderboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/user/mutual-crush">Mutual Crush</a>
+                </li>
+                <li class="nav-item ms-3">
+                    <a href="/logout" class="btn btn-neon btn-sm rounded-pill px-4">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Mobile Bottom Navigation -->
+<nav class="bottom-nav">
+    <a href="/user/rating" class="bottom-nav-item active">
+        <i class="bi bi-fire"></i>
+        <span>Rate</span>
+    </a>
+    <a href="/user/games" class="bottom-nav-item">
+        <i class="bi bi-controller"></i>
+        <span>Games</span>
+    </a>
+    <a href="/user/add-new-post" class="bottom-nav-item">
+        <i class="bi bi-plus-circle-fill"></i>
+        <span>Add Post</span>
+    </a>
+    <a href="/user/mutual-crush" class="bottom-nav-item ">
+        <i class="bi bi-heart-fill"></i>
+        <span>Crush</span>
+    </a>
+    <a href="/user/dashboard" class="bottom-nav-item">
+        <i class="bi bi-house-door-fill"></i>
+        <span>Dashboard</span>
+    </a>
+</nav>
+
+<!--<div class="main-container">-->
+<!--    &lt;!&ndash; Sample Rating Card &ndash;&gt;-->
+<!--    <div th:each="post : ${posts}" class="rating-card" th:attr="data-id=${post.postId}" >-->
+<!--        <div class="image-wrapper">-->
+<!--            <div class="phuljhari-border"></div>-->
+<!--            <img th:src="@{/userphoto/{id}(id=${post.postId})}" alt="Profile">-->
+
+<!--            <div class="timer-container">-->
+<!--                <div class="progress-container">-->
+<!--                    <div class="progress-bar"></div>-->
+<!--                </div>-->
+<!--            </div>-->
+
+<!--            <div class="rating-badge">5</div>-->
+<!--            <div class="locked-overlay">-->
+<!--                <div class="locked-icon">🔒</div>-->
+<!--            </div>-->
+
+<!--            <div class="thermometer-container">-->
+<!--                <div class="thermometer">-->
+<!--                    <div class="scale-markers">-->
+<!--                        <div>10</div>-->
+<!--                        <div>8</div>-->
+<!--                        <div>6</div>-->
+<!--                        <div>4</div>-->
+<!--                        <div>2</div>-->
+<!--                    </div>-->
+<!--                    <div class="thermometer-fill"></div>-->
+<!--                    <div class="thermometer-bulb">-->
+<!--                        <div class="thermometer-bulb-inner"></div>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
+
+<!--            <form class="postRatingForm">-->
+<!--                <input type="hidden" id="userFrom" name="userFrom" th:value="${user_master.userId}">-->
+<!--                <input type="hidden" id="userTo" name="userTo" th:value="${post.user.userId}">-->
+<!--                <input type="hidden" name="postId" th:value="${post.postId}">-->
+<!--            </form>-->
+
+<!--            <div class="image-overlay">-->
+<!--                <div class="overlay-content">-->
+<!--                    <div class="user-info">-->
+<!--                        <div class="avatar"></div>-->
+<!--                        <div class="username" th:text="${post.user.username}">sarah_jones</div>-->
+<!--                    </div>-->
+<!--                    <div class="caption" th:text="${post.caption}">Living my best life ✨ Coffee lover and adventure seeker 🌍</div>-->
+<!--                    <div class="hashtags">-->
+<!--                        <span class="hashtag" th:text="${post.hashtag}">#lifestyle</span>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</div>-->
+<div class="main-container">
+    <div th:each="post : ${posts}" class="rating-card" th:attr="data-id=${post.postId}">
+        <div class="image-wrapper">
+            <div class="phuljhari-border"></div>
+            <img th:src="@{/userphoto/{id}(id=${post.postId})}" alt="Profile">
+
+            <!-- for 3 dots -->
+            <!-- 3-Dots Menu -->
+            <div class="three-dots-menu">
+                <i class="bi bi-three-dots-vertical dots-icon"></i>
+                <!--th:href="@{/user/getreport}"-->
+                <div class="dots-dropdown">
+                    <a ><div class="dropdown-item report-btn">🚫 Report</div></a>
+                    <div class="dropdown-item block-btn">⛔ Block User</div>
+                </div>
+            </div>
+
+            <!--            for double report.-->
+            <div th:if="${param.duplicateReport}" class="alert alert-warning"  style="z-index:100000;">
+                You have already reported this post.
+            </div>
+
+
+            <!-- Timer Section -->
+            <div class="timer-container">
+                <div class="timer-text">10s</div>
+                <div class="progress-container">
+                    <div class="progress-bar"></div>
+                </div>
+            </div>
+
+            <div class="rating-badge">5</div>
+            <div class="locked-overlay">
+                <div class="locked-icon">🔒</div>
+            </div>
+
+            <div class="thermometer-container">
+                <div class="thermometer">
+                    <div class="scale-markers">
+                        <div>10</div>
+                        <div>8</div>
+                        <div>6</div>
+                        <div>4</div>
+                        <div>2</div>
+                    </div>
+                    <div class="thermometer-fill"></div>
+                    <div class="thermometer-bulb">
+                        <div class="thermometer-bulb-inner"></div>
+                    </div>
+                </div>
+            </div>
+
+            <form class="postRatingForm">
+                <input type="hidden" id="userFrom" name="userFrom" th:value="${user_master.userId}">
+                <input type="hidden" id="userTo" name="userTo" th:value="${post.user.userId}">
+                <input type="hidden" name="postId" th:value="${post.postId}">
+            </form>
+
+            <div class="image-overlay">
+                <div class="overlay-content">
+                    <div class="user-info">
+                        <div class="avatar"></div>
+                        <div class="username" th:text="${post.user.username}">sarah_jones</div>
+                    </div>
+                    <div class="caption" th:text="${post.caption}">Living my best life ✨ Coffee lover and adventure seeker 🌍</div>
+                    <div class="hashtags">
+                        <span class="hashtag" th:text="${post.hashtag}">#lifestyle</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- for modal  inside loop for post id -->
+        <!-- REPORT MODAL -->
+        <div class="report-modal-overlay" id="reportModal">
+            <div class="report-modal">
+                <button class="close-report">&times;</button>
+                <!--        th:action="@{/user/reportPost}"-->
+                <form id="reportForm"  th:action="@{/user/reportPost}" method="post">
+
+
+
+                    <h2 class="modal-title">Report Post</h2>
+                    <p class="modal-subtitle">Select a reason for reporting this post</p>
+
+                    <input type="hidden" name="postId" th:value="${post.postId}">
+                    <!--            <input type="hidden" id="reporter_user_id" name="reporter_user_id" th:value="${user_master.userId}">-->
+
+
+                    <label required>
+                        <label class="reason-option">
+                            <input type="radio" name="reason" value="Harassment">
+                            Harassment / Bullying
+                        </label>
+
+                        <label class="reason-option">
+                            <input type="radio" name="reason" value="Spam">
+                            Spam or misleading content
+                        </label>
+
+                        <label class="reason-option">
+                            <input type="radio" name="reason" value="Hate Speech">
+                            Hate speech
+                        </label>
+
+                        <label class="reason-option">
+                            <input type="radio" name="reason" value="Explicit Content">
+                            Explicit or sexual content
+                        </label>
+
+                        <label class="reason-option">
+                            <input type="radio" name="reason" value="Violence">
+                            Violence or dangerous acts
+                        </label>
+
+                        <label class="reason-option">
+                            <input type="radio" name="reason"  value="other">
+                            Other
+                        </label>
+
+                    </label>
+                    <textarea class="extra-comments" name="comment" placeholder="Additional comments (optional)"></textarea>
+
+                    <button type="submit" class="submit-report-btn" id="submitReportBtn">Submit Report</button>
+                </form>
+            </div>
+        </div>
+
+
+
+    </div>
+</div>
+<div class="popup-overlay" id="popupOverlay">
+    <div class="popup">
+        <button class="close-btn" onclick="closePopup()">&times;</button>
+
+        <div class="badge-wrapper">
+            <div class="badge">
+                <div class="shine"></div>
+                <div class="badge-text">+<span id="badgePoints">50</span></div>
+            </div>
+        </div>
+
+        <div class="points-earned" style="font-size:13px;"><span id="pointsText">You earned 50 points!</span></div>
+    </div>
+</div>
+
+<div class="Birthdayoverlay" id="birthdayPopup">
+    <div class="birthdaypopup">
+        <button class="birthdayclose-btn" id="BirthdayClose">×</button>
+
+        <div class="party-emoji party-left">🎉</div>
+        <div class="party-emoji party-right">🎉</div>
+
+        <div class="sparkle sparkle-1">✨</div>
+        <div class="sparkle sparkle-2">✨</div>
+        <div class="sparkle sparkle-3">✨</div>
+
+        <div class="gift-icon">🎁</div>
+
+        <h1>🎂 Happy Birthday! 🎂</h1>
+
+        <p class="subtitle">Wishing you an amazing day filled with joy!</p>
+
+        <div class="bonus-card">
+            <div class="bonus-icon">🎁</div>
+            <div class="bonus-title">Birthday Bonus!</div>
+            <div class="bonus-points">2x POINTS</div>
+            <div class="bonus-duration">for the next 24 hours!</div>
+        </div>
+
+    </div>
+</div>
+
+
+<!-- CONFIRMATION POPUP -->
+<div class="confirm-overlay" id="confirmPopup" style="z-index:999999 !important;">
+    <div class="confirm-box">
+        <p style="color:black;">Are you sure you want to submit this report?</p>
+        <div class="confirm-buttons col-lg-12">
+            <button id="confirmYes" class="yes-btn col-lg-6 ">Yes</button>
+            <button id="confirmNo" class="no-btn col-lg-6">No</button>
+        </div>
+    </div>
+</div>
+
+<div th:if="${reportSuccess}" id="showSuccessFlag"></div>
+
+<!-- SUCCESS POPUP -->
+<div class="success-overlay" id="successPopup">
+    <div class="success-box">
+        <p style="color:black;">Report submitted successfully!</p>
+        <button id="successOk" class="ok-btn">OK</button>
+    </div>
+</div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+
+
+<!--Referral Point 50 BY-->
+<script th:inline="javascript">
+    const popupPoints = /*[[${popupPoints}]]*/ null;
+
+    function showPopup(points) {
+        document.getElementById('badgePoints').textContent = '50';
+        document.getElementById('pointsText').textContent = points;
+        document.getElementById('pointsText').style.fontSize = '13px';
+
+        const overlay = document.getElementById('popupOverlay');
+        overlay.classList.add('show');
+
+        setTimeout(() => overlay.classList.remove('show'), 3000);
+    }
+
+    function closePopup() {
+        document.getElementById('popupOverlay').classList.remove('show');
+    }
+
+    if (popupPoints) {
+        showPopup(popupPoints);
+    }
+</script>
+<!--Referral Point 150 Through-->
+<script th:inline="javascript">
+    const referralMessage = /*[[${referralMessage}]]*/ null;
+    const referralPoint = /*[[${referralPoint}]]*/ null;
+
+    function showPopup(message, point) {
+        document.getElementById('badgePoints').textContent = point;
+        document.getElementById('pointsText').textContent = message;
+        document.getElementById('pointsText').style.fontSize = '13px';
+
+        const overlay = document.getElementById('popupOverlay');
+        overlay.classList.add('show');
+
+        setTimeout(() => overlay.classList.remove('show'), 3000);
+    }
+
+    if (referralMessage) {
+        showPopup(referralMessage, referralPoint);
+    }
+</script>
+
+<script>
+    const ratedCards = new Set();
+
+
+    function closePopup() {
+        document.getElementById('popupOverlay').classList.remove('show');
+    }
+
+    window.addEventListener("load", () => {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                const card = entry.target;
+                const cardId = card.dataset.id;
+
+                if (entry.isIntersecting && entry.intersectionRatio >= 0.7) {
+                    if (!card.dataset.timerStarted && !ratedCards.has(cardId)) {
+                        card.dataset.timerStarted = "true";
+                        startRatingTimer(card);
+                    }
+                }
+            });
+        }, { threshold: [0.7] });
+
+        document.querySelectorAll(".rating-card").forEach(card => observer.observe(card));
+    });
+
+    function startRatingTimer(card) {
+        const cardId = card.dataset.id;
+        const thermometer = card.querySelector(".thermometer");
+        const thermometerFill = card.querySelector(".thermometer-fill");
+        const bulbInner = card.querySelector(".thermometer-bulb-inner");
+        const phuljhariBorder = card.querySelector(".phuljhari-border");
+        const ratingBadge = card.querySelector(".rating-badge");
+        const lockedOverlay = card.querySelector(".locked-overlay");
+        const progressBar = card.querySelector(".progress-bar");
+        const timerContainer = card.querySelector(".timer-container");
+
+        if (!thermometer || !thermometerFill) return;
+
+        let currentRating = 5;
+        let timeRemaining = 10;
+        let canRate = true;
+
+        updateThermometer(currentRating);
+        phuljhariBorder.classList.add('active');
+
+        const timerInterval = setInterval(() => {
+        if (isReportModalOpen) return; // ⛔ Pause timer when reporting
+            timeRemaining--;
+
+            phuljhariBorder.style.opacity = timeRemaining / 10;
+            progressBar.style.width = (timeRemaining / 10) * 100 + "%";
+
+            if (timeRemaining <= 0) {
+                clearInterval(timerInterval);
+                progressBar.style.width = "0%";
+                submitRating(currentRating);
+            }
+        }, 1000);
+
+        thermometer.addEventListener("click", handleThermometerClick);
+
+        function handleThermometerClick(e) {
+            if (!canRate || ratedCards.has(cardId)) return;
+
+            const rect = thermometer.getBoundingClientRect();
+            const y = e.clientY - rect.top;
+            const usableHeight = rect.height - 40;
+            const rating = Math.round(((usableHeight - y) / usableHeight) * 10);
+            const finalRating = Math.max(1, Math.min(10, rating));
+
+            updateThermometer(finalRating);
+        }
+
+        function updateThermometer(rating) {
+            currentRating = rating;
+            const percentage = (rating / 10) * 100;
+            thermometerFill.style.height = percentage + "%";
+            ratingBadge.textContent = rating;
+
+            if (rating <= 3) {
+                bulbInner.style.background = "linear-gradient(135deg, #FA8231, #F97F51)";
+            } else if (rating <= 7) {
+                bulbInner.style.background = "linear-gradient(135deg, #FF8C42, #FFD32A)";
+            } else {
+                bulbInner.style.background = "linear-gradient(135deg, #00ff88, #26de81)";
+            }
+        }
+
+        function submitRating(rating) {
+            if (ratedCards.has(cardId)) return;
+            canRate = false;
+            ratedCards.add(cardId);
+
+            phuljhariBorder.style.opacity = '0';
+            phuljhariBorder.classList.remove('active');
+            thermometer.classList.add("disabled");
+            thermometer.removeEventListener("click", handleThermometerClick);
+            timerContainer.style.display = 'none';
+            ratingBadge.textContent = rating;
+            ratingBadge.classList.add('show');
+
+            setTimeout(() => {
+                lockedOverlay.classList.add('show');
+            }, 500);
+
+             const form = card.querySelector(".postRatingForm");
+            const formData = new FormData(form);
+            formData.append("rating", rating);
+
+            const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute("content");
+            const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute("content");
+
+            fetch('/saveRating', {
+                method: 'POST',
+                headers: {
+                    [csrfHeader]: csrfToken
+                },
+                body: formData
+            })
+            .then(res => res.text())
+            .then(data => console.log("✅ Rating submitted:", data))
+            .catch(err => console.error("⚠️ Error submitting rating:", err));
+
+
+            console.log(`✅ Rating ${rating}/10 submitted for card ${cardId}`);
+
+
+            // Auto-scroll to next card
+            setTimeout(() => {
+                const nextCard = card.nextElementSibling;
+                if (nextCard && nextCard.classList.contains('rating-card')) {
+                    nextCard.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                }
+            }, 800);
+        }
+    }
+
+    // Active nav state management for mobile
+    document.addEventListener('DOMContentLoaded', function() {
+        const currentPath = window.location.pathname;
+        const navItems = document.querySelectorAll('.bottom-nav-item');
+
+        navItems.forEach(item => {
+            if (item.getAttribute('href') === currentPath) {
+                item.classList.add('active');
+            }
+        });
+    });
+</script>
+<script>
+    let isReportModalOpen = false;  // 🔥 Global for all scripts
+</script>
+<script>
+    document.querySelectorAll(".dots-icon").forEach(dot => {
+        dot.addEventListener("click", (e) => {
+            const dropdown = e.target.parentElement.querySelector(".dots-dropdown");
+            dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
+        });
+    });
+
+    // OPEN MODAL
+    document.querySelectorAll(".report-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            isReportModalOpen = true;  // ⛔ Pause rating
+
+            document.getElementById("reportModal").classList.add("show");
+            document.querySelectorAll(".dots-dropdown").forEach(d => d.style.display = "none");
+        });
+    });
+
+    // CLOSE MODAL
+    document.querySelector(".close-report").addEventListener("click", () => {
+        isReportModalOpen = false;
+        document.getElementById("reportModal").classList.remove("show");
+    });
+
+
+</script>
+
+
+<script>
+    const reportForm = document.getElementById("reportForm");
+    const submitBtn = document.getElementById("submitReportBtn");
+
+    const confirmPopup = document.getElementById("confirmPopup");
+    const successPopup = document.getElementById("successPopup");
+
+    const confirmYes = document.getElementById("confirmYes");
+    const confirmNo = document.getElementById("confirmNo");
+    const successOk = document.getElementById("successOk");
+
+
+    // STOP default submit - show confirmation popup
+    submitBtn.addEventListener("click", function (event) {
+        event.preventDefault();
+
+        confirmPopup.style.display = "flex";
+    });
+
+    //  YES - Submit form
+    confirmYes.addEventListener("click", function () {
+        confirmPopup.style.display = "none";
+
+        // Actually submit the form now
+        reportForm.submit();
+    });
+
+    //  NO - Close popup
+    confirmNo.addEventListener("click", function () {
+        confirmPopup.style.display = "none";
+    });
+
+    // Optional: Close success popup
+    if (successOk) {
+        successOk.addEventListener("click", function () {
+            successPopup.style.display = "none";
+        });
+    }
+
+        // AFTER SUBMIt SUCCESS POPUP
+    // --------------------------
+    if (document.getElementById("showSuccessFlag")) {
+        successPopup.style.display = "flex";
+    }
+
+    successOk.addEventListener("click", function () {
+        successPopup.style.display = "none";
+    });
+</script>
+
+
+<script th:if="${isBirthday}">
+
+    function openBirthdayPopup() {
+     document.getElementById('birthdayPopup').style.display = 'flex';
+    }
+    openBirthdayPopup();
+    let closebtn = document.getElementById('BirthdayClose');
+    closebtn.addEventListener('click', () =>{
+      document.getElementById('birthdayPopup').style.display='none';
+    });
+
+</script>
+
+<script>
+
+    function createConfetti() {
+        const colors = ['#FF6B6B', '#4ECDC4', '#FFE66D', '#A8E6CF', '#FF8B94'];
+        const overlay = document.getElementById('birthdayPopup');
+
+        for (let i = 0; i < 50; i++) {
+          const confetti = document.createElement('div');
+          confetti.className = 'confetti';
+          confetti.style.left = Math.random() * 100 + '%';
+          confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+          confetti.style.animationDuration = (3 + Math.random() * 2) + 's';
+          confetti.style.animationDelay = Math.random() * 3 + 's';
+          overlay.appendChild(confetti);
+        }
+      }
+     createConfetti();
+    // Close birthday Once and it will not show Again
+
+</script>
+
+
+</body>
+</html>
