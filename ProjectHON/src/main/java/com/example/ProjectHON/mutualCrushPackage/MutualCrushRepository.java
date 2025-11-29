@@ -17,7 +17,7 @@ public interface MutualCrushRepository extends JpaRepository<MutualCrushMaster, 
 
     List<MutualCrushMaster> findByRequestToAndRequestedTrueAndAcceptedFalseAndIgnoredFalse(UserMaster requestTo);
 
-    Optional<MutualCrushMaster> findByRequestBy(UserMaster requestBy);
+    List<MutualCrushMaster> findByRequestBy(UserMaster requestBy);
 
     List<MutualCrushMaster> findByRequestByAndAcceptedTrue(UserMaster requestBy);
 
@@ -37,5 +37,16 @@ public interface MutualCrushRepository extends JpaRepository<MutualCrushMaster, 
             "WHERE (m.requestBy = :user OR m.requestTo = :user) " +
             "AND m.accepted = true")
     long countMutualCrushes(@Param("user") UserMaster user);
+
+//
+
+
+//    @Query("SELECT m FROM MutualCrushMaster m " +
+//            "WHERE m.accepted = true " +
+//            "AND (m.requestBy.id = :userId OR m.requestTo.id = :userId)")
+//    List<MutualCrushMaster> findMutualCrushesByUser(@Param("userId") Long userId);
+
+
+
 }
 

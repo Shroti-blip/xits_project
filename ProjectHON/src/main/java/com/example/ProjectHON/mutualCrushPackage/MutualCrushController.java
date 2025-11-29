@@ -50,18 +50,21 @@ public String inviteCrush(@RequestParam("targetId") Long targetId, HttpSession s
 }
 
     @PostMapping("/acceptCrush")
-    public String acceptCrush(@RequestParam("inviteId") Long inviteId, HttpSession session) {
-        UserMaster current = (UserMaster) session.getAttribute("user_master");
+    public String acceptCrush(@RequestParam("inviteId") Long inviteId, HttpSession session) {//152
+        Long userId=(Long)session.getAttribute("userId");
+        UserMaster current = userRepo.findById(userId).orElse(null);//154
         if (current == null) return "redirect:/login";
 
 
-        UserMaster user1 = userRepo.findById(inviteId).orElse(null);
-        mutualRepo.findByRequestBy(user1).ifPresent(invite -> {
+        UserMaster user1 = userRepo.findById(inviteId).orElse(null);//152
+        System.out.println("---------------------------------After Invite Object");
+        mutualRepo.findByRequestBy(user1)
+                .forEach(invite -> {
+                    if (invite.getRequestTo().getUserId().equals(current.getUserId())) {
+                        crushService.acceptInvite(invite);
+                    }
+                });
 
-            if (invite.getRequestTo().getUserId().equals(current.getUserId())) {
-                crushService.acceptInvite(invite);
-            }
-        });
         return "redirect:/user/mutual-crush";
     }
 

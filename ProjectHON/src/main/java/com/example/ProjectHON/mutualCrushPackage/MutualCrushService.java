@@ -84,17 +84,13 @@ public class MutualCrushService {
 
         UserMaster user1 = userRepo.findById(invite.getRequestBy().getUserId()).orElse(null);
         UserMaster user2 = userRepo.findById(invite.getRequestTo().getUserId()).orElse(null);
+        System.out.println("Got both object ");
         Optional<MutualCrushMaster> record = mutualRepo.findByRequestByAndRequestTo(invite.getRequestBy(), invite.getRequestTo());
+//        System.out.println("Size of Record is "+());
         if (record.isPresent()) {
             MutualCrushMaster mc = record.get();
             mc.setAccepted(true);
-//            mc.setMutualCrush(true);
-//            System.out.println("u1 points = "+user1.getPoints());
-//            System.out.println("u2 points = "+user2.getPoints());
-
             mutualRepo.save(mc);
-
-
         } else {
             MutualCrushMaster mc = new MutualCrushMaster(invite.getRequestBy(), invite.getRequestTo());
             mc.setRequested(true);
