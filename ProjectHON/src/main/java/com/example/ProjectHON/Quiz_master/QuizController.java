@@ -58,50 +58,6 @@ public class QuizController {
 
 
 
-//    @PostMapping("/quiz/save-answer")
-//    @ResponseBody
-//    public Map<String, Object> saveAnswer(
-//            @RequestParam int quizId,
-//            @RequestParam String answer,
-//            @RequestParam("playWithId") Long playWithId,
-//            HttpSession session) {
-//
-//        //  existing quiz question
-//        QuizQuestion question = quizRepository.findById(quizId)
-//                .orElseThrow(() -> new RuntimeException("Invalid quiz ID"));
-//        UserMaster user = (UserMaster) session.getAttribute("user_master");
-//        UserMaster userMaster = userMasterRepository.findById(playWithId).orElse(null);
-//
-//
-//        QuizAnswer qa = new QuizAnswer();
-//        qa.setQuestion(question);
-//        qa.setSelectedOption(answer);
-//        qa.setPlayWith(userMaster);
-//
-//         qa.setUser(user);
-//
-//        quizAnswerRepository.save(qa);
-//
-//
-//        QuizQuestion next = quizRepository.findNext(quizId);
-//
-//        Map<String, Object> resp = new HashMap<>();
-//
-//        if (next == null) {
-//            resp.put("finished", true);
-//            return resp;
-//        }
-//
-//        resp.put("finished", false);
-//        resp.put("id", next.getId());
-//        resp.put("questionText", next.getQuestionText());
-//        resp.put("optionA", next.getOptionA());
-//        resp.put("optionB", next.getOptionB());
-//
-//        return resp;
-//    }
-
-
     @GetMapping("/crushpic/{id}")
     public ResponseEntity<byte[]> userPhoto(@PathVariable("id")Long id){
 
