@@ -1,0 +1,46 @@
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Quiz</title>
+</head>
+<body>
+
+<h2>Play Quiz</h2>
+
+<form th:action="@{/user/saveAnswers}" method="post">
+
+    <div th:each="quiz : ${questions}" class="quiz-card">
+
+        <input type="hidden" th:value="${playWithId}" name="playWithId">
+        <h4 th:text="${quiz.questionText}"></h4>
+
+        <!-- IMPORTANT: Include quizId in radio name -->
+        <label>
+            <input type="radio"
+                   th:name="'answers[' + ${quiz.id} + ']'"
+                   value="A"
+                   required>
+            <span th:text="${quiz.optionA}"></span>
+        </label>
+
+        <br>
+
+        <label>
+            <input type="radio"
+                   th:name="'answers[' + ${quiz.id} + ']'"
+                   value="B"
+                   required>
+            <span th:text="${quiz.optionB}"></span>
+        </label>
+
+        <hr>
+    </div>
+
+    <button type="submit">Submit Quiz</button>
+
+</form>
+
+</body>
+</html>
+
