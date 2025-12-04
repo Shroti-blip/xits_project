@@ -36,6 +36,10 @@ public class QuizAnswer {
     private LocalDateTime answeredAt = LocalDateTime.now();
 
 
+
+    private Boolean quizComplete = false;
+
+
     public QuizAnswer() {
     }
 
@@ -95,44 +99,16 @@ public class QuizAnswer {
     public void setPlayWith(UserMaster playWith) {
         this.playWith = playWith;
     }
+
+
+    public Boolean getQuizComplete() {
+        return quizComplete;
+    }
+
+    public void setQuizComplete(Boolean quizComplete) {
+        this.quizComplete = quizComplete;
+    }
 }
-
-
-
-
-
-
-//.filter(m -> m.getRequestBy().getId() == current.getUserId())
-//        .filter(MutualCrushMaster::isMutualCrush)
-//              .collect(Collectors.toList());
-
-// .filter(m -> m.isMutualCrush())                         // accepted
-//        .filter(m -> m.getRequestBy().getId() == currentId)     // I requested
-//        .map(m -> m.getRequestTo())                             // show only other person
-//        .toList();
-
-
-
-//List<MutualCrushMaster> masters = master.stream()
-//        .filter(MutualCrushMaster::isAccepted) // only accepted
-//        .filter(m ->
-//                m.getRequestBy().getUserId() == currentUser.getUserId() ||
-//                        m.getRequestTo().getUserId() == currentUser.getUserId()
-//        )
-//        .map(m -> {
-//            // return the "other" person, not the logged-in user
-//            return m.getRequestBy().getUserId() == currentUser.getUserId()
-//                    ? m.getRequestTo()
-//                    : m.getRequestBy();
-//        })
-//        .toList();
-
-
-
-
-
-
-
 
 
 
