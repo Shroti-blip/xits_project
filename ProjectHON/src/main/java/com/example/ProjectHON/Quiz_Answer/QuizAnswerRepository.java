@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface QuizAnswerRepository extends JpaRepository<QuizAnswer, Integer> {
@@ -18,4 +19,10 @@ public interface QuizAnswerRepository extends JpaRepository<QuizAnswer, Integer>
     Optional<QuizAnswer>findPlayWithUserQuestionByUser(@Param("userBy")UserMaster userBy,
                                                        @Param("userTo")UserMaster userTo,
                                                        @Param("quizQuestion")QuizQuestion quizQuestion);
+
+    @Query("SELECT COUNT(a) FROM QuizAnswer a WHERE a.user.userId = :userId AND a.playWith.userId = :playWithId")
+    int countUserAttempts(Long userId, Long playWithId);
+
+    @Query(value = "select q from QuizAnswer q where (q.user.userId = :u1 And q.user.playWithId =: u2) OR (q.user.userId = :u2 And q.user.userId=:u1)")
+    List<QuizAnswer> getAllAnswersOfBoth(Long u1 , Long u2);
 }
