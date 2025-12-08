@@ -1,46 +1,198 @@
-
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Quiz</title>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --coral: #F73B20;
+            --coral-light: #ff5238;
+            --coral-bg: #ffe5df;
+            --coral-soft: rgba(247, 59, 32, 0.15);
+        }
+
+        body {
+            background: linear-gradient(135deg, #fff3ee, #ffe5df);
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 30px 15px;
+            color: #1a1a1a;
+            overflow-x: hidden;
+        }
+
+        /* --------------------- MAIN WRAPPER --------------------- */
+        .quiz-wrapper {
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            padding: 35px;
+            border-radius: 30px;
+            box-shadow: 0 10px 40px rgba(247, 59, 32, 0.18);
+            border: 1px solid rgba(247, 59, 32, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* floating soft coral circles */
+        .bg-orb {
+            position: absolute;
+            border-radius: 50%;
+            background: var(--coral-soft);
+            filter: blur(60px);
+            animation: orbFloat 12s infinite ease-in-out alternate;
+            z-index: -1;
+        }
+
+        .orb1 { width: 250px; height: 250px; top: -60px; right: -60px; }
+        .orb2 { width: 200px; height: 200px; bottom: -40px; left: -40px; }
+
+        @keyframes orbFloat {
+            0% { transform: translate(0,0); }
+            100% { transform: translate(30px, -40px); }
+        }
+
+        /* --------------------- HEADING --------------------- */
+        h2 {
+            text-align: center;
+            color: var(--coral);
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        /* --------------------- QUIZ CARD --------------------- */
+        .quiz-card {
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(247, 59, 32, 0.1);
+            margin-bottom: 25px;
+            border-left: 6px solid var(--coral);
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        h4 {
+            font-size: 20px;
+            color: #222;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        label {
+            display: block;
+            font-size: 17px;
+            margin: 10px 0;
+            cursor: pointer;
+            padding: 12px;
+            border-radius: 12px;
+            background: #fff6f5;
+            border: 1px solid rgba(247, 59, 32, 0.2);
+            transition: 0.25s ease;
+        }
+
+        label:hover {
+            background: #ffe4df;
+            border-color: var(--coral);
+            transform: translateY(-2px);
+        }
+
+        input[type="radio"] {
+            margin-right: 10px;
+            accent-color: var(--coral);
+        }
+
+        hr {
+            border: none;
+            border-bottom: 1px solid rgba(247, 59, 32, 0.2);
+            margin-top: 20px;
+        }
+
+        /* --------------------- SUBMIT BUTTON --------------------- */
+        button {
+            width: 100%;
+            background: var(--coral);
+            padding: 15px;
+            font-size: 20px;
+            color: white;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: 0.3s ease;
+            box-shadow: 0 8px 22px rgba(247, 59, 32, 0.35);
+            font-weight: 600;
+        }
+
+        button:hover {
+            background: var(--coral-light);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(247, 59, 32, 0.45);
+        }
+
+        /* --------------------- ANIMATIONS --------------------- */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 600px) {
+            .quiz-wrapper { padding: 25px; }
+            h2 { font-size: 30px; }
+        }
+
+    </style>
 </head>
+
 <body>
 
-<h2>Play Quiz</h2>
+<div class="quiz-wrapper">
 
-<form th:action="@{/user/saveAnswers}" method="post">
+    <div class="bg-orb orb1"></div>
+    <div class="bg-orb orb2"></div>
 
-    <div th:each="quiz : ${questions}" class="quiz-card">
+    <h2>🌸 Play Quiz With Your Crush 🌸</h2>
 
-        <input type="hidden" th:value="${playWithId}" name="playWithId">
-        <h4 th:text="${quiz.questionText}"></h4>
+    <form th:action="@{/user/saveAnswers}" method="post">
 
-        <!-- IMPORTANT: Include quizId in radio name -->
-        <label>
-            <input type="radio"
-                   th:name="'answers[' + ${quiz.id} + ']'"
-                   value="A"
-                   required>
-            <span th:text="${quiz.optionA}"></span>
-        </label>
+        <div th:each="quiz : ${questions}" class="quiz-card">
 
-        <br>
+            <input type="hidden" th:value="${playWithId}" name="playWithId">
 
-        <label>
-            <input type="radio"
-                   th:name="'answers[' + ${quiz.id} + ']'"
-                   value="B"
-                   required>
-            <span th:text="${quiz.optionB}"></span>
-        </label>
+            <h4>❓ <span th:text="${quiz.questionText}"></span></h4>
 
-        <hr>
-    </div>
+            <!-- Option A -->
+            <label>
+                <input type="radio"
+                       th:name="'answers[' + ${quiz.id} + ']'"
+                       value="A"
+                       required>
+                <span>🅰️ <span th:text="${quiz.optionA}"></span></span>
+            </label>
 
-    <button type="submit">Submit Quiz</button>
+            <!-- Option B -->
+            <label>
+                <input type="radio"
+                       th:name="'answers[' + ${quiz.id} + ']'"
+                       value="B"
+                       required>
+                <span>🅱️ <span th:text="${quiz.optionB}"></span></span>
+            </label>
 
-</form>
+            <hr>
+        </div>
+
+        <button type="submit">✨ Submit Quiz ✨</button>
+
+    </form>
+</div>
 
 </body>
 </html>
-
