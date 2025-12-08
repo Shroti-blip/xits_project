@@ -1,9 +1,15 @@
 package com.example.ProjectHON.mutualCrushPackage;
 
+//import com.example.ProjectHON.Quiz_Answer.BetweenQuiz;
+//import com.example.ProjectHON.Quiz_Answer.BetweenRepo;
 import com.example.ProjectHON.User_masterpackage.UserMaster;
+import com.example.ProjectHON.streakhistorypackage.StreakHistory;
 import jakarta.persistence.*;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 public class MutualCrushMaster {
@@ -26,6 +32,57 @@ public class MutualCrushMaster {
 
     private boolean ignored = false; // if user chose to ignore the invitation from user1(for requested is true), if requested is false, user1 will not be suggested to invite
     private LocalDateTime requestedAt = LocalDateTime.now(); // the date time when user1 has requested or sent an invitation
+
+    @Column(nullable = false)//
+    private boolean quizPlayed =false;
+    private Integer percentage;
+
+
+    private Boolean playedByRequestBy = false;
+    private Boolean playedByRequestTo = false;
+
+     Boolean inviteSent =false ;
+     LocalDateTime inviteTime ;
+
+    public Boolean getPlayedByRequestBy() {
+        return playedByRequestBy;
+    }
+
+    public Boolean getPlayedByRequestTo() {
+        return playedByRequestTo;
+    }
+
+    public Boolean getInviteSent() {
+        return inviteSent;
+    }
+
+    public void setInviteSent(Boolean inviteSent) {
+        this.inviteSent = inviteSent;
+    }
+
+    public LocalDateTime getInviteTime() {
+        return inviteTime;
+    }
+
+    public void setInviteTime(LocalDateTime inviteTime) {
+        this.inviteTime = inviteTime;
+    }
+
+    public Boolean isPlayedByRequestBy() {
+        return playedByRequestBy;
+    }
+
+    public void setPlayedByRequestBy(Boolean playedByRequestBy) {
+        this.playedByRequestBy = playedByRequestBy;
+    }
+
+    public Boolean isPlayedByRequestTo() {
+        return playedByRequestTo;
+    }
+
+    public void setPlayedByRequestTo(Boolean playedByRequestTo) {
+        this.playedByRequestTo = playedByRequestTo;
+    }
 
     public MutualCrushMaster() {
     }
@@ -103,4 +160,32 @@ public class MutualCrushMaster {
     public LocalDateTime getRequestedAt() {
         return requestedAt;
     }
+
+
+
+    public boolean isQuizPlayed() {
+        return quizPlayed;
+    }
+
+    public void setQuizPlayed(boolean quizPlayed) {
+        this.quizPlayed = quizPlayed;
+    }
+
+    public Integer getPercentage() {
+        return percentage;
+    }
+
+    public void setPercentage(Integer percentage) {
+        this.percentage = percentage;
+    }
+
+//    @Autowired
+//    BetweenRepo betweenRepo;
+//
+//    @Transient
+//    public Boolean isPlayedQuiz(UserMaster fromQuiz,UserMaster toQuiz){
+//
+//        return betweenRepo.getFindResult(fromQuiz,toQuiz);
+//
+//    }
 }
