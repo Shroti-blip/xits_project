@@ -1,0 +1,1402 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rate Photos - HotOrNot</title>
+  <meta name="_csrf" th:content="${_csrf.token}" />
+  <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css"
+        rel="stylesheet">
+  <style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        background: #ffffff;
+        color: #2d2d2d;
+        min-height: 100vh;
+        position: relative;
+        overflow-x: hidden;
+        padding-bottom: 80px;
+        /* Space for mobile bottom nav */
+    }
+
+    @media (min-width: 768px) {
+        body {
+            padding-bottom: 0;
+        }
+    }
+
+    .bg-gradient {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        overflow: hidden;
+        background: linear-gradient(135deg, #FFF5F0 0%, #FFE8F0 50%, #FFF0F5 100%);
+    }
+
+    .bg-gradient::before,
+    .bg-gradient::after,
+    .bg-gradient span {
+        content: '';
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(100px);
+    }
+
+    .bg-gradient::before {
+        width: 600px;
+        height: 600px;
+        background: rgba(250, 130, 49, 0.15);
+        animation: float1 20s ease-in-out infinite;
+    }
+
+    .bg-gradient::after {
+        width: 700px;
+        height: 700px;
+        background: rgba(255, 107, 157, 0.12);
+        animation: float2 25s ease-in-out infinite;
+    }
+
+    .bg-gradient span {
+        width: 500px;
+        height: 500px;
+        background: rgba(249, 127, 81, 0.1);
+        animation: float3 18s ease-in-out infinite;
+    }
+
+    @keyframes float1 {
+
+        0%,
+        100% {
+            transform: translate(10vw, 20vh) scale(1);
+        }
+
+        25% {
+            transform: translate(60vw, 70vh) scale(1.3);
+        }
+
+        50% {
+            transform: translate(80vw, 30vh) scale(0.9);
+        }
+
+        75% {
+            transform: translate(30vw, 80vh) scale(1.2);
+        }
+    }
+
+    @keyframes float2 {
+
+        0%,
+        100% {
+            transform: translate(70vw, 60vh) scale(1);
+        }
+
+        33% {
+            transform: translate(20vw, 20vh) scale(1.4);
+        }
+
+        66% {
+            transform: translate(50vw, 80vh) scale(0.8);
+        }
+    }
+
+    @keyframes float3 {
+
+        0%,
+        100% {
+            transform: translate(40vw, 10vh) scale(1);
+        }
+
+        30% {
+            transform: translate(10vw, 70vh) scale(1.3);
+        }
+
+        60% {
+            transform: translate(75vw, 50vh) scale(0.9);
+        }
+
+        90% {
+            transform: translate(55vw, 15vh) scale(1.2);
+        }
+    }
+
+    /* Desktop Navigation */
+    .navbar-desktop {
+        background: rgba(255, 255, 255, 0.95) !important;
+        backdrop-filter: blur(20px);
+        border-bottom: 2px solid rgba(250, 130, 49, 0.2);
+        box-shadow: 0 4px 20px rgba(250, 130, 49, 0.1);
+        display: none;
+    }
+
+    @media (min-width: 768px) {
+        .navbar-desktop {
+            display: block !important;
+        }
+    }
+
+    .navbar-brand {
+        font-size: 1.8rem;
+        font-weight: 900;
+        letter-spacing: -1px;
+    }
+
+    .logo-hot {
+        background: linear-gradient(135deg, #FA8231 0%, #F97F51 50%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .logo-not {
+        color: #FF6B9D;
+    }
+
+    .nav-link {
+        color: #555 !important;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        position: relative;
+        margin: 0 0.5rem;
+    }
+
+    .nav-link:hover {
+        color: #FA8231 !important;
+        transform: translateY(-2px);
+    }
+
+    .nav-link.active {
+        color: #FA8231 !important;
+    }
+
+    .btn-neon {
+        background: linear-gradient(135deg, #FA8231 0%, #F97F51 50%, #FF6B9D 100%);
+        color: white;
+        border: none;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        box-shadow: 0 4px 15px rgba(250, 130, 49, 0.4);
+        transition: all 0.3s ease;
+    }
+
+    .btn-neon:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 25px rgba(250, 130, 49, 0.6);
+        color: white;
+    }
+
+    /* Mobile Bottom Navigation */
+    .bottom-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(20px);
+        border-top: 2px solid rgba(250, 130, 49, 0.2);
+        box-shadow: 0 -4px 20px rgba(250, 130, 49, 0.1);
+        z-index: 1000;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        padding: 8px 0;
+        height: 70px;
+    }
+
+    @media (min-width: 768px) {
+        .bottom-nav {
+            display: none;
+        }
+    }
+
+    .bottom-nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        color: #888;
+        transition: all 0.3s ease;
+        padding: 8px 12px;
+        border-radius: 12px;
+        min-width: 60px;
+    }
+
+    .bottom-nav-item i {
+        font-size: 24px;
+        margin-bottom: 4px;
+        transition: all 0.3s ease;
+    }
+
+    .bottom-nav-item span {
+        font-size: 11px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .bottom-nav-item.active {
+        color: #FA8231;
+    }
+
+    .bottom-nav-item.active i {
+        transform: scale(1.1);
+    }
+
+    .bottom-nav-item:hover {
+        color: #FA8231;
+        background: rgba(250, 130, 49, 0.1);
+    }
+
+    /* Logo for mobile (top-left corner) */
+    .mobile-logo {
+        position: fixed;
+        top: 15px;
+        left: 15px;
+        z-index: 999;
+        font-size: 1.3rem;
+        font-weight: 900;
+        letter-spacing: -1px;
+        display: block;
+    }
+
+    @media (min-width: 768px) {
+        .mobile-logo {
+            display: none;
+        }
+    }
+
+    .main-container {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 1rem;
+    }
+
+    @media (max-width: 767px) {
+        .main-container {
+            padding-top: 10px;
+        }
+    }
+
+
+
+
+
+
+
+    @keyframes sparkle {
+
+        0%,
+        100% {
+            opacity: 0.8;
+            filter: blur(8px) brightness(1);
+        }
+
+        50% {
+            opacity: 1;
+            filter: blur(12px) brightness(1.3);
+        }
+    }
+
+
+
+    @keyframes pulse-glow {
+
+        0%,
+        100% {
+            opacity: 0.6;
+            transform: translate(50%, -50%) scale(1);
+        }
+
+        50% {
+            opacity: 1;
+            transform: translate(50%, -50%) scale(1.3);
+        }
+    }
+
+
+
+
+
+    @keyframes popIn {
+        0% {
+            transform: scale(0);
+        }
+
+        50% {
+            transform: scale(1.2);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+    }
+
+
+    .popup-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.4s ease;
+    }
+
+    .popup-overlay.show {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .popup {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 248, 240, 0.95));
+        padding: 40px 60px;
+        border-radius: 25px;
+        text-align: center;
+        color: #2d2d2d;
+        box-shadow: 0 10px 50px rgba(250, 130, 49, 0.4);
+        border: 3px solid rgba(250, 130, 49, 0.3);
+        position: relative;
+        overflow: hidden;
+        animation: popupScale 0.6s ease-out;
+    }
+
+    @keyframes popupScale {
+        0% {
+            transform: scale(0.8);
+            opacity: 0;
+        }
+
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    .badge-wrapper {
+        position: relative;
+        margin-bottom: 15px;
+    }
+
+    .badge {
+        background: linear-gradient(135deg, #FA8231, #F97F51, #FF6B9D);
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        position: relative;
+        box-shadow: 0 0 40px rgba(250, 130, 49, 0.6);
+        animation: pulse 1.5s infinite;
+    }
+
+    .badge-text {
+        font-size: 2.5em;
+        font-weight: bold;
+        color: #fff;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .shine {
+        position: absolute;
+        top: 0;
+        left: -75%;
+        width: 50%;
+        height: 100%;
+        background: linear-gradient(120deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0));
+        transform: skewX(-25deg);
+        animation: shine 2s infinite;
+    }
+
+    @keyframes shine {
+        0% {
+            left: -75%;
+        }
+
+        100% {
+            left: 125%;
+        }
+    }
+
+    .points-earned {
+        font-size: 1.2em;
+        margin-top: 15px;
+        color: #FA8231;
+        font-weight: 700;
+    }
+
+    @keyframes pulse {
+
+        0%,
+        100% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.08);
+        }
+    }
+
+    .close-btn {
+        position: absolute;
+        top: 15px;
+        right: 20px;
+        font-size: 32px;
+        color: #999;
+        background: none;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        z-index: 1001;
+    }
+
+    .close-btn:hover {
+        color: #FA8231;
+        transform: rotate(90deg);
+    }
+
+    @media (max-width: 576px) {
+
+
+        .popup {
+            padding: 30px 40px;
+        }
+
+        .badge {
+            width: 100px;
+            height: 100px;
+        }
+
+        .badge-text {
+            font-size: 2em;
+        }
+    }
+
+
+    /* Mutual Crush CSS  */
+    .post-card {
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s;
+    }
+
+    .post-card:hover {
+        transform: scale(1.02);
+    }
+
+    .post-img {
+        width: 100%;
+        height: 300px;
+        object-fit: cover;
+    }
+
+    .username {
+        font-weight: 600;
+        color: #E4405F;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    .username:hover {
+        text-decoration: underline;
+    }
+
+    .sidebar-card {
+        border-radius: 15px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .sidebar-header {
+        font-weight: 600;
+        color: #E4405F;
+    }
+
+    .mutual-card {
+        border: 1px solid #eee;
+        border-radius: 10px;
+        padding: 8px 12px;
+        background-color: #fff;
+    }
+
+    #mutualPopup {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    #termsPopup {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    /* Tabs in mobile view */
+
+    /* Make tab buttons mobile-friendly */
+    .crush-tabs button {
+        font-size: 14px;
+        padding: 10px 6px;
+        white-space: nowrap;
+    }
+
+    /* Allow horizontal scrolling on small devices */
+    .crush-tabs {
+        overflow-x: auto;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Remove scrollbar */
+    .crush-tabs::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* Mobile: reduce titles */
+    @media (max-width: 480px) {
+        .crush-tabs button {
+            font-size: 13px;
+            padding: 5px;
+        }
+    }
+
+    /* for quiz part */
+
+    .section-title {
+        margin-bottom: 15px;
+        font-weight: bold;
+        font-size: 20px;
+    }
+
+    .crush-card {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #ffffff;
+        padding: 12px 15px;
+        border-radius: 12px;
+        margin-bottom: 12px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+        transition: 0.2s ease;
+    }
+
+    .crush-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+    }
+
+    .crush-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .crush-avatar {
+        width: 40px;
+        height: 40px;
+        background: #f0f0f0;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 18px;
+        color: #888;
+    }
+
+    .crush-name {
+        font-size: 17px;
+        margin: 0;
+        font-weight: 600;
+    }
+
+    .crush-sub {
+        font-size: 12px;
+        color: #777;
+    }
+
+    .play-btn {
+        background: #6a5acd;
+        color: white;
+        padding: 8px 14px;
+        font-size: 14px;
+        border-radius: 8px;
+        text-decoration: none;
+        transition: 0.2s ease;
+    }
+
+    .play-btn:hover {
+        background: #5847c5;
+    }
+
+    .crush-img {
+        width: 45px;
+        height: 45px;
+        object-fit: cover;
+        border-radius: 50%;
+    }
+
+
+    /* for showing all mutual crush for quiz */
+
+
+    /* -------------------------------
+MUTUAL CRUSH LIST SECTION
+--------------------------------*/
+
+    /* List container */
+    .crush-list {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        margin: 30px 20px;
+    }
+
+    /* Card */
+    .crush-card {
+        background: #fffdfc;
+        border: 1.5px solid rgba(247, 59, 32, 0.25);
+        padding: 18px 20px;
+        border-radius: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 4px 12px rgba(247, 59, 32, 0.12);
+        transition: 0.3s ease;
+    }
+
+    .crush-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px rgba(247, 59, 32, 0.25);
+    }
+
+    /* Avatar + Details */
+    .crush-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .crush-avatar {
+        width: 62px;
+        height: 62px;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 3px solid rgba(247, 59, 32, 0.4);
+    }
+
+    .crush-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    /* Crush name */
+    .crush-details {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .crush-name {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #F73B20;
+        margin-bottom: 2px;
+    }
+
+    /* Cute badge */
+    .mutual-badge {
+        background: rgba(247, 59, 32, 0.12);
+        border: 1px solid rgba(247, 59, 32, 0.25);
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #F73B20;
+        width: max-content;
+    }
+
+    /* Play button */
+    .play-btn {
+        background: linear-gradient(135deg, #F73B20, #ff5238);
+        border: none;
+        padding: 10px 18px;
+        color: white !important;
+        font-weight: 700;
+        border-radius: 14px;
+        font-size: 0.95rem;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(247, 59, 32, 0.25);
+        transition: 0.3s;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .play-btn:hover {
+        background: linear-gradient(135deg, #ff5238, #F73B20);
+        transform: translateY(-2px);
+    }
+
+    /* Compatibility text */
+    .compatibility-box {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #F73B20;
+    }
+
+    /* -------------------------------
+  RESPONSIVE DESIGN
+--------------------------------*/
+    @media (max-width: 768px) {
+
+        .crush-card {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+            padding: 16px;
+        }
+
+        .play-btn {
+            width: 100%;
+            text-align: center;
+            padding: 12px;
+            font-size: 1rem;
+            border-radius: 12px;
+        }
+
+        .crush-avatar {
+            width: 55px;
+            height: 55px;
+        }
+
+        .crush-name {
+            font-size: 1.05rem;
+        }
+
+        .mutual-badge {
+            font-size: 0.8rem;
+            padding: 4px 10px;
+        }
+    }
+
+    @media (max-width: 480px) {
+
+        .crush-card {
+            padding: 14px;
+        }
+
+        .crush-info {
+            gap: 10px;
+        }
+
+        .crush-avatar {
+            width: 50px;
+            height: 50px;
+        }
+
+        .crush-name {
+            font-size: 1rem;
+        }
+    }
+
+
+    /* ===== MODAL OVERLAY ===== */
+    .quiz-modal {
+        display: none;
+        /* Hidden by default */
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(10px);
+        justify-content: center;
+        align-items: center;
+        z-index: 9999999;
+    }
+
+    /* Show modal */
+    .quiz-modal.show {
+        display: flex;
+    }
+
+    /* ===== MODAL BOX ===== */
+    .modal-content {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: 24px;
+        padding: 48px 40px;
+        max-width: 500px;
+        width: 90%;
+        box-shadow: 0 20px 60px rgba(255, 107, 157, 0.2);
+        border: 2px solid rgba(255, 255, 255, 0.8);
+
+        /* Animation */
+        transform: scale(0.8) translateY(20px);
+        opacity: 0;
+        transition: all 0.3s ease;
+    }
+
+    /* Animate when modal is visible */
+    .quiz-modal.show .modal-content {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+
+    /* ===== TITLE ===== */
+    .modal-content h2 {
+        color: #FF6B9D;
+        font-size: 32px;
+        margin-bottom: 32px;
+        text-align: center;
+        font-weight: 700;
+    }
+
+    /* ===== RULE LIST ===== */
+    .modal-content ul {
+        list-style: none;
+        margin-bottom: 32px;
+        padding: 0;
+    }
+
+    .modal-content li {
+        background: linear-gradient(135deg, rgba(255, 107, 157, 0.05) 0%, rgba(255, 160, 122, 0.05) 100%);
+        padding: 16px 20px;
+        margin-bottom: 12px;
+        border-radius: 12px;
+        font-size: 16px;
+        color: #333;
+        display: flex;
+        align-items: center;
+        border: 1px solid rgba(255, 107, 157, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .modal-content li:hover {
+        transform: translateX(8px);
+        background: linear-gradient(135deg, rgba(255, 107, 157, 0.1) 0%, rgba(255, 160, 122, 0.1) 100%);
+        border-color: rgba(255, 107, 157, 0.2);
+    }
+
+    /* ===== START BUTTON ===== */
+    .start-btn {
+        display: block;
+        width: 100%;
+        background: linear-gradient(135deg, #FF6B9D 0%, #FFA07A 100%);
+        color: white;
+        border: none;
+        padding: 18px 32px;
+        font-size: 18px;
+        font-weight: 600;
+        border-radius: 16px;
+        cursor: pointer;
+        text-align: center;
+        text-decoration: none;
+        margin-bottom: 12px;
+        box-shadow: 0 8px 24px rgba(255, 107, 157, 0.3);
+        transition: all 0.3s ease;
+    }
+
+    .start-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 32px rgba(255, 107, 157, 0.4);
+    }
+
+    /* ===== CLOSE BUTTON ===== */
+    .close-btn {
+        display: block;
+        width: 100%;
+        background: transparent;
+        color: #666;
+        border: 2px solid rgba(255, 107, 157, 0.2);
+        padding: 14px 32px;
+        font-size: 16px;
+        font-weight: 600;
+        border-radius: 16px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .close-btn:hover {
+        background: rgba(255, 107, 157, 0.05);
+        color: #FF6B9D;
+        border-color: rgba(255, 107, 157, 0.3);
+    }
+
+    /* ===== PLAY BUTTON PULSE ANIMATION ===== */
+    @keyframes pulse {
+
+        0%,
+        100% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.05);
+        }
+    }
+
+    .play-btn {
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    .play-btn:hover {
+        animation: none;
+    }
+  </style>
+</head>
+
+<body>
+<div class="bg-gradient">
+  <span></span>
+</div>
+
+<!-- Mobile Logo (top-left corner) -->
+<a href="#" class="mobile-logo">
+  <span class="logo-hot">Hot</span><span class="logo-not">Or</span><span class="logo-hot">Not</span>
+</a>
+
+<!-- Desktop Navigation -->
+<nav class="navbar-desktop navbar navbar-expand-lg navbar-light sticky-top">
+  <div class="container-fluid px-4">
+    <a class="navbar-brand" href="#">
+      <span class="logo-hot">Hot</span><span class="logo-not">Or</span><span class="logo-hot">Not</span>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto align-items-center">
+        <li class="nav-item">
+          <a class="nav-link" href="/user/dashboard">Dashboard</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/user/rating">Rate</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/user/add-new-post">Add Post</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/user/games">Games</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active" href="/user/mutual-crush">Mutual Crush</a>
+        </li>
+        <li class="nav-item ms-3">
+          <a href="/logout" class="btn btn-neon btn-sm rounded-pill px-4">Logout</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile Bottom Navigation -->
+<nav class="bottom-nav">
+  <a href="/user/rating" class="bottom-nav-item">
+    <i class="bi bi-fire"></i>
+    <span>Rate</span>
+  </a>
+  <a href="/user/games" class="bottom-nav-item">
+    <i class="bi bi-controller"></i>
+    <span>Games</span>
+  </a>
+  <a href="/user/add-new-post" class="bottom-nav-item">
+    <i class="bi bi-plus-circle-fill"></i>
+    <span>Add Post</span>
+  </a>
+  <a href="/user/mutual-crush" class="bottom-nav-item active">
+    <i class="bi bi-heart-fill"></i>
+    <span>Crush</span>
+  </a>
+  <a href="/user/dashboard" class="bottom-nav-item">
+    <i class="bi bi-house-door-fill"></i>
+    <span>Dashboard</span>
+  </a>
+</nav>
+
+<!--<div class="main-container">-->
+<div class="container mt-4">
+  <div class="row ">
+
+    <!--Tab section -->
+    <div class="col-md-12">
+      <div class="card shadow-sm p-3 rounded-4">
+
+        <!-- RESPONSIVE TAB HEADERS -->
+        <ul class="nav nav-tabs nav-fill mb-3 crush-tabs" id="crushTab" role="tablist"
+            style="display:flex; gap:6px;">
+
+          <li class="nav-item flex-fill" role="presentation">
+            <button class="nav-link active fw-bold text-danger" id="whisper-tab" data-bs-toggle="tab"
+                    data-bs-target="#whisper" type="button" role="tab">Whisper</button>
+          </li>
+
+          <li class="nav-item flex-fill" role="presentation">
+            <button class="nav-link fw-bold text-danger" id="mutual-tab" data-bs-toggle="tab"
+                    data-bs-target="#mutual" type="button" role="tab">Mutual</button>
+          </li>
+
+          <li class="nav-item flex-fill" role="presentation">
+            <button class="nav-link fw-bold text-warning" id="hitups-tab" data-bs-toggle="tab"
+                    data-bs-target="#hitups" type="button" role="tab">Hit-Ups</button>
+          </li>
+
+          <li class="nav-item flex-fill" role="presentation">
+            <button class="nav-link fw-bold text-primary" id="invite-tab" data-bs-toggle="tab"
+                    data-bs-target="#invite" type="button" role="tab">Invite</button>
+          </li>
+
+          <li class="nav-item flex-fill" role="presentation">
+            <button class="nav-link fw-bold text-primary" id="quiz-tab" data-bs-toggle="tab"
+                    data-bs-target="#quiz" type="button" role="tab">Quiz Part</button>
+          </li>
+
+        </ul>
+
+        <!--        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">-->
+
+        <!-- TAB CONTENT -->
+        <div class="tab-content" id="crushTabContent">
+
+          <!-- MUTUAL CRUSHES -->
+          <div class="tab-pane fade show" id="mutual" role="tabpanel">
+
+            <div th:if="${#lists.isEmpty(mutualCrushes)}">
+              <p class="text-muted">No mutual crushes yet.</p>
+            </div>
+
+            <div th:each="mc : ${mutualCrushes}" class="mb-2">
+                                <span class="fw-semibold"
+                                      th:text="${mc.requestBy.userId == userSession.userId ? mc.requestTo.username : mc.requestBy.username}"></span>
+
+              <form th:action="@{/dumpCrush}" method="post" style="display:inline;">
+                <input type="hidden" name="dumpId"
+                       th:value="${mc.requestBy.userId == userSession.userId ? mc.requestTo.userId : mc.requestBy.userId}">
+                <button class="btn btn-sm btn-outline-danger ms-1">Dump</button>
+              </form>
+            </div>
+          </div>
+          <!-- WHISPER PART -->
+          <div class="tab-pane fade show active" id="whisper" role="tabpanel">
+
+            <p>Whisper part</p>
+          </div>
+
+          <!-- HIT UPS -->
+          <div class="tab-pane fade" id="hitups" role="tabpanel">
+
+            <div th:if="${#lists.isEmpty(pendingRequests)}">
+              <p class="text-muted">No pending hits.</p>
+            </div>
+
+            <div th:each="req : ${pendingRequests}" class="mb-2">
+              <span class="fw-semibold" th:text="${req.requestBy.username}"></span>
+
+              <form th:action="@{/acceptCrush}" method="post" style="display:inline;">
+                <input type="hidden" name="inviteId" th:value="${req.requestBy.userId}">
+                <button type="submit" class="btn btn-sm btn-success ms-1"
+                        onclick="openTermsPopup()">Accept</button>
+              </form>
+
+              <form th:action="@{/ignoreCrush}" method="post" style="display:inline;">
+                <input type="hidden" name="inviteId" th:value="${req.requestBy.userId}">
+                <button class="btn btn-sm btn-outline-secondary ms-1">Dodge</button>
+              </form>
+            </div>
+
+          </div>
+
+          <!-- INVITE -->
+          <div class="tab-pane fade" id="invite" role="tabpanel">
+
+            <div th:if="${#lists.isEmpty(canInvite)}">
+              <p class="text-muted">No one eligible to invite yet.</p>
+            </div>
+
+            <div th:each="u : ${canInvite}" class="mb-2">
+              <span class="fw-semibold" th:text="${u.username}"></span>
+
+              <form th:action="@{/inviteCrush}" onsubmit="return openTermsPopupForHit(this)"
+                    method="post" style="display:inline;">
+                <input type="hidden" name="targetId" th:value="${u.userId}">
+                <button type="submit" class="btn btn-sm btn-outline-primary ms-1">Hit</button>
+              </form>
+            </div>
+
+          </div>
+
+          <!--  Quiz part-->
+          <div class="tab-pane fade show" id="quiz" role="tabpanel">
+            <!--            for showing all users-->
+            <h3 class="section-title">Play quiz with</h3>
+
+            <div class="crush-list" th:each="item : ${crushList}">
+
+              <div class="crush-card">
+
+                <div class="crush-info">
+
+                  <div class="crush-avatar">
+                    <img th:src="@{'/crushpic/' + ${
+                        item.crush.requestTo.userId != userSession.userId
+                        ? item.crush.requestTo.userId
+                        : item.crush.requestBy.userId
+                }}" class="crush-img">
+                  </div>
+
+                  <div class="crush-details">
+
+                    <p class="crush-name"
+                       th:if="${item.crush.requestTo.userId != userSession.userId}"
+                       th:text="${item.crush.requestTo.username}">
+                    </p>
+
+                    <p class="crush-name"
+                       th:unless="${item.crush.requestTo.userId != userSession.userId}"
+                       th:text="${item.crush.requestBy.username}">
+                    </p>
+
+                    <span class="mutual-badge">💞 Mutual Crush</span>
+
+                  </div>
+                </div>
+
+                <!-- CASE 1: current user has NOT played -->
+                <a class="play-btn text-decoration-none"
+                   th:if="${item.currentUserPlayed == false}"
+                   th:href="@{'/user/playquiz/' + ${
+                item.crush.requestTo.userId != userSession.userId
+                ? item.crush.requestTo.userId
+                : item.crush.requestBy.userId}}">
+                  🎮 Play Quiz With Your Crush
+                </a>
+
+                <!-- CASE 2: current user played but other user NOT played -->
+                <p th:if="${item.currentUserPlayed == true and item.otherUserPlayed == false}">
+                  ⏳ Waiting for your crush to finish the quiz...
+                </p>
+
+                <!-- CASE 3: both played -->
+                <div th:if="${item.currentUserPlayed == true and item.otherUserPlayed == true}">
+                  Compatibility: [[${item.crush.percentage}]]%
+                </div>
+
+                <div th:if="${item.crush.inviteSent
+            and item.crush.requestBy.userId != userSession.userId and item.crush.quizPlayed != true}">
+                  You have a quiz invitation from <span th:text="${item.crush.requestTo.userId != userSession.userId?
+                  item.crush.requestTo.username: item.crush.requestBy.username}"></span> ❤️
+                </div>
+
+<!--
+          <div th:if="${item.crush.inviteSent
+            and item.crush.requestBy.userId != userSession.userId
+            and item.otherUserPlayed == false}">
+    You have a quiz invitation ❤️
+</div>
+
+-->
+
+                <!--                <div th:if="${item.crush.quizPlayed== true and item.crush.quizPlayed==true}">-->
+<!--                  Compatibility: [[${item.crush.percentage}]]%-->
+<!--                </div>-->
+
+              </div>
+
+            </div>
+
+
+          </div>
+
+          <!--          quiz part ends here -->
+
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!--  for modal before play quiz-->
+
+
+
+  <!-- Lottie Animation Container -->
+  <div id="mutualPopup" th:if="${showMutualPopup}">
+    <div style="background: white; padding: 30px; border-radius: 20px;
+              text-align: center; box-shadow: 0 0 20px rgba(0,0,0,0 .3);">
+      <dotlottie-wc src="" style="width: 300px;height: 300px" autoplay></dotlottie-wc>
+      <h3 style="color:#ff4081;">It’s a Mutual Crush! 💖</h3>
+      <p>Congrats! You both like each other.</p>
+      <button class="closeBtn" onclick="document.getElementById('mutualPopup').style.display='none';" style="padding: 8px 16px; background-color:#ff4081; color:white;
+                   border:none; border-radius:8px; cursor:pointer;">Close
+      </button>
+    </div>
+  </div>
+
+
+  <div id="termsPopup" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+            background:rgba(0,0,0,0.5); justify-content:center; align-items:center;">
+
+    <div style="background:white; padding:30px; border-radius:15px; width:350px; text-align:center;">
+      <h5>Do you Want to Invite?</h5>
+
+      <div th:if="${firstUse}">
+        <h4 class="text-danger">Terms & Conditions</h4>
+        <p>Loot lunga</p>
+      </div>
+
+      <button class="agreeBtn"
+              style="padding:10px 20px; background:#ff4081; color:white; border:none; border-radius:8px;">
+        I Agree
+      </button>
+
+      <button class="closeBtn" onclick="document.getElementById('termsPopup').style.display='none';"
+              style="padding:10px 20px; background:skyblue; color:white; border:none; border-radius:8px;">
+        Cancel
+      </button>
+    </div>
+
+  </div>
+  <!--     101 102  103  104  quizModal__101 -->
+  <!-- modal place-->
+
+</div>
+
+<!-- Lottie Script -->
+<script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+<script src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.8.5/dist/dotlottie-wc.js" type="module"></script>
+
+<script>
+  let currentForm = null;
+
+  function openTermsPopupForHit(form) {
+      currentForm = form;  // store form reference
+      document.getElementById('termsPopup').style.display = 'flex';
+      return false; // STOP default submit
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+      document.querySelector(".agreeBtn").addEventListener("click", function () {
+          document.getElementById('termsPopup').style.display = 'none';
+          if (currentForm) currentForm.submit(); // now submit the form
+      });
+  });
+</script>
+
+
+<!--</div>-->
+
+<div class="popup-overlay" id="popupOverlay">
+  <div class="popup">
+    <button class="close-btn" onclick="closePopup()">&times;</button>
+
+    <div class="badge-wrapper">
+      <div class="badge">
+        <div class="shine"></div>
+        <div class="badge-text">+<span id="badgePoints">50</span></div>
+      </div>
+    </div>
+
+    <div class="points-earned" style="font-size:13px;"><span id="pointsText">You earned 50 points!</span></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+
+  // Active nav state management for mobile
+  document.addEventListener('DOMContentLoaded', function () {
+      const currentPath = window.location.pathname;
+      const navItems = document.querySelectorAll('.bottom-nav-item');
+
+      navItems.forEach(item => {
+          if (item.getAttribute('href') === currentPath) {
+              item.classList.add('active');
+          }
+      });
+  });
+</script>
+
+
+<script>
+  /*
+    document.addEventListener("click", function (e) {
+       const btn = e.target.closest("[data-modal-target]");  // FIXED
+
+       if (btn) {
+           const modalId = btn.getAttribute("data-modal-target");
+           const modal = document.querySelector(modalId);
+           if (modal) modal.classList.add("show");
+       }
+   });
+
+  document.addEventListener("click", function (e) {
+      // Don't trigger if clicking inside an open modal
+      if (e.target.closest(".quiz-modal.show")) {
+          return;
+      }
+
+      const btn = e.target.closest("[data-modal-target]");
+      if (btn) {
+          e.preventDefault();
+          e.stopPropagation();
+          const modalId = btn.getAttribute("data-modal-target");
+          const modal = document.querySelector(modalId);
+          if (modal) modal.classList.add("show");
+      }
+  });
+
+
+  function closeModal(event) {
+      const modal = event.target.closest(".quiz-modal");
+      if (modal) modal.classList.remove("show");
+  }
+
+  function startQuiz(event, playWithId) {
+      event.preventDefault();
+      window.location.href = `/user/playquiz/${playWithId}`;
+  }
+
+*/
+</script>
+
+
+
+</body>
+
+</html>
+
