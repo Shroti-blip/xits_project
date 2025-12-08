@@ -1,10 +1,10 @@
 package com.example.ProjectHON.Quiz_master;
 
-import com.example.ProjectHON.Quiz_Answer.QuizAnswer;
-import com.example.ProjectHON.Quiz_Answer.QuizAnswerRepository;
-import com.example.ProjectHON.Quiz_Answer.QuizAnswerService;
+import com.example.ProjectHON.Quiz_Answer.*;
 import com.example.ProjectHON.User_masterpackage.UserMaster;
 import com.example.ProjectHON.User_masterpackage.UserMasterRepository;
+import com.example.ProjectHON.mutualCrushPackage.MutualCrushMaster;
+import com.example.ProjectHON.mutualCrushPackage.MutualCrushRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -13,6 +13,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -34,6 +35,11 @@ public class QuizController {
     @Autowired
     QuizAnswerService quizAnswerService;
 
+    @Autowired
+    MutualCrushRepository mutualCrushRepository;
+
+    @Autowired
+    BetweenRepo betweenRepo;
 
     @GetMapping("/user/playquiz/{playWithId}")
     public String playQuiz(Model model , @PathVariable("playWithId") Long playWithId,
@@ -42,8 +48,9 @@ public class QuizController {
         UserMaster playWithUserId = userMasterRepository.findById(playWithId).orElse(null);
          Long userId = (Long)session.getAttribute("userId");
         List<QuizQuestion> list = quizService.getQuizForUsers(userId , playWithId);
-        Boolean quizcomplete = quizAnswerService.isCountComplete(userId , playWithId);
-        model.addAttribute("quizcomplete" , quizcomplete);
+
+        mutualCrushRepository.markInviteSent(userId,playWithId);
+
          model.addAttribute("questions" , list);
         model.addAttribute("playWithUserId",playWithUserId);
         return "MergePart/playquiz";
@@ -53,10 +60,12 @@ public class QuizController {
     @PostMapping("/user/saveAnswers")
     public String saveAnswers(Model model , HttpSession session ,
                               @RequestParam Map<String , String> answers,
-                              @RequestParam("playWithId") Long playWithId){
+                              @RequestParam("playWithId") Long playWithId,
+                              RedirectAttributes redirectAttributes){
         System.out.println("-------inside post mapping------------");
          Long userId = (Long) session.getAttribute("userId");
         UserMaster userMaster = userMasterRepository.findById(userId).orElse(null);//153 , 154
+        UserMaster userPlayQuiz=userMasterRepository.findById(playWithId).orElse(null);
 
         System.out.println("--------------before key/value loop------------");
 
@@ -73,12 +82,45 @@ public class QuizController {
                quizAnswer.setPlayWith(userMasterRepository.findById(playWithId).orElse(null));
                quizAnswer.setQuizComplete(true);
                quizAnswerRepository.save(quizAnswer);
-
                System.out.println("-------after saving data------");
+
+               MutualCrushMaster mutual = mutualCrushRepository.getPair(userId , playWithId);
+
+               Boolean done = quizAnswerService.areBothPlayerDone(userId ,playWithId);
+               model.addAttribute("quizComplete" , done);
+
+
+
+               if(done){
+                   Map<String , Integer > data = quizAnswerService.getPoints(userId, playWithId);
+
+                   mutual.setQuizPlayed(true);
+                    mutual.setPercentage(data.get("percentage"));
+                    mutualCrushRepository.save(mutual);
+
+                    //no use.
+                    model.addAttribute("scoreU1" , data.get("scoreU1"));
+                   model.addAttribute("scoreU2" ,  data.get("scoreU2"));
+                   model.addAttribute("percentage" , mutual.getPercentage());
+                   model.addAttribute("quizPlayed" , mutual.isQuizPlayed());
+
+               }
+
+
+               System.out.println("-------after fetching obj. data------" );
 
 
            }
         });
+
+
+        BetweenQuiz betweenQuiz=new BetweenQuiz();
+        betweenQuiz.setFromQuiz(userMaster);
+        betweenQuiz.setToQuiz(userPlayQuiz);
+        betweenQuiz.setPlayed(true);
+
+        betweenRepo.save(betweenQuiz);
+
 
         return "redirect:/user/mutual-crush";
     }
@@ -142,27 +184,6 @@ public class QuizController {
 
 
 
-
-
-
-    //@RequestParam Map<String, String> params,
-//    @PostMapping("/quizwithcrush")
-//    public String quizWithCrush(@RequestParam("selectedOption") String selectedOption,
-//                                @RequestParam("questionId") int questionId,
-//                                HttpSession session) {
-//
-//        UserMaster current = (UserMaster) session.getAttribute("user_master");
-//        QuizQuestion question =   quizRepository.findById(questionId).orElse(null);
-//
-//        QuizAnswer quizAnswer = new QuizAnswer();
-////        quizAnswer.setAnswer(answers.get(2));
-//        quizAnswer.setQuestion(question);
-//        quizAnswer.setAnsweredAt(LocalDateTime.now());
-//        quizAnswer.setUser(current);
-//        quizAnswerRepository.save(quizAnswer);
-//
-//        return "redirect:/user/mutual-crush";
-//    }
 
 
 
