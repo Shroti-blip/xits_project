@@ -2,8 +2,10 @@ package com.example.ProjectHON.mutualCrushPackage;
 
 import com.example.ProjectHON.Post_masterpackage.PostMaster;
 import com.example.ProjectHON.Post_masterpackage.PostRepository;
+import com.example.ProjectHON.Quiz_Answer.BetweenRepo;
 import com.example.ProjectHON.Quiz_Answer.QuizAnswer;
 import com.example.ProjectHON.Quiz_Answer.QuizAnswerRepository;
+import com.example.ProjectHON.Quiz_Answer.QuizAnswerService;
 import com.example.ProjectHON.Quiz_master.QuizQuestion;
 import com.example.ProjectHON.Quiz_master.QuizRepository;
 import com.example.ProjectHON.User_masterpackage.UserMaster;
@@ -36,9 +38,17 @@ public class MutualController {
     @Autowired
     QuizAnswerRepository quizAnswerRepository;
 
+    @Autowired
+    QuizAnswerService quizAnswerService;
 
     @Autowired
     QuizRepository quizRepository;
+
+    @Autowired
+    BetweenRepo betweenRepo;
+
+
+
     @GetMapping("/user/mutual-crush")
     public String showDashboard(HttpSession session, Model model) {
         UserMaster currentUser = (UserMaster) session.getAttribute("user_master");
@@ -97,10 +107,8 @@ public class MutualController {
 
         //for showing first question
 
-
         //for showing list of all users
-//        List<MutualCrushMaster> mutualCrushMasterList = mutualCrushRepo.findByUserAsMutual(currentUser);
-//        model.addAttribute("mutualCrushList" , mutualCrushMasterList);
+
 
         List<MutualCrushMaster> master = mutualCrushRepo.findByUserAsMutual(currentUser);
 
@@ -112,97 +120,60 @@ public class MutualController {
                 .filter(m -> m.getRequestBy().getUserId().equals(currentUser.getUserId())
                 || m.getRequestTo().getUserId().equals(currentUser.getUserId())) // requests sent by current user and request to.
                 .toList();
+//
+//        System.out.println("Current user id: " + currentUser.getUserId());//152
+//
+//
+//
+//        model.addAttribute("master" , masters);//153 , 158
 
-        System.out.println("Current user id: " + currentUser.getUserId());//152
+        List<MutualCrushDTO> dtoList = new ArrayList<>();
 
-
-//        System.out.println(masters+ "==============================data");151
-
-
-       // List<List<>>
-        model.addAttribute("master" , masters);//153 , 158
-
-//        QuizQuestion firstQ1 = quizRepository.findFirstByOrderByIdAsc();
-//        model.addAttribute("firstQuestion",firstQ//1);
+        System.out.println("Current User Id "+currentUser.getUserId()+" And Total Mutual Crush "+masters.size());
 
 
-        Map<UserMaster, QuizQuestion> nextQuestionMap = new HashMap<>();
 
-        QuizQuestion firstQ = quizRepository.findFirstByOrderByIdAsc();
 
-        for (MutualCrushMaster mcm : masters) {
+        for (MutualCrushMaster m : masters) {
 
-            UserMaster playWith = mcm.getRequestTo().getUserId() != currentUser.getUserId()
-                    ? mcm.getRequestTo()
-                    : mcm.getRequestBy();
+            System.out.println("=**********************************************************************");
+            System.out.println("Current User Id "+currentUser.getUserId());
+            System.out.println("Request To Id "+m.getRequestTo().getUserId());
+            System.out.println("Request By Id "+m.getRequestBy().getUserId());
 
-            // 1. CHECK IF USER ANSWERED THE FIRST QUESTION
-            Optional<QuizAnswer> ans =
-                    quizAnswerRepository.findPlayWithUserQuestionByUser(currentUser, playWith, firstQ);
 
-            // If user never answered first question → show first question
-            if (ans.isEmpty()) {
-                nextQuestionMap.put(playWith, firstQ);
-                continue;
-            }
+            System.out.println("=**********************************************************************");
 
-            // 2. ITERATE UNTIL WE FIND FIRST UNANSWERED QUESTION
-            QuizQuestion currentQ = ans.get().getQuestion();
-            QuizQuestion nextQ = quizRepository.findNext(currentQ.getId());
 
-            while (nextQ != null) {
+            Long otherUserId =
+                    !m.getRequestTo().getUserId().equals(currentUser.getUserId())//to is 165 !=  current is 165
+                            ? m.getRequestTo().getUserId()
+                            : m.getRequestBy().getUserId();//163
 
-                Optional<QuizAnswer> nextAns =
-                        quizAnswerRepository.findPlayWithUserQuestionByUser(currentUser, playWith, nextQ);
+//            Long oUi;
+//            if(m.)
 
-                if (nextAns.isEmpty()) {
-                    // Found next un-answered question
-                    nextQuestionMap.put(playWith, nextQ);
-                    nextQ = null;
-                    break;
-                }
+            boolean currentUserPlayed =
+                    betweenRepo.hasUserPlayed(currentUser.getUserId(), otherUserId);
 
-                currentQ = nextQ;
-                nextQ = quizRepository.findNext(currentQ.getId());
-            }
+            System.out.println("Current User Played "+currentUserPlayed);
+            System.out.println("Current User Id "+currentUser.getUserId());
 
-            // 3. IF NO NEXT QUESTION → QUIZ COMPLETED
-            if (!nextQuestionMap.containsKey(playWith)) {
-                nextQuestionMap.put(playWith, null); // Means completed
-            }
+            boolean otherUserPlayed =
+                    betweenRepo.hasUserPlayed(otherUserId, currentUser.getUserId());
+
+
+            System.out.println("Other User Played "+otherUserPlayed);
+            System.out.println("Other User Id "+otherUserId);
+
+            MutualCrushDTO dto = new MutualCrushDTO(m, currentUserPlayed, otherUserPlayed);
+            dtoList.add(dto);
         }
 
-        model.addAttribute("nextQuestionMap", nextQuestionMap);
+        model.addAttribute("crushList", dtoList);
 
 
-//        Map<UserMaster,List<QuizQuestion>> quizQuestionList=new HashMap();//1 2 3 4
-//        for(MutualCrushMaster mcm : masters){
-//            UserMaster playWith=mcm.getRequestTo().getUserId()!=currentUser.getUserId() ? mcm.getRequestTo() : mcm.getRequestBy();;
-//            Optional<QuizAnswer>ans=quizAnswerRepository.findPlayWithUserQuestionByUser(currentUser,playWith,firstQ);//1
-//            List<QuizQuestion>quizAnswers=new ArrayList<>();
-//            while (ans.isPresent()){
-//                quizAnswers.add(ans.get().getQuestion());
-//               // quizQuestionList.put(ans.get().getPlayWith(),ans.get().getQuestion());
-//                ans=quizAnswerRepository.findPlayWithUserQuestionByUser(currentUser,playWith,
-//                        quizRepository.findNext(ans.get().getQuestion().getId()));
-//            }
-////            quizQuestionList.put(playWith,quizAnswers);
-////            if(!quizQuestionList.get(playWith).isEmpty()) {
-////                QuizQuestion lastNextQuestion = quizRepository.findNext(quizQuestionList.get(playWith).get(quizQuestionList.get(playWith).size() + 1).getId());
-////                if (lastNextQuestion != null) {
-////                    quizAnswers.add(lastNextQuestion);
-////                }
-////            }
-//
-//            quizQuestionList.replace(playWith,quizAnswers);
-//        }
-//
-//      //  quizQuestionList.get()
-//      //  quizQuestionList.get(currentUser).getLast().getQuestionText()
-//
-//        model.addAttribute("quizQuestionList",quizQuestionList);
 
-//        System.out.println("Value of mutualCrushList is : " + master);
 
         return "MergePart/mutualcrush";
     }
