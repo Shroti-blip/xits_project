@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Chat</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #FFF5F0 0%, #FFE8F0 50%, #FFF0F5 100%);
+            color: #2d2d2d;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 900px;
+            height: 90vh;
+            max-height: 700px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            box-shadow: 0 10px 50px rgba(250, 130, 49, 0.2);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border: 2px solid rgba(250, 130, 49, 0.2);
+        }
+
+        /* Chat Header */
+        .chat-header {
+            background: linear-gradient(135deg, #FA8231 0%, #F97F51 50%, #FF6B9D 100%);
+            color: white;
+            padding: 20px 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 4px 15px rgba(250, 130, 49, 0.3);
+        }
+
+        .chat-header .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .chat-header .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateX(-3px);
+        }
+
+        .chat-header .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 3px solid white;
+            object-fit: cover;
+        }
+
+        .chat-header .user-info {
+            flex: 1;
+        }
+
+        .chat-header .user-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .chat-header .user-status {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        /* Chat Box */
+        #chatBox {
+            flex: 1;
+            overflow-y: auto;
+            padding: 25px;
+            background: #ffffff;
+            scroll-behavior: smooth;
+        }
+
+        #chatBox::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #chatBox::-webkit-scrollbar-track {
+            background: rgba(250, 130, 49, 0.05);
+        }
+
+        #chatBox::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #FA8231, #FF6B9D);
+            border-radius: 10px;
+        }
+
+        /* Messages */
+        .message-wrapper {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 10px;
+            animation: messageSlide 0.3s ease-out;
+            position: relative;
+        }
+
+        @keyframes messageSlide {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-wrapper.sent {
+            align-items: flex-end;
+        }
+
+        .message-wrapper.received {
+            align-items: flex-start;
+        }
+
+        .msg-sent, .msg-received {
+            max-width: 70%;
+            padding: 4px 8px ;
+            border-radius: 18px;
+            word-wrap: break-word;
+            position: relative;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            animation: messagePop 0.3s ease-out;
+        }
+
+        @keyframes messagePop {
+            0% {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .msg-sent {
+            background: linear-gradient(135deg, #FA8231 0%, #F97F51 100%);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .msg-received {
+            background: #f0f0f0;
+            color: #2d2d2d;
+            border-bottom-left-radius: 4px;
+        }
+
+        /* Message image styling */
+        .message-image {
+            max-width: 230px;
+            border-radius: 15px;
+            display: block;
+            margin-top: 8px;
+            padding : 2px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .message-image:hover {
+            transform: scale(1.02);
+        }
+
+        /* ADDED: Loading placeholder for images */
+        .message-image-loading {
+            max-width: 230px;
+            height: 150px;
+            border-radius: 14px;
+            display: block;
+            margin-top: 8px;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .message-time {
+            font-size: 0.7rem;
+            margin-top: 4px;
+            opacity: 0.7;
+            color: #666;
+        }
+
+        .message-wrapper.sent .message-time {
+            text-align: right;
+            color: #999;
+        }
+
+        .message-wrapper.received .message-time {
+            text-align: left;
+            color: #888;
+        }
+
+        /* Context menu for delete */
+        .context-menu {
+            position: fixed;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            padding: 8px 0;
+            z-index: 1000;
+            min-width: 120px;
+            display: none;
+        }
+
+        .context-menu.show {
+            display: block;
+        }
+
+        .context-menu-item {
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .context-menu-item:hover {
+            background: #f0f0f0;
+        }
+
+        .context-menu-item.delete {
+            color: #dc3545;
+        }
+
+        /* Image preview area */
+        .image-preview-container {
+            padding: 10px 25px;
+            background: rgba(250, 130, 49, 0.05);
+            border-top: 1px solid rgba(250, 130, 49, 0.1);
+            display: none;
+        }
+
+        .image-preview-container.show {
+            display: block;
+        }
+
+        .image-preview-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        .image-preview {
+            max-width: 150px;
+            max-height: 150px;
+            border-radius: 12px;
+            border: 2px solid rgba(250, 130, 49, 0.3);
+        }
+
+        .remove-preview {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Image modal for full view */
+        .image-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .image-modal.show {
+            display: flex;
+        }
+
+        .image-modal-content {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 12px;
+        }
+
+        .image-modal-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 40px;
+            cursor: pointer;
+            background: rgba(0, 0, 0, 0.5);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @media (max-width: 576px) {
+            .msg-sent, .msg-received {
+                max-width: 85%;
+            }
+        }
+
+        /* Input Area */
+        .chat-input-area {
+            padding: 20px 25px;
+            background: rgba(255, 255, 255, 0.98);
+            border-top: 2px solid rgba(250, 130, 49, 0.1);
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        #messageInput {
+            flex: 1;
+            border: 2px solid rgba(250, 130, 49, 0.2);
+            border-radius: 25px;
+            padding: 12px 20px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        #messageInput:focus {
+            outline: none;
+            border-color: #FA8231;
+            box-shadow: 0 0 0 4px rgba(250, 130, 49, 0.1);
+        }
+
+        .image-picker-icon {
+            font-size: 20px;
+            cursor: pointer;
+            color: #FA8231;
+            transition: all 0.3s ease;
+        }
+
+        .image-picker-icon:hover {
+            transform: scale(1.1);
+            color: #F97F51;
+        }
+
+        #sendBtn {
+            background: linear-gradient(135deg, #FA8231 0%, #F97F51 50%, #FF6B9D 100%);
+            border: none;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 15px rgba(250, 130, 49, 0.3);
+        }
+
+        #sendBtn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(250, 130, 49, 0.5);
+        }
+
+        #sendBtn:active {
+            transform: scale(0.95);
+        }
+
+        /* Empty State */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #999;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            background: linear-gradient(135deg, #FA8231, #FF6B9D);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 15px;
+        }
+
+        .empty-state p {
+            font-size: 1.1rem;
+            margin: 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body {
+                padding: 0;
+            }
+
+            .chat-container {
+                height: 100vh;
+                max-height: 100vh;
+                border-radius: 0;
+                border: none;
+            }
+
+            .chat-header {
+                border-radius: 0;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .chat-header {
+                padding: 15px 20px;
+            }
+
+            .chat-header .user-avatar {
+                width: 40px;
+                height: 40px;
+            }
+
+            .chat-header .user-name {
+                font-size: 1.1rem;
+            }
+
+            #chatBox {
+                padding: 20px 15px;
+            }
+
+            .chat-input-area {
+                padding: 15px;
+            }
+
+            #messageInput {
+                padding: 10px 18px;
+                font-size: 0.95rem;
+            }
+
+            #sendBtn {
+                width: 40px;
+                height: 40px;
+            }
+        }
+
+        /* Typing indicator */
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 12px 18px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #999;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-10px);
+            }
+        }
+
+        /* for modal */
+
+/* REPORT MODAL (with theme colors) */
+:root {
+    --theme-orange: #F73B20;
+    --theme-orange-light: #ff5238;
+
+    --theme-orange-10: rgba(247, 59, 32, 0.10);
+    --theme-orange-15: rgba(247, 59, 32, 0.15);
+    --theme-orange-20: rgba(247, 59, 32, 0.20);
+    --theme-orange-30: rgba(247, 59, 32, 0.30);
+
+    --theme-gradient: linear-gradient(135deg, #F73B20 0%, #ff5238 100%);
+}
+
+/* Overlay */
+.report-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+/* Modal Box */
+.report-modal {
+    background: #fff;
+    padding: 20px;
+    border-radius: 14px;
+    width: 350px;
+    animation: fadeIn 0.2s ease-in-out;
+    border: 1px solid var(--theme-orange-15);
+    box-shadow: 0 8px 25px var(--theme-orange-10);
+}
+
+/* Close Button */
+.close-report {
+    background: none;
+    border: none;
+    font-size: 25px;
+    float: right;
+    cursor: pointer;
+    color: var(--theme-orange);
+}
+
+.close-report:hover {
+    color: var(--theme-orange-light);
+}
+
+/* Title & Subtitle */
+.modal-title {
+    color: var(--theme-orange);
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.modal-subtitle {
+    color: rgba(0, 0, 0, 0.6);
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+}
+
+/* Reason Options */
+.reason-option {
+    margin: 8px 0;
+}
+
+.reason-option input[type="radio"] {
+    accent-color: var(--theme-orange);
+}
+
+.reason-option label {
+    cursor: pointer;
+    color: #333;
+}
+
+/* Textarea */
+.extra-comments {
+    width: 100%;
+    height: 70px;
+    margin-top: 10px;
+    padding: 8px;
+    border: 1px solid var(--theme-orange-20);
+    border-radius: 6px;
+    outline: none;
+}
+
+.extra-comments:focus {
+    border-color: var(--theme-orange);
+    box-shadow: 0 0 6px var(--theme-orange-20);
+}
+
+/* Submit Button */
+.submit-report-btn {
+    margin-top: 10px;
+    width: 100%;
+    padding: 10px;
+    background: var(--theme-orange);
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 6px;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+.submit-report-btn:hover {
+    background: var(--theme-orange-light);
+    box-shadow: 0 6px 18px var(--theme-orange-30);
+}
+
+        .success-banner {
+    background: var(--theme-orange);
+    color: white;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    text-align: center;
+    width: fit-content;
+    margin: 10px auto;
+    box-shadow: 0 4px 12px rgba(247, 59, 32, 0.3);
+    transition: opacity 0.5s ease;
+}
+
+    </style>
+</head>
+<body>
+
+<input type="hidden" id="senderId" th:value="${sender.userId}">
+<input type="hidden" id="receiverId" th:value="${receiver.userId}">
+
+
+<div class="chat-container">
+    <!-- Chat Header -->
+    <div class="chat-header">
+
+<!--        -->
+
+        <button class="back-btn" onclick="window.history.back()">
+            <i class="bi bi-arrow-left"></i>
+        </button>
+        <img class="user-avatar" th:src="${receiverImage != '' ? receiverImage : '/noprofilepic.png'}" alt="User Avatar" onclick="openImageModal(this.src)">
+        <div class="user-info">
+            <h3 class="user-name" th:text="${receiver.username}">Username</h3>
+            <p class="user-status mb-0">Online</p>
+        </div>
+    </div>
+
+    <!-- Chat Messages -->
+    <div id="chatBox">
+        <!-- Load previous messages -->
+        <div th:each="msg : ${messages}">
+            <!-- MODIFIED: Changed to use data attributes instead of adding Base64 -->
+            <div th:data-whisper-id="${msg.whisperId}"
+                 th:data-owner-id="${msg.sentBy.userId}"
+                 th:data-has-image="${msg.image != null}"
+                 th:data-time="${msg.sentAt}"
+                 th:class="${msg.sentBy.userId == sender.userId} ? 'message-wrapper sent' : 'message-wrapper received'">
+                <div th:class="${msg.sentBy.userId == sender.userId} ? 'msg-sent' : 'msg-received'">
+                    <!-- Text content -->
+                    <span th:if="${msg.whisper != null}" th:text="${msg.whisper}"></span>
+
+                    <!-- MODIFIED: Image placeholder that will be loaded via JavaScript -->
+                    <div th:if="${msg.image != null}"
+                         class="message-image-placeholder"
+                         th:attr="data-whisper-id=${msg.whisperId}"></div>
+                    </div>
+                <div class="message-time" th:attr="data-timestamp=${msg.sentAt}"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image preview area -->
+    <div class="image-preview-container" id="imagePreviewContainer">
+        <div class="image-preview-wrapper">
+            <img id="imagePreview" class="image-preview" src="" alt="Preview">
+            <button class="remove-preview" onclick="clearImagePreview()">
+                <i class="bi bi-x"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Input Area -->
+    <div class="chat-input-area">
+        <input id="messageInput" type="text" placeholder="Type a message..." autocomplete="off">
+        <input type="file" id="imagePicker" accept="image/*" style="display:none;">
+        <i class="bi bi-image image-picker-icon" onclick="imagePicker.click()"></i>
+        <button id="sendBtn">
+            <i class="bi bi-send-fill"></i>
+        </button>
+    </div>
+</div>
+
+
+<!-- Image modal for full view -->
+<div class="image-modal" id="imageModal" onclick="closeImageModal()">
+    <span class="image-modal-close">&times;</span>
+    <img class="image-modal-content" id="modalImage">
+</div>
+
+<!-- Context menu for delete -->
+<div class="context-menu" id="contextMenu">
+    <div class="context-menu-item delete" onclick="deleteMessage()">
+        <i class="bi bi-trash"></i>
+        <span>Delete</span>
+    </div>
+</div>
+
+<!--context for report other user-->
+<div class="context-menu" id="contextMenu2">
+    <div class="context-menu-item report" onclick="reportMessage()">
+        <i class="bi bi-flag"></i>
+        <span>Report</span>
+    </div>
+</div>
+<!--needed.-->
+<input type="hidden" id="loggedInUserId" value="${sender.userId}">
+
+<!-- for report thing-->
+<!-- REPORT MODAL -->
+<div class="report-modal-overlay" id="reportModal">
+    <div class="report-modal">
+        <button class="close-report" onclick="closeReportModal()">&times;</button>
+
+        <form id="reportForm" th:action="@{/user/reportChat}" method="post">
+
+            <h2 class="modal-title">Report Message</h2>
+            <p class="modal-subtitle">Select a reason for reporting this message</p>
+
+
+
+            <input type="hidden" id="ownerId" name="ownerId">
+            <input type="hidden" id="reporterId" name="reporterId">
+            <input type="hidden" id="reportWhisperId" name="whisperId">
+
+            <div class="reason-option">
+                <label><input type="radio" name="reason" value="Harassment"> Harassment / Bullying</label>
+            </div>
+
+            <div class="reason-option">
+                <label><input type="radio" name="reason" value="Spam"> Spam or Misleading Content</label>
+            </div>
+
+            <div class="reason-option">
+                <label><input type="radio" name="reason" value="Hate Speech"> Hate Speech</label>
+            </div>
+
+            <div class="reason-option">
+                <label><input type="radio" name="reason" value="Explicit"> Explicit or Sexual Content</label>
+            </div>
+
+            <div class="reason-option">
+                <label><input type="radio" name="reason" value="Violence"> Violence or Dangerous Acts</label>
+            </div>
+
+            <div class="reason-option">
+                <label><input type="radio" name="reason" value="Other"> Other</label>
+            </div>
+
+            <textarea class="extra-comments" name="comment"
+                      placeholder="Additional comments (optional)"></textarea>
+
+           <button type="submit" class="submit-report-btn">Submit Report</button>
+
+        </form>
+    </div>
+</div>
+
+<!--<div th:if="${success}" id="successMsg" class="success-banner">-->
+<!--    ✔ Successfully Reported.-->
+<!--</div>-->
+
+<!-- STOMP + SockJS -->
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+
+<!-- krishna part-->
+<script th:inline="javascript">
+    let senderId = document.getElementById("senderId").value;
+    let receiverId = document.getElementById("receiverId").value;
+    let ms = [[${wt}]];
+
+    let stompClient = null;
+    let currentMessageElement = null;
+    let currentWhisperId = null;
+
+    function connect() {
+        let socket = new SockJS('/ws');
+        stompClient = Stomp.over(socket);
+
+        stompClient.connect({}, function () {
+            stompClient.subscribe('/topic/inbox/' + senderId, function (message) {
+                let msgObj = JSON.parse(message.body);
+                showMessage(msgObj.content, msgObj.imageBase64, false, msgObj.sentAt, msgObj.whisperId);
+            });
+
+            stompClient.subscribe('/topic/delete/' + senderId, function (message) {
+                let msgObj = JSON.parse(message.body);
+                removeMessageFromUI(msgObj.whisperId);
+            });
+        });
+    }
+
+    // MODIFIED: Enhanced image loading with separate endpoint
+    function showMessage(msg, image, sentByMe, sentAt, whisperId) {
+        let chatBox = document.getElementById("chatBox");
+
+        let wrapper = document.createElement("div");
+        wrapper.className = sentByMe ? "message-wrapper sent" : "message-wrapper received";
+        wrapper.setAttribute('data-whisper-id', whisperId);
+        wrapper.setAttribute('data-time', sentAt);
+
+        let div = document.createElement("div");
+        div.className = sentByMe ? "msg-sent" : "msg-received";
+
+        if (msg) {
+            div.textContent = msg;
+        }
+
+        // MODIFIED: Handle image display with Base64 for new messages
+        if (image) {
+            let img = document.createElement("img");
+            img.src = `data:image/*;base64,${image}`;
+            img.className = "message-image";
+            img.onclick = function() { openImageModal(this.src); };
+            div.appendChild(img);
+        }
+
+        let timeDiv = document.createElement("div");
+        timeDiv.className = "message-time";
+        timeDiv.textContent = formatTime(sentAt);
+
+        wrapper.appendChild(div);
+        wrapper.appendChild(timeDiv);
+
+        if (sentByMe) {
+            let longPressTimer;
+
+            wrapper.addEventListener('touchstart', function(e) {
+                longPressTimer = setTimeout(() => {
+                    showContextMenu(e, wrapper, whisperId);
+                }, 500);
+            });
+
+            wrapper.addEventListener('touchend', function() {
+                clearTimeout(longPressTimer);
+            });
+
+            wrapper.addEventListener('touchmove', function() {
+                clearTimeout(longPressTimer);
+            });
+
+            wrapper.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+                showContextMenu(e, wrapper, whisperId);
+            });
+        }
+
+        chatBox.appendChild(wrapper);
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        let dbTime = new Date(sentAt).getTime();
+        let now = Date.now();
+        let tme = now - dbTime;
+
+        if (tme >= ms) {
+            div.textContent="Whisper faded";
+            div.style.fontStyle="italic";
+            div.style.opacity="0.6";
+            let img = div.querySelector('.message-image');
+            if (img) img.remove();
+            return;
+        }
+
+        if(tme>=(parseInt(ms+60000)))
+                wrapper.remove();
+
+        let remaining = ms - tme;
+        setTimeout(() => {
+            if (wrapper && wrapper.parentNode){
+                div.textContent="Whisper faded";
+                div.style.fontStyle="italic";
+                div.style.opacity="0.6";
+                let img = div.querySelector('.message-image');
+                if (img) img.remove();
+            }
+        }, remaining);
+
+        setTimeout(() => {
+                if(wrapper && wrapper.parentNode){
+                    wrapper.remove();
+                }
+            }, (parseInt(remaining + 60000)))
+    }
+
+    // MODIFIED: Enhanced image loading with better error handling and debugging
+    function loadImageFromServer(whisperId, imgElement) {
+        console.log('Attempting to load image for whisperId:', whisperId);
+
+        fetch(`/whisper/image/${whisperId}`)
+            .then(response => {
+                console.log('Response status:', response.status);
+                if (response.ok) {
+                    return response.blob();
+                }
+                throw new Error(`Image not found. Status: ${response.status}`);
+            })
+            .then(blob => {
+                console.log('Image blob received, size:', blob.size);
+                let objectURL = URL.createObjectURL(blob);
+                imgElement.src = objectURL;
+                imgElement.className = "message-image";
+                imgElement.onclick = function() { openImageModal(this.src); };
+            })
+            .catch(error => {
+                console.error('Error loading image for whisperId', whisperId, ':', error);
+                // Show error placeholder instead of removing
+                imgElement.className = "message-image-loading";
+                imgElement.style.background = '#f0f0f0';
+                imgElement.style.display = 'flex';
+                imgElement.style.alignItems = 'center';
+                imgElement.style.justifyContent = 'center';
+                imgElement.innerHTML = '<i class="bi bi-image" style="font-size: 2rem; color: #ccc;"></i>';
+            });
+    }
+
+    function formatTime(timestamp) {
+        let date = new Date(timestamp);
+        let hours = date.getHours();
+        let minutes = date.getMinutes();
+        let ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        hours = hours ? hours : 12;
+        minutes = minutes < 10 ? '0' + minutes : minutes;
+        return hours + ':' + minutes + ' ' + ampm;
+    }
+
+    function sendMessage() {
+        let msg = document.getElementById("messageInput").value;
+        let file = document.getElementById("imagePicker").files[0];
+
+        if (!msg && !file) return;
+
+        if (file) {
+            let reader = new FileReader();
+            reader.onload = function (e) {
+                let base64 = e.target.result.split(",")[1];
+
+                stompClient.send("/app/sendMessage", {}, JSON.stringify({
+                    senderId: senderId,
+                    receiverId: receiverId,
+                    content: msg || null,
+                    imageBase64: base64
+                }));
+
+                let tempId = 'temp_' + Date.now();
+                showMessage(msg, base64, true, Date.now(), tempId);
+
+                clearImagePreview();
+            };
+            reader.readAsDataURL(file);
+        }
+        else {
+            stompClient.send("/app/sendMessage", {}, JSON.stringify({
+                senderId: senderId,
+                receiverId: receiverId,
+                content: msg,
+                imageBase64: null
+            }));
+
+            let tempId = 'temp_' + Date.now();
+            showMessage(msg, null, true, Date.now(), tempId);
+        }
+
+        document.getElementById("messageInput").value = "";
+        document.getElementById("imagePicker").value = "";
+    }
+
+    document.getElementById('imagePicker').addEventListener('change', function(e) {
+        let file = e.target.files[0];
+        if (file) {
+            let reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('imagePreview').src = e.target.result;
+                document.getElementById('imagePreviewContainer').classList.add('show');
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    function clearImagePreview() {
+        document.getElementById('imagePreviewContainer').classList.remove('show');
+        document.getElementById('imagePicker').value = '';
+        document.getElementById('imagePreview').src = '';
+    }
+
+    function openImageModal(src) {
+        document.getElementById('modalImage').src = src;
+        document.getElementById('imageModal').classList.add('show');
+    }
+
+    function closeImageModal() {
+        document.getElementById('imageModal').classList.remove('show');
+    }
+
+    function showContextMenu(e, wrapper, whisperId) {
+        e.preventDefault();
+
+        let contextMenu = document.getElementById('contextMenu');
+        currentMessageElement = wrapper;
+        currentWhisperId = whisperId;
+
+        let x = e.clientX || (e.touches && e.touches[0].clientX);
+        let y = e.clientY || (e.touches && e.touches[0].clientY);
+
+        contextMenu.style.left = x + 'px';
+        contextMenu.style.top = y + 'px';
+        contextMenu.classList.add('show');
+    }
+
+//
+    document.addEventListener('click', function(e) {
+        let contextMenu = document.getElementById('contextMenu');
+        if (!contextMenu.contains(e.target)) {
+            contextMenu.classList.remove('show');
+        }
+    });
+
+    function deleteMessage() {
+        if (!currentWhisperId || !currentMessageElement) return;
+
+        stompClient.send("/app/deleteMessage", {}, JSON.stringify({
+            whisperId: currentWhisperId,
+            senderId: senderId,
+            receiverId: receiverId
+        }));
+
+        document.getElementById('contextMenu').classList.remove('show');
+        removeMessageFromUI(currentWhisperId);
+    }
+
+    function removeMessageFromUI(whisperId) {
+        let messageElement = document.querySelector(`[data-whisper-id="${whisperId}"]`);
+        if (messageElement) {
+            messageElement.remove();
+        }
+    }
+
+    connect();
+
+    document.getElementById("sendBtn").addEventListener("click", sendMessage);
+    document.getElementById("messageInput").addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+            sendMessage();
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Format timestamps
+        document.querySelectorAll('.message-time').forEach(function(timeEl) {
+            let timestamp = timeEl.getAttribute('data-timestamp');
+            if (timestamp) {
+                let ts = new Date(timestamp);
+                timeEl.textContent = formatTime(ts);
+            }
+        });
+
+        // MODIFIED: Load images from server for existing messages with debugging
+        document.querySelectorAll('.message-image-placeholder').forEach(function(placeholder) {
+            let whisperId = placeholder.getAttribute('data-whisper-id');
+            console.log('Found placeholder for whisperId:', whisperId);
+
+            if (whisperId && whisperId !== 'null' && whisperId !== 'undefined') {
+                let img = document.createElement('img');
+                img.className = "message-image-loading";
+                placeholder.replaceWith(img);
+
+                loadImageFromServer(whisperId, img);
+            } else {
+                console.error('Invalid whisperId:', whisperId);
+                placeholder.remove();
+            }
+        });
+
+        // Add context menu to existing sent messages
+        document.querySelectorAll('.message-wrapper.sent').forEach(function(wrapper) {
+            let whisperId = wrapper.getAttribute('data-whisper-id');
+
+            let longPressTimer;
+
+            wrapper.addEventListener('touchstart', function(e) {
+                longPressTimer = setTimeout(() => {
+                    showContextMenu(e, wrapper, whisperId);
+                }, 500);
+            });
+
+            wrapper.addEventListener('touchend', function() {
+                clearTimeout(longPressTimer);
+            });
+
+            wrapper.addEventListener('touchmove', function() {
+                clearTimeout(longPressTimer);
+            });
+
+            wrapper.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+                showContextMenu(e, wrapper, whisperId);
+            });
+        });
+    });
+
+</script>
+
+<!--for report one.-->
+<script>
+
+    // =============================
+
+    let currentReportId = null;
+    let currentReportElement = null;
+
+    document.getElementById('chatBox').addEventListener('click', function (e) {
+
+        // Find ONLY the actual message bubble
+        // (NOT wrapper, NOT chatbox background)
+        const bubble = e.target.closest('.msg-received');
+        if (!bubble) return; // click was not on a real message → ignore
+
+        // Now get wrapper (parent)
+        const wrapper = bubble.closest('[data-whisper-id]');
+        if (!wrapper) return;
+
+        // Prevent closing instantly
+        e.stopPropagation();
+
+        //do NOT show report on your own messages
+        if (wrapper.classList.contains('sent')) return;
+
+        currentReportId = wrapper.getAttribute('data-whisper-id');
+        currentReportElement = wrapper;
+
+        const menu = document.getElementById('contextMenu2');
+        menu.style.left = e.pageX + 'px';
+        menu.style.top = e.pageY + 'px';
+        menu.classList.add('show');
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener('click', function(e) {
+        const menu = document.getElementById('contextMenu2');
+        if (!menu.contains(e.target)) {
+            menu.classList.remove('show');
+        }
+    });
+
+
+
+    function reportMessage() {
+    if (!currentReportId) return;
+
+    document.getElementById('contextMenu2').classList.remove('show');
+
+    // Open modal using whisperId
+    openReportModalById(receiverId, senderId, currentReportId);
+}
+
+</script>
+
+<!-- for modal-->
+<script>
+
+    function openReportModal(msgElement) {
+        const whisperId = msgElement.getAttribute("data-id");
+        document.getElementById("reportWhisperId").value = whisperId;
+
+        document.getElementById("reportModal").style.display = "flex";
+    }
+
+    function closeReportModal() {
+        document.getElementById("reportModal").style.display = "none";
+    }
+
+    // close when clicking outside
+    document.getElementById("reportModal").addEventListener("click", function (e) {
+        if (e.target === this) closeReportModal();
+    });
+
+const reporterId = document.getElementById("loggedInUserId").value;
+    function openReportModalById(ownerId, reporterId, whisperId) {
+    document.getElementById("ownerId").value = ownerId;
+    document.getElementById("reporterId").value = reporterId;
+    document.getElementById("reportWhisperId").value = whisperId;
+    document.getElementById("reportModal").style.display = "flex";
+}
+
+</script>
+
+<!--<script>-->
+<!--    window.addEventListener("DOMContentLoaded", function () {-->
+<!--        const msg = document.getElementById("successMsg");-->
+<!--        if (msg) {-->
+<!--            setTimeout(() => {-->
+<!--                msg.style.display = "none";-->
+<!--            }, 3000); // 3 seconds-->
+<!--        }-->
+<!--    });-->
+<!--</script>-->
+
+
+<script>
+    document.getElementById("reportForm").addEventListener("submit", function(event) {
+        const selected = document.querySelector('input[name="reason"]:checked');
+
+        if (!selected) {
+            alert("Please select at least one reason for reporting.");
+            event.preventDefault(); // Stop form submission
+        }
+    });
+</script>
+
+
+</body>
+</html>
