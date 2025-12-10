@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Inbox | Whisper</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #FFF0EE 0%, #FFE5E5 50%, #FFF5F5 100%);
+            color: #2d2d2d;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .inbox-container {
+            width: 100%;
+            max-width: 600px;
+            height: 90vh;
+            max-height: 700px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            box-shadow: 0 10px 50px rgba(247, 59, 32, 0.2);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border: 2px solid rgba(247, 59, 32, 0.2);
+        }
+
+        /* Header */
+        .inbox-header {
+            background: linear-gradient(135deg, #f73b20 0%, #ff5a42 50%, #ff6b5a 100%);
+            color: white;
+            padding: 20px 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 4px 15px rgba(247, 59, 32, 0.3);
+        }
+
+        .inbox-header .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .inbox-header .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateX(-3px);
+        }
+
+        .inbox-header .inbox-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin: 0;
+            flex: 1;
+        }
+
+        /* Category Tabs */
+        .category-tabs {
+            display: flex;
+            background: #ffffff;
+            border-bottom: 1px solid rgba(247, 59, 32, 0.1);
+            padding: 0;
+        }
+
+        .category-tab {
+            flex: 1;
+            padding: 15px 10px;
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            text-align: center;
+        }
+
+        .category-tab:hover {
+            color: #f73b20;
+            background: rgba(247, 59, 32, 0.03);
+        }
+
+        .category-tab.active {
+            color: #f73b20;
+        }
+
+        .category-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(135deg, #f73b20, #ff6b5a);
+            border-radius: 3px 3px 0 0;
+        }
+
+        .category-tab .badge {
+            background: linear-gradient(135deg, #f73b20, #ff6b5a);
+            color: white;
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: 5px;
+        }
+
+        /* Chat List */
+        .chat-list {
+            flex: 1;
+            overflow-y: auto;
+            background: #ffffff;
+            scroll-behavior: smooth;
+            position: relative;
+        }
+
+        .chat-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-list::-webkit-scrollbar-track {
+            background: rgba(247, 59, 32, 0.05);
+        }
+
+        .chat-list::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #f73b20, #ff6b5a);
+            border-radius: 10px;
+        }
+
+        /* Empty State */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #999;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            background: linear-gradient(135deg, #f73b20, #ff6b5a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 15px;
+        }
+
+        .empty-state p {
+            font-size: 1.1rem;
+            margin: 0;
+            color: #666;
+        }
+
+        /* Chat Item */
+        .chat-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 18px 25px;
+            text-decoration: none;
+            color: #2d2d2d;
+            transition: all 0.3s ease;
+            border-bottom: 1px solid rgba(247, 59, 32, 0.1);
+            position: relative;
+        }
+
+        .chat-item:hover {
+            background: linear-gradient(90deg, rgba(247, 59, 32, 0.05), transparent);
+            transform: translateX(5px);
+        }
+
+        .chat-item:active {
+            transform: scale(0.98);
+        }
+
+        .chat-item::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(135deg, #f73b20, #ff6b5a);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .chat-item:hover::after {
+            opacity: 1;
+        }
+
+        .chat-avatar {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid transparent;
+            background: linear-gradient(white, white) padding-box,
+                        linear-gradient(135deg, #f73b20, #ff6b5a) border-box;
+            transition: all 0.3s ease;
+        }
+
+        .chat-item:hover .chat-avatar {
+            transform: scale(1.05);
+        }
+
+        .chat-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .chat-username {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #2d2d2d;
+            margin: 0 0 4px 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .chat-preview {
+            font-size: 0.9rem;
+            color: #888;
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .chat-meta {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 5px;
+        }
+
+        .chat-time {
+            font-size: 0.75rem;
+            color: #999;
+            white-space: nowrap;
+        }
+
+        .unread-badge {
+            background: linear-gradient(135deg, #f73b20, #ff6b5a);
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 12px;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        .chat-arrow {
+            color: #f73b20;
+            font-size: 1.2rem;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .chat-item:hover .chat-arrow {
+            opacity: 1;
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+            min-height: 100%;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body {
+                padding: 0;
+            }
+
+            .inbox-container {
+                height: 100vh;
+                max-height: 100vh;
+                border-radius: 0;
+                border: none;
+            }
+
+            .inbox-header {
+                border-radius: 0;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .inbox-header {
+                padding: 15px 20px;
+            }
+
+            .inbox-header .inbox-title {
+                font-size: 1.2rem;
+            }
+
+            .category-tab {
+                padding: 12px 8px;
+                font-size: 0.85rem;
+            }
+
+            .chat-item {
+                padding: 15px 20px;
+            }
+
+            .chat-avatar {
+                width: 50px;
+                height: 50px;
+            }
+
+            .chat-username {
+                font-size: 1rem;
+            }
+
+            .chat-preview {
+                font-size: 0.85rem;
+            }
+        }
+
+        /* Animation for new items */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .chat-item {
+            animation: slideIn 0.3s ease-out;
+        }
+
+          .success-banner {
+    background: green;
+    color: white;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    text-align: center;
+    width: fit-content;
+    margin: 10px auto;
+    box-shadow: 0 4px 12px rgba(247, 59, 32, 0.3);
+    transition: opacity 0.5s ease;
+}
+    </style>
+</head>
+<body>
+
+<div class="inbox-container">
+    <!-- Header -->
+    <div class="inbox-header">
+        <button class="back-btn" onclick="window.history.back()">
+            <i class="bi bi-arrow-left"></i>
+        </button>
+        <h1 class="inbox-title">
+            <i class="bi bi-chat-dots-fill me-2"></i>Whispers
+        </h1>
+    </div>
+
+    <!-- Category Tabs -->
+    <div class="category-tabs">
+        <button class="category-tab active" onclick="switchTab('all')">
+            All
+            <span class="badge" th:text="${#lists.size(allChats)}">0</span>
+        </button>
+        <button class="category-tab" onclick="switchTab('general')">
+            General
+            <span class="badge" th:text="${#lists.size(generalChats)}">0</span>
+        </button>
+        <button class="category-tab" onclick="switchTab('mutual')">
+            Mutual
+            <span class="badge" th:text="${#lists.size(mutualChats)}">0</span>
+        </button>
+    </div>
+
+    <!-- Chat List -->
+    <div class="chat-list">
+        <!-- All Tab Content -->
+        <div id="all-tab" class="tab-content active">
+            <!-- Empty State -->
+            <div th:if="${#lists.isEmpty(allChats)}" class="empty-state">
+                <i class="bi bi-inbox"></i>
+                <p>No Whispers yet</p>
+                <small style="color: #999; margin-top: 8px;">Whisper to see it here</small>
+            </div>
+
+            <!-- Chat Items -->
+            <a th:href="@{'/whisper/' + ${ch.sentBy.userId == currentUser.userId ? ch.sentTo.userId : ch.sentBy.userId}}"
+               class="chat-item"
+               th:each="ch : ${allChats}">
+                <img class="chat-avatar"
+                     th:src="${ch.sentBy.userId == currentUser.userId ? ch.sentTo.profilePhoto : ch.sentBy.profilePhoto}"
+                     alt="User Avatar">
+                <div class="chat-info">
+                    <h3 class="chat-username"
+                        th:text="${ch.sentBy.userId == currentUser.userId ? ch.sentTo.username : ch.sentBy.username}">
+                        Username
+                    </h3>
+                    <p class="chat-preview">Tap to whisper</p>
+                </div>
+                <div class="chat-meta">
+                    <!-- <span class="chat-time">2m ago</span> -->
+                    <!-- <span class="unread-badge">3</span> -->
+                </div>
+                <i class="bi bi-chevron-right chat-arrow"></i>
+            </a>
+        </div>
+
+        <!-- General Tab Content -->
+        <div id="general-tab" class="tab-content">
+            <!-- Empty State -->
+            <div th:if="${#lists.isEmpty(generalChats)}" class="empty-state">
+                <i class="bi bi-inbox"></i>
+                <p>No General Whispers</p>
+                <small style="color: #999; margin-top: 8px;">General whispers will appear here</small>
+            </div>
+
+            <!-- General Chat Items -->
+            <a th:href="@{'/whisper/' + ${ch.sentBy.userId == currentUser.userId ? ch.sentTo.userId : ch.sentBy.userId}}"
+               class="chat-item"
+               th:each="ch : ${generalChats}">
+                <img class="chat-avatar"
+                     th:src="${ch.sentBy.userId == currentUser.userId ? ch.sentTo.profilePhoto : ch.sentBy.profilePhoto}"
+                     alt="User Avatar">
+                <div class="chat-info">
+                    <h3 class="chat-username"
+                        th:text="${ch.sentBy.userId == currentUser.userId ? ch.sentTo.username : ch.sentBy.username}">
+                        Username
+                    </h3>
+                    <p class="chat-preview">Tap to whisper</p>
+                </div>
+                <div class="chat-meta">
+                    <!-- <span class="chat-time">2m ago</span> -->
+                    <!-- <span class="unread-badge">3</span> -->
+                </div>
+                <i class="bi bi-chevron-right chat-arrow"></i>
+            </a>
+        </div>
+
+        <!-- Mutual Tab Content -->
+        <div id="mutual-tab" class="tab-content">
+            <!-- Empty State -->
+            <div th:if="${#lists.isEmpty(mutualChats)}" class="empty-state">
+                <i class="bi bi-inbox"></i>
+                <p>No Mutual Whispers</p>
+                <small style="color: #999; margin-top: 8px;">Mutual whispers will appear here</small>
+            </div>
+
+            <!-- Mutual Chat Items -->
+            <a th:href="@{'/whisper/' + ${ch.sentBy.userId == currentUser.userId ? ch.sentTo.userId : ch.sentBy.userId}}"
+               class="chat-item"
+               th:each="ch : ${mutualChats}">
+                <img class="chat-avatar"
+                     th:src="${ch.sentBy.userId == currentUser.userId ? ch.sentTo.profilePhoto : ch.sentBy.profilePhoto}"
+                     alt="User Avatar">
+                <div class="chat-info">
+                    <h3 class="chat-username"
+                        th:text="${ch.sentBy.userId == currentUser.userId ? ch.sentTo.username : ch.sentBy.username}">
+                        Username
+                    </h3>
+                    <p class="chat-preview">Tap to whisper</p>
+                </div>
+                <div class="chat-meta">
+                    <!-- <span class="chat-time">2m ago</span> -->
+                    <!-- <span class="unread-badge">3</span> -->
+                </div>
+                <i class="bi bi-chevron-right chat-arrow"></i>
+            </a>
+
+        </div>
+    </div>
+
+<!--    report part -->
+    <div th:if="${success}" id="successMsg" class="success-banner">
+        ✔ Successfully Reported.
+    </div>
+
+</div>
+
+<script>
+    function switchTab(tabName) {
+        // Remove active class from all tabs
+        document.querySelectorAll('.category-tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+
+        // Remove active class from all tab contents
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+
+        // Add active class to clicked tab
+        event.target.classList.add('active');
+
+        // Show corresponding tab content
+        document.getElementById(tabName + '-tab').classList.add('active');
+    }
+</script>
+
+<!--    report part -->
+<script>
+    window.addEventListener("DOMContentLoaded", function () {
+        const msg = document.getElementById("successMsg");
+        if (msg) {
+            setTimeout(() => {
+                msg.style.display = "none";
+            }, 3000); // 3 seconds
+        }
+    });
+</script>
+
+
+
+</body>
+</html>
