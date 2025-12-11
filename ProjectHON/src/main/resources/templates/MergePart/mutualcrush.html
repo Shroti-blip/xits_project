@@ -514,89 +514,12 @@
         }
     }
 
-/* for quiz part */
-
-    .section-title {
-    margin-bottom: 15px;
-    font-weight: bold;
-    font-size: 20px;
-}
-
-.crush-card {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: #ffffff;
-    padding: 12px 15px;
-    border-radius: 12px;
-    margin-bottom: 12px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.12);
-    transition: 0.2s ease;
-}
-
-.crush-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.18);
-}
-
-.crush-info {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.crush-avatar {
-    width: 40px;
-    height: 40px;
-    background: #f0f0f0;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 18px;
-    color: #888;
-}
-
-.crush-name {
-    font-size: 17px;
-    margin: 0;
-    font-weight: 600;
-}
-
-.crush-sub {
-    font-size: 12px;
-    color: #777;
-}
-
-.play-btn {
-    background: #6a5acd;
-    color: white;
-    padding: 8px 14px;
-    font-size: 14px;
-    border-radius: 8px;
-    text-decoration: none;
-    transition: 0.2s ease;
-}
-
-.play-btn:hover {
-    background: #5847c5;
-}
-
-    .crush-img {
-    width: 45px;
-    height: 45px;
-    object-fit: cover;
-    border-radius: 50%;
-}
-
-
-
   </style>
 </head>
 <body>
-<div class="bg-gradient">
-  <span></span>
-</div>
+<!--<div class="bg-gradient">-->
+<!--  <span></span>-->
+<!--</div>-->
 
 <!-- Mobile Logo (top-left corner) -->
 <a href="#" class="mobile-logo">
@@ -705,7 +628,7 @@
 
         </ul>
 
-<!--        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">-->
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
 
         <!-- TAB CONTENT -->
         <div class="tab-content" id="crushTabContent">
@@ -775,62 +698,36 @@
 
           </div>
 
+        </div>
+
 <!--  Quiz part-->
           <div class="tab-pane fade show" id="quiz" role="tabpanel">
+            <p>quiz part</p>
 
-<!--            for showing all users-->
+<!--            new one for quiz-->
+              <div id="quizBox">
 
+                  <h3 id="questionText"></h3>
 
-            <h3 class="section-title">Play quiz with</h3>
+                  <label>
+                      <input type="radio" name="answer" value="A" onclick="submitAndNext('A')">
+                      <span id="optionAText"></span>
+                  </label>
 
-            <div class="crush-list" th:each="crush : ${master}">
-              <div class="crush-card">
+                  <label>
+                      <input type="radio" name="answer" value="B" onclick="submitAndNext('B')">
+                      <span id="optionBText"></span>
+                  </label>
 
-                <div class="crush-info">
-                  <div class="crush-avatar">
-                    <img th:src="@{'/crushpic/' + ${
-            crush.requestTo.userId != userSession.userId
-            ? crush.requestTo.userId
-            : crush.requestBy.userId
-        }}" class="crush-img">
-                  </div>
-
-                  <div>
-                    <p class="crush-name"
-                       th:if="${crush.requestTo.userId != userSession.userId}"
-                       th:text="${crush.requestTo.username}"></p>
-
-                    <p class="crush-name"
-                       th:unless="${crush.requestTo.userId != userSession.userId}"
-                       th:text="${crush.requestBy.username}"></p>
-
-                    <small>@ Mutual Crush</small>
-                  </div>
-                </div>
-
-                <input type="hidden" class="playWithId"
-                       th:value="${crush.requestTo.userId != userSession.userId
-                         ? crush.requestTo.userId
-                         : crush.requestBy.userId}" />
-
-                <!-- Button   quizModal__101-->
-                <button class="play-btn"
-                        th:attr="data-bs-target='#quizModal__' + (${crush.requestTo.userId != userSession.userId
-                            ? crush.requestTo.userId
-                            : crush.requestBy.userId})"
-                        data-bs-toggle="modal" >
-                  Play Quiz
-                </button>
-
+                  <input type="hidden" id="currentQuizId">
               </div>
-            </div>
 
 
           </div>
 
 <!--          quiz part ends here -->
 
-        </div>
+
 
       </div>
     </div>
@@ -878,87 +775,7 @@
     </div>
 
   </div>
-<!--     101 102  103  104  quizModal__101 -->
 
-  <div th:each="crush : ${master}">
-
-    <div th:with="
-            uid = ${crush.requestTo.userId != userSession.userId
-                   ? crush.requestTo.userId
-                   : crush.requestBy.userId},
-            playWith = ${crush.requestTo.userId != userSession.userId
-                        ? crush.requestTo
-                        : crush.requestBy},
-            q = ${nextQuestionMap.get(playWith)}
-         "
-         class="modal fade"
-         th:id="'quizModal__' + ${uid}"
-         tabindex="-1">
-
-      <div class="modal-dialog">
-        <div class="modal-content">
-
-          <div class="modal-header">
-            <h5 class="modal-title">Quiz</h5>
-            <button class="btn-close" data-bs-dismiss="modal"></button>
-          </div>
-
-          <div class="modal-body">
-
-            <!-- COMPLETED -->
-            <div th:if="${q == null}">
-              <h3>You have completed all questions 🎉</h3>
-            </div>
-
-            <!-- NEXT QUESTION -->
-            <div th:if="${q != null}">
-              <h3 th:id="'questionText_' + ${uid}"
-                  th:text="${q.questionText}"></h3>
-
-              <label>
-                <input type="radio"
-                       th:name="'answer_' + ${uid}"
-                       value="A"
-                       th:id="'questionATextId_' + ${uid}">
-                <span th:id="'questionAText_' + ${uid}"
-                      th:text="${q.optionA}"></span>
-              </label><br>
-
-              <label>
-                <input type="radio"
-                       th:name="'answer_' + ${uid}"
-                       value="B"
-                       th:id="'questionBTextId_' + ${uid}">
-                <span th:id="'questionBText_' + ${uid}"
-                      th:text="${q.optionB}"></span>
-              </label>
-
-              <input type="hidden"
-                     th:id="'currentQuizId_' + ${uid}"
-                     th:value="${q.id}">
-            </div>
-
-          </div>
-
-          <div class="modal-footer" th:if="${q != null}">
-            <button type="button"
-                      th:id="'modalButton_'+ ${uid}"
-                    class="btn btn-primary"
-                    th:attr="onclick='submitAndNext(' + ${uid} + ')'">
-              Next
-            </button>
-          </div>
-
-        </div>
-      </div>
-
-    </div>
-
-  </div>
-
-
-
-</div>
 
   <!-- Lottie Script -->
   <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
@@ -981,7 +798,7 @@
     });
   </script>
 
-
+</div>
 <!--</div>-->
 
 <div class="popup-overlay" id="popupOverlay">
@@ -999,7 +816,7 @@
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
 
 <script>
 
@@ -1016,178 +833,85 @@
   });
 </script>
 
-
-<script>
-  /* Start Quiz */
-  function startQuiz(btn) {
-
-      let card = btn.closest(".crush-card");
-      let playWithId = card.querySelector(".playWithId").value;
-
-      let modalId = "quizModal__" + playWithId;
-
-      fetch(`/quiz/first?playWithId=${playWithId}`)
-          .then(res => res.json())
-          .then(q => {
-
-
-              document.getElementById("questionText_" + playWithId).innerText = q.questionText;
-              document.getElementById("optionA_" + playWithId).innerText = q.optionA;
-              document.getElementById("optionB_" + playWithId).innerText = q.optionB;
-
-              document.getElementById("currentQuizId_" + playWithId).value = q.id;
-          })
-          .catch(err => console.error("Error loading first question:", err));
-  }
-</script>
-
-
-<script>
-  function submitAndNext(uid) {
-
-      let modal = document.getElementById("quizModal__" + uid);
-
-      let selected = modal.querySelector(`input[name='answer_${uid}']:checked`);
-      if (!selected) {
-          alert("Please choose an option!");
-          return;
-      }
-
-      let chosenOption = selected.value;
-      let quizId = document.getElementById("currentQuizId_" + uid).value;
-
-      let formData = new FormData();
-      formData.append("quizId", quizId);
-      formData.append("option", chosenOption);
-      formData.append("playWithId", uid);
-
-      const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute("content");
-      const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute("content");
-
-      fetch(`/quiz/submit`, {
-          method: "POST",
-          body: formData,
-          headers: {
-              [csrfHeader]: csrfToken
-          }
-      })
-      .then(res => res.json())
-      .then(nextQ => {
-
-          // QUIZ COMPLETED
-          if (nextQ.noQuestion) {
-
-              document.getElementById("questionText_" + uid).innerText = "Quiz Completed 🎉";
-
-              document.getElementById("questionAText_" + uid).style.display = "none";
-              document.getElementById("questionBText_" + uid).style.display = "none";
-
-              document.getElementById("questionATextId_" + uid).style.display = "none";
-              document.getElementById("questionBTextId_" + uid).style.display = "none";
-               document.getElementById("modalButton_" + uid).style.display = "none";
-
-              return;
-          }
-
-          // LOAD NEXT QUESTION
-          document.getElementById("questionText_" + uid).innerText = nextQ.next.questionText;
-
-          document.getElementById("questionAText_" + uid).innerText = nextQ.next.optionA;
-          document.getElementById("questionBText_" + uid).innerText = nextQ.next.optionB;
-
-          document.getElementById("currentQuizId_" + uid).value = nextQ.next.id;
-
-          // reset radio buttons
-          modal.querySelectorAll(`input[name='answer_${uid}']`).forEach(r => r.checked = false);
-      })
-      .catch(err => console.error("Error loading next:", err));
-  }
-</script>
-
-
-
 <!--<script>-->
+<!--  /* function submitAndNext(selectedOption) {-->
+<!--    const quizId = document.getElementById("currentQuizId").value;-->
 
-<!--  function submitAndNext(uid) {-->
+<!--    fetch("/quiz/next", {-->
+<!--        method: "POST",-->
+<!--        headers: { "Content-Type": "application/x-www-form-urlencoded" },-->
+<!--        body: `quizId=${quizId}&selectedOption=${selectedOption}`-->
+<!--    })-->
+<!--    .then(res => res.json())-->
+<!--    .then(data => {-->
 
-<!--      // find which option is selected-->
-<!--      let selected = document.querySelector(`input[name='answer_${uid}']:checked`);-->
+<!--        if (data.finished) {-->
+<!--            document.getElementById("quizBox").innerHTML =-->
+<!--                "<h3>You have completed the quiz 🎉</h3>";-->
+<!--            return;-->
+<!--        }-->
 
-<!--     if (!selected) {-->
-<!--          alert("Please choose an option!");-->
-<!--          return;-->
-<!--      }-->
+<!--        // Load next question dynamically-->
+<!--        document.getElementById("currentQuizId").value = data.id;-->
+<!--        document.getElementById("questionText").textContent = data.questionText;-->
+<!--        document.getElementById("optionAText").textContent = data.optionA;-->
+<!--        document.getElementById("optionBText").textContent = data.optionB;-->
 
-<!--     let chosenOption = selected.value;-->
+<!--        // Clear previous selection-->
+<!--        document.querySelectorAll('input[name="answer"]').forEach(r => r.checked = false);-->
+<!--    });-->
+<!--} */-->
 
-<!--   console.log("user id " + uid)-->
+<!--</script>-->
 
-<!--      //current question ID-->
-<!--      let quizId = document.getElementById("currentQuizId_" + uid).value;-->
+<!--<script th:inline="javascript">-->
 
-<!--      // prepare FormData-->
-<!--      let formData = new FormData();-->
-<!--      formData.append("quizId", quizId);-->
-<!--      formData.append("option", chosenOption);-->
-<!--      formData.append("playWithId", uid);-->
+<!--  /* window.onload = function () {-->
+<!--      document.getElementById("currentQuizId").value = [[${firstQ.id}]];-->
+<!--      document.getElementById("questionText").textContent = '[[${firstQ.questionText}]]';-->
+<!--      document.getElementById("optionAText").textContent = '[[${firstQ.optionA}]]';-->
+<!--      document.getElementById("optionBText").textContent = '[[${firstQ.optionB}]]';-->
+<!--  };-->
 
+<!--  function submitAndNext(selectedOption) {-->
 
-<!--      console.log("=========before fetch=======");-->
+<!--      let qId = document.getElementById("currentQuizId").value;-->
 
-<!--      const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute("content");-->
-<!--       const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute("content");-->
-
-<!--      // send to backend-->
-<!--      fetch(`/quiz/submit`, {-->
+<!--      fetch("/quiz/save-answer", {-->
 <!--          method: "POST",-->
-<!--          body: formData,-->
 <!--          headers: {-->
-<!--                  [csrfHeader]: csrfToken-->
-<!--              }-->
+<!--               "X-CSRF-TOKEN": document.querySelector('meta[name="_csrf"]').content,-->
+<!--              "Content-Type": "application/x-www-form-urlencoded"-->
+<!--          },-->
+<!--          body: `quizId=${qId}&answer=${selectedOption}`-->
 <!--      })-->
-<!--      .then(res => res.json())-->
+<!--      .then(response => response.json())-->
 <!--      .then(nextQ => {-->
-<!--        console.log("-&#45;&#45;&#45;&#45;after response-&#45;&#45;&#45;&#45;");-->
-<!--          if (!nextQ || !nextQ.id) {-->
 
-<!--              document.getElementById("questionText_" + uid).innerText =-->
-<!--                  "Quiz Completed 🎉";-->
+<!--          console.log("DATA FROM BACKEND:", nextQ); // FIXED-->
 
-<!--              document.getElementById("optionAText_" + uid).style.display = "none";-->
-<!--              document.getElementById("optionBText_" + uid).style.display = "none";-->
-
+<!--          if (nextQ.finished === true) {-->
+<!--              document.getElementById("quizBox").innerHTML =-->
+<!--                  "<h3>Quiz Completed 🎉</h3>";-->
 <!--              return;-->
 <!--          }-->
 
-<!--          // update question text-->
-<!--          document.getElementById("questionText_" + uid).innerText = nextQ.questionText;-->
+<!--          // Load next question-->
+<!--          document.getElementById("currentQuizId").value = nextQ.id;-->
+<!--          document.getElementById("questionText").textContent = nextQ.questionText;-->
+<!--          document.getElementById("optionAText").textContent = nextQ.optionA;-->
+<!--          document.getElementById("optionBText").textContent = nextQ.optionB;-->
 
-<!--          // update options-->
-<!--          document.getElementById("optionAText_" + uid).innerText = nextQ.optionA;-->
-<!--          document.getElementById("optionBText_" + uid).innerText = nextQ.optionB;-->
-
-<!--          // update next question ID-->
-<!--          document.getElementById("currentQuizId_" + uid).value = nextQ.id;-->
-
-<!--          // unselect radio-->
-<!--          document-->
-<!--              .querySelectorAll(`input[name='answer_${uid}']`)-->
-<!--              .forEach(r => r.checked = false);-->
-<!--      })-->
-<!--      .catch(err => console.error("Error loading next question:", err));-->
-<!--  }-->
-
+<!--          // Clear radio buttons-->
+<!--          document.querySelectorAll("input[name='answer']").forEach(r => r.checked = false);-->
+<!--      });-->
+<!--  } */-->
 <!--</script>-->
 
 
 
 
 
+<!--</div>-->
 </body>
 </html>
-
-
-<!--
-  document.getElementById("showBtn").onclick = function(){
-    document.getElementById("quizBox").style.display = "block";
-  };-->
