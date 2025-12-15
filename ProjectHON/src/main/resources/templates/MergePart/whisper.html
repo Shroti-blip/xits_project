@@ -643,6 +643,131 @@
     box-shadow: 0 4px 12px rgba(247, 59, 32, 0.3);
     transition: opacity 0.5s ease;
 }
+        /* for 3 dots*/
+
+       .chat-header-menu-container {
+    position: relative;
+    margin-left: auto;
+}
+
+.chat-header-menu-icon {
+    font-size: 22px;
+    cursor: pointer;
+    padding: 5px;
+}
+
+.chat-header-menu-dropdown {
+    position: absolute;
+     color:black;
+    top: 35px;
+    right: 0;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+    width: 150px;
+    display: none;
+    z-index: 1000;
+    overflow: hidden;
+}
+
+.chat-header-menu-dropdown.show {
+    display: block;
+}
+
+.chat-header-menu-item {
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.2s ease;
+}
+
+.chat-header-menu-item:hover {
+    background: #f2f2f2;
+}
+
+.chat-header-menu-item.danger {
+    color: black;
+    font-weight: 600;
+}
+
+.error-text {
+    color: #e63946;
+    font-size: 0.9rem;
+    margin: 8px 0;
+}
+
+
+        /* for block user popup.*/
+
+   .confirm-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 3000;
+}
+
+.confirm-box {
+    background: white;
+    width: 380px;
+    padding: 2rem;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+    animation: fadeIn 0.3s ease;
+    text-align: center;
+}
+
+.confirm-box h3 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #F73B20;
+    margin-bottom: 0.8rem;
+}
+
+.confirm-box p {
+    font-size: 0.95rem;
+    color: rgba(26, 26, 26, 0.7);
+    margin-bottom: 1.8rem;
+}
+
+.confirm-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.confirm-actions .btn {
+    padding: 0.6rem 1.6rem;
+    border-radius: 50px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.confirm-actions .btn.cancel {
+    background: #f3f3f3;
+    color: #333;
+}
+
+.confirm-actions .btn.cancel:hover {
+    background: #e5e5e5;
+}
+
+.confirm-actions .btn.danger {
+    background: #F73B20;
+    color: white;
+    box-shadow: 0 4px 15px rgba(247, 59, 32, 0.35);
+}
+
+.confirm-actions .btn.danger:hover {
+    background: #ff5238;
+    transform: translateY(-2px);
+}
+
 
     </style>
 </head>
@@ -651,12 +776,20 @@
 <input type="hidden" id="senderId" th:value="${sender.userId}">
 <input type="hidden" id="receiverId" th:value="${receiver.userId}">
 
+<form id="blockForm" th:action="@{/user/blockUser}" method="post" style="display:none;">
+    <input type="hidden" name="blocker" th:value="${sender.userId}">
+    <input type="hidden" name="blockedUser" th:value="${receiver.userId}">
+</form>
+
+<form id="unblock" th:action="@{/user/unblockUser}" method="post" style="display:none">
+    <input type="hidden" name="blocker" th:value="${sender.userId}">
+    <input type="hidden" name="blockedUser" th:value="${receiver.userId}">
+</form>
+
 
 <div class="chat-container">
     <!-- Chat Header -->
     <div class="chat-header">
-
-<!--        -->
 
         <button class="back-btn" onclick="window.history.back()">
             <i class="bi bi-arrow-left"></i>
@@ -666,7 +799,29 @@
             <h3 class="user-name" th:text="${receiver.username}">Username</h3>
             <p class="user-status mb-0">Online</p>
         </div>
+
+        <div class="chat-header-menu-container">
+            <i class="bi bi-three-dots-vertical chat-header-menu-icon" onclick="toggleChatMenu()"></i>
+
+            <div id="chatHeaderMenu" class="chat-header-menu-dropdown">
+<!--                <div class="chat-header-menu-item" onclick="openProfile()">View Profile</div>-->
+                <div class="chat-header-menu-item" onclick="reportUser()">Report User</div>
+
+                <div class="chat-header-menu-item danger" onclick="openBlockConfirmModal()">Block</div>
+<!--                <div class="chat-header-menu-item danger" onclick="document.getElementById('blockForm').submit()">-->
+<!--                    Block-->
+<!--                </div>-->
+                <div class="chat-header-menu-item danger" onclick="OpenUnblockConfirmModal">Unblock</div>
+<!--                <div class="chat-header-menu-item" ><span onclick="document.getElementById('unblock').submit()">-->
+<!--                    Unblock Now</span>-->
+<!--                </div>-->
+
+            </div>
+        </div>
+
+
     </div>
+
 
     <!-- Chat Messages -->
     <div id="chatBox">
@@ -692,6 +847,21 @@
         </div>
     </div>
 
+    <!--if user is blocked.-->
+    <div th:if="${isBlocked}" class="blocked-notice">
+        <p style="text-align:center; padding: 10px; color: red; font-weight: bold;">
+           Chat is Blocked between you two from one side.
+            <a onclick="document.getElementById('unblock').submit()" style="color:black;">Unblock Now</a>
+        </p>
+    </div>
+
+<!--    <div th:if="${getBlocked}" class="blocked-notice">-->
+<!--        <p style="text-align:center; padding: 10px; color: red; font-weight: bold;">-->
+<!--             You cannot send messages.-->
+<!--&lt;!&ndash;            <a onclick="document.getElementById('unblock').submit()">Unblock Now</a>&ndash;&gt;-->
+<!--        </p>-->
+<!--    </div>-->
+
     <!-- Image preview area -->
     <div class="image-preview-container" id="imagePreviewContainer">
         <div class="image-preview-wrapper">
@@ -703,7 +873,7 @@
     </div>
 
     <!-- Input Area -->
-    <div class="chat-input-area">
+    <div class="chat-input-area" th:unless="${isBlocked}">
         <input id="messageInput" type="text" placeholder="Type a message..." autocomplete="off">
         <input type="file" id="imagePicker" accept="image/*" style="display:none;">
         <i class="bi bi-image image-picker-icon" onclick="imagePicker.click()"></i>
@@ -738,17 +908,16 @@
 <!--needed.-->
 <input type="hidden" id="loggedInUserId" value="${sender.userId}">
 
-<!-- for report thing-->
-<!-- REPORT MODAL -->
+
+<!-- REPORT MODAL for chat-->
 <div class="report-modal-overlay" id="reportModal">
     <div class="report-modal">
         <button class="close-report" onclick="closeReportModal()">&times;</button>
 
-        <form id="reportForm" th:action="@{/user/reportChat}" method="post">
+        <form id="reportForm" th:action="@{'/user/reportChat'}" method="post">
 
             <h2 class="modal-title">Report Message</h2>
             <p class="modal-subtitle">Select a reason for reporting this message</p>
-
 
 
             <input type="hidden" id="ownerId" name="ownerId">
@@ -779,18 +948,99 @@
                 <label><input type="radio" name="reason" value="Other"> Other</label>
             </div>
 
+            <div class="error-text" id="reasonErrorChat" style="display:none;" >
+                ⚠ Please select at least one reason.
+            </div>
+
             <textarea class="extra-comments" name="comment"
                       placeholder="Additional comments (optional)"></textarea>
 
-           <button type="submit" class="submit-report-btn">Submit Report</button>
+           <button type="submit" class="submit-report-btn" id="chat-submit-button">Submit Report</button>
 
         </form>
     </div>
 </div>
 
-<!--<div th:if="${success}" id="successMsg" class="success-banner">-->
-<!--    ✔ Successfully Reported.-->
-<!--</div>-->
+<!--User Report Modal-->
+<div class="report-modal-overlay" id="userReportModal">
+    <div class="report-modal">
+        <button class="close-report" onclick="closeUserReportModal()">&times;</button>
+
+        <form id="reportUserForm" th:action="@{'/user/userReport'}" method="post" onsubmit="return validateReportForm()">
+
+            <h2 class="modal-title">Report User</h2>
+            <p class="modal-subtitle">Select a reason for reporting this user</p>
+
+            <input type="hidden" id="ownerIdU" name="ownerId">
+            <input type="hidden" id="reporterIdU" name="reporterId">
+
+            <div class="reason-option">
+                <label><input type="radio" name="reason" value="Harassment"> Harassment / Bullying</label>
+            </div>
+
+            <div class="reason-option">
+                <label><input type="radio" name="reason" value="Spam"> Spam or Misleading Content</label>
+            </div>
+
+            <div class="reason-option">
+                <label><input type="radio" name="reason" value="Hate Speech"> Hate Speech</label>
+            </div>
+
+            <div class="reason-option">
+                <label><input type="radio" name="reason" value="Explicit"> Explicit or Sexual Content</label>
+            </div>
+
+            <div class="reason-option">
+                <label><input type="radio" name="reason" value="Violence"> Violence or Dangerous Acts</label>
+            </div>
+
+            <div class="reason-option">
+                <label><input type="radio" name="reason" value="Other"> Other</label>
+            </div>
+
+            <div class="error-text" id="reasonError" style="display:none;">
+                ⚠ Please select at least one reason
+            </div>
+
+
+            <textarea class="extra-comments" name="comment"
+                      placeholder="Additional comments (optional)"></textarea>
+
+            <button type="submit" class="submit-report-btn" id="user-submit-button">Submit Report</button>
+
+        </form>
+    </div>
+</div>
+
+<!--for block confirmation-->
+<div class="confirm-overlay" id="blockConfirmModal">
+    <div class="confirm-box">
+        <h3>Block this user?</h3>
+        <p>
+            You won’t be able to send or receive messages from this user.
+        </p>
+
+        <div class="confirm-actions">
+            <button class="btn cancel" onclick="closeBlockConfirmModal()">Cancel</button>
+            <button class="btn danger" onclick="confirmBlock()">Block</button>
+        </div>
+    </div>
+</div>
+
+<!--for unblock model-->
+<div class="confirm-overlay" id="UnblockConfirmModal">
+    <div class="confirm-box">
+        <h3>Unblock this user?</h3>
+        <p>
+            You will be able to send or receive messages from this user.
+        </p>
+        <div class="confirm-actions">
+            <button class="btn cancel" onclick="closeUnblockConfirmModel()">Cancel</button>
+            <button class="btn danger" onclick="confirmUnblock()">Unblock</button>
+        </div>
+    </div>
+</div>
+
 
 <!-- STOMP + SockJS -->
 <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
@@ -1133,7 +1383,7 @@
 
 </script>
 
-<!--for report one.-->
+<!--for report one like click one.-->
 <script>
 
     // =============================
@@ -1201,13 +1451,17 @@
     function closeReportModal() {
         document.getElementById("reportModal").style.display = "none";
     }
+    function closeUserReportModal() {
+        document.getElementById("userReportModal").style.display = "none";
+    }
 
     // close when clicking outside
     document.getElementById("reportModal").addEventListener("click", function (e) {
         if (e.target === this) closeReportModal();
     });
 
-const reporterId = document.getElementById("loggedInUserId").value;
+    const reporterId = document.getElementById("loggedInUserId").value;
+
     function openReportModalById(ownerId, reporterId, whisperId) {
     document.getElementById("ownerId").value = ownerId;
     document.getElementById("reporterId").value = reporterId;
@@ -1217,29 +1471,178 @@ const reporterId = document.getElementById("loggedInUserId").value;
 
 </script>
 
-<!--<script>-->
-<!--    window.addEventListener("DOMContentLoaded", function () {-->
-<!--        const msg = document.getElementById("successMsg");-->
-<!--        if (msg) {-->
-<!--            setTimeout(() => {-->
-<!--                msg.style.display = "none";-->
-<!--            }, 3000); // 3 seconds-->
-<!--        }-->
-<!--    });-->
-<!--</script>-->
-
-
+<!--for radio btn-->
 <script>
     document.getElementById("reportForm").addEventListener("submit", function(event) {
         const selected = document.querySelector('input[name="reason"]:checked');
+           let errorDiv = document.getElementById("reasonErrorChat");
 
         if (!selected) {
-            alert("Please select at least one reason for reporting.");
+            //alert("Please select at least one reason for reporting.");
+            errorDiv.style.display = "block";
             event.preventDefault(); // Stop form submission
+            return;
+        }
+
+        errorDiv.style.display="none";
+
+         document.getElementById("chat-submit-button").disabled=true;
+          document.getElementById("chat-submit-button").innerHTML="Reporting...";
+    });
+</script>
+
+<!--profile 3 dots.-->
+<script>
+    function toggleChatMenu() {
+        document.getElementById("chatHeaderMenu").classList.toggle("show");
+    }
+
+    // close menu when clicking outside
+    document.addEventListener("click", function(e) {
+        const menu = document.getElementById("chatHeaderMenu");
+        const icon = document.querySelector(".chat-header-menu-icon");
+
+        if (!menu.contains(e.target) && !icon.contains(e.target)) {
+            menu.classList.remove("show");
         }
     });
 </script>
 
+<!--for report user modal -->
+<script>
+
+    function reportUser() {
+       // const reporterId = document.getElementById("loggedInUserId").value;
+      //  const ownerId = document.getElementById("profileUserId").value; // user being reported
+
+
+        const ownerId = document.getElementById("receiverId").value;
+        const reporterId= document.getElementById("senderId").value;
+
+        // Clear whisperId because reporting user → not reporting message
+        //document.getElementById("reportWhisperId").value = "";
+
+        // Set IDs inside modal
+        document.getElementById("ownerIdU").value = ownerId;
+        document.getElementById("reporterIdU").value = reporterId;
+
+        // Open modal
+        document.getElementById("userReportModal").style.display = "flex";
+    }
+
+</script>
+
+<!--user report.-->
+<script>
+    function validateReportForm() {
+        let reasons = document.getElementsByName("reason");
+        let errorDiv = document.getElementById("reasonError");
+        let selected = false;
+
+        for (let r of reasons) {
+            if (r.checked) {
+                selected = true;
+                break;
+            }
+        }
+
+        if (!selected) {
+            errorDiv.style.display = "block"; // show UI error
+            return false; // stop submit
+        }
+
+        // hide error if valid
+        errorDiv.style.display = "none";
+
+        let btn = document.getElementById("user-submit-button");
+        btn.disabled = true;
+        btn.innerHTML = "Reporting...";
+
+        return true; // allow submit
+    }
+</script>
+
+<!--for modal error msg disappear-->
+<script>
+    document.querySelectorAll("input[name='reason']").forEach(radio => {
+        radio.addEventListener("change", () => {
+            document.getElementById("reasonError").style.display = "none";
+        });
+    });
+</script>
+
+<!--for showing blocking confirmation popup-->
+<script>
+    function openBlockConfirmModal(){
+        document.getElementById("blockConfirmModal").style.display="flex";
+    }
+    function closeBlockConfirmModal(){
+    document.getElementById("blockConfirmModal").style.display="none";
+    }
+
+    function confirmBlock(){
+    document.getElementById("blockForm").submit();
+    }
+</script>
+
+<!--for unblock confirmation-->
+<script>
+    function OpenUnblockConfirmModal(){
+    document.getElementById("unBlockConfirmModal").style.display="flex";
+    }
+
+        function confirmUnblock(){
+        document.getElementById("unblock").submit();
+     }
+
+    function closeUnblockConfirmModel(){
+    document.getElementById("unblock").style.display ="none";
+    }
+
+
+</script>
+
+
+<!--for user report modal option choose js.-->
+<!--<script>-->
+<!--    function validateReportForm() {-->
+<!--        let reasons = document.getElementsByName("reason");-->
+<!--        let selected = false;-->
+
+<!--        for (let r of reasons) {-->
+<!--            if (r.checked) {-->
+<!--                selected = true;-->
+<!--                break;-->
+<!--            }-->
+<!--        }-->
+
+<!--        if (!selected) {-->
+<!--            alert("⚠ Please select at least one reason before submitting.");-->
+<!--            return false; // Prevent submit-->
+<!--        }-->
+
+<!--        document.getElementById("user-submit-button").disabled = true;-->
+<!--        document.getElementById("user-submit-button").innerHTML = "Reporting...";-->
+
+
+<!--        return true; // Allow submit-->
+<!--    }-->
+<!--</script>-->
 
 </body>
 </html>
+
+
+<!--for blocking popup-->
+<!--<div class="confirm-overlay" id="blockConfirmModal">-->
+<!--    <div class="confirm-box">-->
+<!--        <h3>Block User?</h3>-->
+<!--        <p>Are you sure you want to block this user? You won't be able to chat anymore.</p>-->
+
+<!--        <div class="confirm-actions">-->
+<!--            <button class="confirm-btn no" onclick="closeBlockConfirm()">Cancel</button>-->
+<!--            <button class="confirm-btn yes" onclick="confirmBlock()">Yes, Block</button>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</div>-->
+
