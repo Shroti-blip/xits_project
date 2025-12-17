@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HON Admin Panel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Caveat', system-ui, sans-serif;
+            background: #f6f7fb;
+            color: #1a1a1a;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ========== SIDEBAR ========== */
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(135deg, #F73B20, #ff5a3f);
+            color: white;
+            padding: 2rem 0;
+            position: fixed;
+            height: 100vh;
+            box-shadow: 6px 0 30px rgba(247, 59, 32, 0.25);
+        }
+
+        .logo {
+            text-align: center;
+            font-size: 1.9rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            margin-bottom: 3rem;
+        }
+
+        .nav-item {
+            margin: 0.4rem 1rem;
+            padding: 1rem 1.5rem;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item i {
+            font-size: 1.3rem;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.18);
+            transform: translateX(6px);
+        }
+
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.28);
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.3);
+        }
+
+        /* ========== MAIN ========== */
+        .main {
+            margin-left: 260px;
+            padding: 2.5rem;
+            width: calc(100% - 260px);
+        }
+
+        /* Topbar */
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+            border-bottom: 2px solid rgba(247,59,32,0.15);
+            padding-bottom: 1rem;
+        }
+
+        .topbar h1 {
+            font-size: 2.6rem;
+            font-weight: 700;
+        }
+
+        .admin {
+            padding: 0.6rem 1.6rem;
+            border-radius: 30px;
+            background: rgba(247,59,32,0.12);
+            color: #F73B20;
+            font-weight: 600;
+            border: 1px solid rgba(247,59,32,0.3);
+        }
+
+        /* ========== STATS ========== */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.6rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 22px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+            transition: 0.3s ease;
+            border: 1px solid rgba(247,59,32,0.15);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 14px 40px rgba(247,59,32,0.2);
+        }
+
+        .stat-title {
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #777;
+            margin-bottom: 0.6rem;
+        }
+
+        .stat-value {
+            font-size: 2.7rem;
+            color: #F73B20;
+            font-weight: 700;
+        }
+
+        /* ========== PANELS ========== */
+        .panel {
+            background: white;
+            border-radius: 22px;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+            border: 1px solid rgba(247,59,32,0.15);
+        }
+
+        .panel-header {
+            margin-bottom: 1.8rem;
+            border-bottom: 2px solid rgba(247,59,32,0.1);
+            padding-bottom: 0.8rem;
+        }
+
+        .panel-header h2 {
+            font-size: 1.9rem;
+            font-weight: 700;
+        }
+
+        /* ========== TABLE ========== */
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 10px;
+        }
+
+        thead th {
+            text-align: left;
+            padding: 1rem;
+            font-size: 0.9rem;
+            color: #F73B20;
+            text-transform: uppercase;
+        }
+
+        tbody tr {
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.05);
+            transition: 0.3s ease;
+        }
+
+        tbody tr:hover {
+            transform: scale(1.01);
+        }
+
+        td {
+            padding: 1rem;
+            font-size: 0.95rem;
+        }
+
+        /* ========== BADGES ========== */
+        .badge {
+            padding: 0.45rem 1rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .badge.warning {
+            background: rgba(255,165,0,0.15);
+            color: #ff8c00;
+        }
+
+        /* ========== BUTTON ========== */
+        .action-btn {
+            background: linear-gradient(135deg, #F73B20, #ff5238);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.6rem;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s ease;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(247,59,32,0.4);
+        }
+
+        /* ========== SUCCESS BANNER ========== */
+       .success-banner {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: white;
+    padding: 12px 18px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.9rem;
+
+    z-index: 9999;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+
+    animation: slideIn 0.4s ease;
+}
+
+
+     @keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(40px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+ @media (max-width: 600px) {
+    .success-banner {
+        left: 50%;
+        right: auto;
+        transform: translateX(-50%);
+        width: calc(100% - 40px);
+        text-align: center;
+    }
+}
+
+    </style>
+
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo">HON · ADMIN</div>
+
+        <div class="nav-item active">
+            <i class="bi bi-shield-lock"></i>
+            <span>Reports</span>
+        </div>
+        <div class="nav-item">
+            <i class="bi bi-chat-dots"></i>
+            <span>Reported Chats</span>
+        </div>
+        <div class="nav-item">
+            <i class="bi bi-people"></i>
+            <span>Users</span>
+        </div>
+        <div class="nav-item">
+            <i class="bi bi-slash-circle"></i>
+            <span>Blocked Users</span>
+        </div>
+        <div class="nav-item">
+            <i class="bi bi-gear"></i>
+            <span>Settings</span>
+        </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+
+        <div class="topbar">
+            <h1>Reports Overview</h1>
+            <div class="admin">Admin</div>
+        </div>
+
+        <!-- Stats -->
+        <section class="stats">
+            <div class="stat-card">
+                <div class="stat-title">Total Reports</div>
+                <div class="stat-value" th:text="${userReport}">128</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Reported Chats</div>
+                <div class="stat-value" th:text="${chatReport}">74</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Pending Review</div>
+                <div class="stat-value">12</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Active Users</div>
+                <div class="stat-value">1,247</div>
+            </div>
+        </section>
+
+        <!-- Reports Table -->
+        <section class="panel">
+            <div class="panel-header">
+                <h2>User Reports</h2>
+            </div>
+            <table>
+                <thead>
+                <tr>
+                    <th>Reporter</th>
+                    <th>Reported User</th>
+                    <th>Reason</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody th:each="list: ${reportedUserList}">
+                <!--            <input type="hidden" name="reporterID" th:value="${list.reporterUser.userId}">-->
+                <!--            <input type="hidden" name="ownerUser" th:value="${list.ownerUser.userId}">-->
+                <tr>
+                    <td th:text="${list.reporterUser.username}">@elara</td>
+                    <td th:text="${list.ownerUser.username}">@unknown_soul</td>
+                    <td th:text="${list.reason}">Harassment</td>
+                    <td><span class="badge warning">Pending</span></td>
+                    <td><a th:href="@{/user/reportReview/{r}/{o}/{reportId}(
+                r=${list.reporterUser.userId}, o=${list.ownerUser.userId} , reportId=${list.id}
+                )}">
+                        <button class="action-btn" >Review</button></a></td>
+                </tr>
+
+                </tbody>
+            </table>
+        </section>
+
+
+
+        <!-- Reported Chats -->
+        <section class="panel">
+            <div class="panel-header">
+                <h2>Reported Chats</h2>
+            </div>
+            <table>
+                <thead>
+                <tr>
+                    <th>User A</th>
+                    <th>User B</th>
+                    <th>Reason</th>
+                    <th>Reports</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody th:each="list : ${reportedChatList}">
+                <tr>
+                    <td th:text="${list.reporter.username}">@elara</td>
+                    <td th:text="${list.owner.username}">@lostboy</td>
+                    <td th:text="${list.reason}">Inappropriate Content</td>
+                    <td>5</td>
+                    <td><button class="action-btn">Open Chat</button></td>
+                </tr>
+
+                </tbody>
+            </table>
+        </section>
+
+    </main>
+
+
+
+<!--    for warning success-->
+<div th:if="${warningSuccess}" id="successMsg" class="success-banner">
+    ✔ Successfully send warning mail to user.
+</div>
+
+<div th:if="${successMsgReport}" id="successMsgReport" class="success-banner">
+    ✔ Successfully rejected report for that user.
+</div>
+
+
+<!--for warning popup-->
+
+<script>
+    window.addEventListener("DOMContentLoaded", function () {
+        const msg = document.getElementById("successMsg");
+        if (msg) {
+            setTimeout(() => {
+                msg.style.display = "none";
+            }, 3000); // 3 seconds
+        }
+    });
+</script>
+
+<script>
+    window.addEventListener("DOMContentLoaded" , function() {
+    const msg = document.getElementById("successMsgReport");
+    if(msg){
+    setTimeout(() => {
+    msg.style.display="none";
+    },3000);
+    }
+    });
+</script>
+
+</body>
+</html>
