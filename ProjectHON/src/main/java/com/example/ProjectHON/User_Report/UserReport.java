@@ -1,6 +1,7 @@
 package com.example.ProjectHON.User_Report;
 
 
+import com.example.ProjectHON.AdminReportPackage.AdminReportEntity;
 import com.example.ProjectHON.User_masterpackage.UserMaster;
 import jakarta.persistence.*;
 
@@ -18,6 +19,29 @@ public class UserReport {
     private String comment;
 
     private LocalDateTime dateTime;
+
+
+//    private Boolean isReported = false;
+
+
+    public enum ReportStatus {
+        PENDING,        // newly reported, admin hasn't seen it
+        IN_REVIEW,      // admin opened it
+        ACTION_TAKEN,   // warning / block / delete done
+        REJECTED        // invalid / false report
+    }
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)//
+    private UserReport.ReportStatus status = UserReport.ReportStatus.PENDING;
+
+    public ReportStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(ReportStatus status) {
+        this.status = status;
+    }
 
     @ManyToOne
     @JoinColumn(name = "reporter_user")
@@ -86,4 +110,12 @@ public class UserReport {
     public void setOwnerUser(UserMaster ownerUser) {
         this.ownerUser = ownerUser;
     }
+
+//    public Boolean getReported() {
+//        return isReported;
+//    }
+//
+//    public void setReported(Boolean reported) {
+//        isReported = reported;
+//    }
 }
