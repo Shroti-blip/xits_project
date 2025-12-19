@@ -1,6 +1,7 @@
 package com.example.ProjectHON.Chat_Report;
 
 
+import com.example.ProjectHON.User_Report.UserReport;
 import com.example.ProjectHON.User_masterpackage.UserMaster;
 import com.example.ProjectHON.Whisper_masterpackage.WhisperMaster;
 import jakarta.persistence.*;
@@ -31,6 +32,25 @@ public class ChatReport {
     @ManyToOne
     @JoinColumn(name="reporter_id")
     private UserMaster reporter;
+
+    public enum ReportStatus {
+        PENDING,        // newly reported, admin hasn't seen it
+        IN_REVIEW,      // admin opened it
+        ACTION_TAKEN,   // warning / block / delete done
+        REJECTED            // invalid / false report
+    }
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)//
+    private ChatReport.ReportStatus status = ChatReport.ReportStatus.PENDING;
+
+    public ReportStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(ReportStatus status) {
+        this.status = status;
+    }
 
     public ChatReport(int id, String reason, String comment, LocalDateTime dateTime, WhisperMaster whisperMaster, UserMaster owner, UserMaster reporter) {
         this.id = id;
