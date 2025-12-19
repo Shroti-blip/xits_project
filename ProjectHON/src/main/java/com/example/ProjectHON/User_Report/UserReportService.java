@@ -17,6 +17,8 @@ public class UserReportService {
     @Autowired
     UserMasterRepository userMasterRepository;
 
+
+
     public UserReport saveReport(String reason , String comment , Long reporterId , Long ownerId){
 
         UserMaster reporter = userMasterRepository.findById(reporterId).orElse(null);
@@ -33,4 +35,6 @@ public class UserReportService {
 
         return userReportRepository.save(u);
     }
+
+
 }
