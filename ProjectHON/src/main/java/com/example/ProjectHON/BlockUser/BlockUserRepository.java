@@ -19,10 +19,10 @@ public interface BlockUserRepository extends JpaRepository<BlockUser , Integer> 
     @Query("DELETE FROM BlockUser bu WHERE bu.blocker.userId = :blockerId AND bu.blockedUser.userId = :blockedId")
     int deleteByBlockerAndBlocked(@Param("blockerId") Long blockerId, @Param("blockedId") Long blockedId);
 
+     @Query("Select b from BlockUser b where b.blocker.userId = :blockerId")
+    List<BlockUser> findAllBYBlockerId(@Param("blockerId") Long blockerId);
 
 
 }
 
 
-
-//void deleteByBlocker_UserIdAndBlockedUser_UserId(Long blockerId, Long blockedId);
