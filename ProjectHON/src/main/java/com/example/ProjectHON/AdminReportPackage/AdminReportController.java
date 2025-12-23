@@ -12,14 +12,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 
 @Controller
 public class AdminReportController {
@@ -40,6 +38,8 @@ public class AdminReportController {
     @Autowired
     AdminEmailService adminEmailService;
 
+
+
     @GetMapping("/user/adminReportPage")
     public String adminReportPage(Model model){
 
@@ -51,6 +51,9 @@ public class AdminReportController {
 
         List<UserReport> reportedUserList = userReportRepository.findAll();
         List<ChatReport> reportedChatList = chatReportRepository.findAll();
+
+//        userReportRepository.findById();
+
 
 
         model.addAttribute("userReport" , userReport);
@@ -82,13 +85,25 @@ public class AdminReportController {
         int totalCount = userReportRepository.countTotalReportsForUser(ownerId);
          System.out.println("====Total reports for that user is : " + totalCount);
 
+//        AdminReportEntity  admin =  adminReportRepository.findByUserReport(report).orElse(null);
+
+        UserReport userReport = userReportRepository.findById(reportId).orElseThrow(()->new RuntimeException("Report not found."));
+
+        if(userReport.getStatus()== UserReport.ReportStatus.PENDING){
+            userReport.setStatus(UserReport.ReportStatus.IN_REVIEW);
+            userReportRepository.save(userReport);
+        }
+
+
         model.addAttribute("reporter" , reporter);
         model.addAttribute("owner" , owner);
         model.addAttribute("report" , report);
         model.addAttribute("totalCount" , totalCount);
+//        model.addAttribute("userReportStatus" , userReport);
 
         session.setAttribute("owner" , owner);
         session.setAttribute("reporter" , reporter);
+        session.setAttribute("reportId" ,reportId);
 
         return "MergePart/report_review_admin";
     }
@@ -98,6 +113,18 @@ public class AdminReportController {
 
        UserMaster owner = (UserMaster) session.getAttribute("owner" );
         UserMaster reporter = (UserMaster) session.getAttribute("reporter");
+//       UserReport report = (UserReport) session.getAttribute("reportId");
+//                Long reportId = report.getId();
+
+        Long userReportId = (Long)session.getAttribute("reportId");
+
+        UserReport userReport = userReportRepository.findById(userReportId).orElseThrow(()->new RuntimeException("Report not found."));
+        userReport.setStatus(UserReport.ReportStatus.ACTION_TAKEN);
+//        userReport.setWarningCount(userReport.getWarningCount()+1);
+        owner.setWarningCount(owner.getWarningCount()+1);
+        userReportRepository.save(userReport);
+        userMasterRepository.save(owner);
+
         try{
             adminEmailService.sendLastWarningMail(owner.getEmail());
         }catch (Exception e){
@@ -116,9 +143,14 @@ public class AdminReportController {
 
         UserMaster owner = (UserMaster) session.getAttribute("owner" );//multi user?
         UserMaster reporter = (UserMaster) session.getAttribute("reporter");
+        Long userReportId = (Long)session.getAttribute("reportId");
 
-        userReportRepository.deleteFromUserReport(owner.getUserId() , reporter.getUserId());
-        System.out.println("---successfully deleted -----");
+        UserReport userReport = userReportRepository.findById(userReportId).orElseThrow(()->new RuntimeException("Report not found."));
+        userReport.setStatus(UserReport.ReportStatus.REJECTED);
+        userReportRepository.save(userReport);
+
+//        userReportRepository.deleteFromUserReport(owner.getUserId() , reporter.getUserId());
+//        System.out.println("---successfully deleted -----");
 
         redirectAttributes.addFlashAttribute("successMsgReport" , true);
 
@@ -128,16 +160,47 @@ public class AdminReportController {
     @PostMapping("/blockReportedUser")
     public String blockReportedUser(HttpSession session){
         UserMaster owner = (UserMaster) session.getAttribute("owner" );
+
+        Long userReportId = (Long)session.getAttribute("reportId");
+
+        UserReport userReport = userReportRepository.findById(userReportId).orElseThrow(()->new RuntimeException("Report not found."));
+        userReport.setStatus(UserReport.ReportStatus.ACTION_TAKEN);
+        userReportRepository.save(userReport);
         owner.setAccountStatus(UserMaster.AccountStatus.BLOCKED);
+        owner.setStatus(false);
         userMasterRepository.save(owner);
+        try{
+            adminEmailService.sendAfterBLocking(owner.getEmail());
+        }catch (Exception e){
+            System.out.println("--------exception in sending blocking mail ------------" + e.getMessage());
+        }
 
         return "redirect:/user/adminReportPage";//success popup + before confirmation popup(with info)
     }
 
-    @GetMapping("/user/blockeduser")
-    public String blockedUser(){
-        return "MergePart/blockeduser";
+//    @GetMapping("/user/blockeduser")
+//    public String blockedUser(){
+//        return "MergePart/blockeduser";
+//    }
+
+    @GetMapping("/user/get-all-blocked-user-admin")
+    public String blockedUser(Model model){
+
+        List<UserMaster> blockedList = userMasterRepository.findAllByStatus(UserMaster.AccountStatus.BLOCKED);
+        model.addAttribute("blockedList" ,blockedList);
+        return "MergePart/blocked_user_by_admin";
     }
+
+
+
+    @GetMapping("/user/get-unblocked/{uid}")
+    public String getUnbloked(@PathVariable("uid") Long blockedUserId  , Model model){
+        UserMaster blockedUser =  userMasterRepository.findById(blockedUserId).orElse(null);
+        model.addAttribute("blockedUser" , blockedUser);
+        return "MergePart/unblock_admin";
+    }
+
+
 }
 
 
