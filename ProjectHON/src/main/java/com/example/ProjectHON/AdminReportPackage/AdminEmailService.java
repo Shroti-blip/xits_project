@@ -1,6 +1,7 @@
 package com.example.ProjectHON.AdminReportPackage;
 
 
+import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -75,6 +76,67 @@ public class AdminEmailService {
         helper.setText(htmlBody , true);
         javaMailSender.send(message);
 
+    }
+
+    public void sendAfterBLocking(String email) throws Exception{
+        MimeMessage message = javaMailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message , true);
+
+        helper.setFrom("muskanshroti01@gmail.com");
+        helper.setTo(email);
+        helper.setSubject("Your Account Is Blocked.");
+
+        String htmlBody =
+                "<!DOCTYPE html>" +
+                        "<html lang='en'>" +
+                        "<head>" +
+                        "  <meta charset='UTF-8'>" +
+                        "  <title>Account Blocked – Action Taken</title>" +
+                        "  <style>" +
+                        "    body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f5f6fa; margin: 0; padding: 40px 0; }" +
+                        "    .container { max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 12px;" +
+                        "                box-shadow: 0 4px 20px rgba(0,0,0,0.08); padding: 40px 30px; text-align: center; }" +
+                        "    .logo { font-size: 32px; font-weight: bold; color: #dc2626; margin-bottom: 20px; }" +
+                        "    h2 { color: #991b1b; font-size: 22px; margin-bottom: 10px; }" +
+                        "    p { color: #555555; font-size: 16px; line-height: 1.6; margin: 15px 0; }" +
+                        "    .blocked-box { background-color: #fee2e2; border-left: 6px solid #dc2626; padding: 18px;" +
+                        "                    color: #7f1d1d; font-size: 16px; border-radius: 6px; margin-top: 25px; }" +
+                        "    .footer { margin-top: 35px; font-size: 12px; color: #999999; border-top: 1px solid #eeeeee; padding-top: 20px; }" +
+                        "    a { color: #dc2626; text-decoration: none; }" +
+                        "  </style>" +
+                        "</head>" +
+                        "<body>" +
+                        "  <div class='container'>" +
+                        "    <div class='logo'>🚫 HotOrNot</div>" +
+
+                        "    <h2>Account Blocked</h2>" +
+
+                        "    <p>Hi <strong>User</strong>,</p>" +
+                        "    <p>This email is to inform you that your account has been <strong>blocked</strong> by the <strong>HotOrNot Admin Team</strong>.</p>" +
+                        "    <p>After reviewing multiple reports filed against your account, it was found that your activity violated our community guidelines.</p>" +
+
+                        "    <div class='blocked-box'>" +
+                        "        🔒 <strong>Account Access Restricted</strong><br><br>" +
+                        "        Due to repeated reports:<br>" +
+                        "        • Your account has been <strong>blocked</strong><br>" +
+                        "        • Chat and interaction features are <strong>disabled</strong><br>" +
+                        "        • Further access to the platform is <strong>restricted</strong><br>" +
+                        "        <br>This decision has been taken to maintain a safe and respectful community." +
+                        "    </div>" +
+
+                        "    <p>If you believe this action was taken in error, you may contact our support team within <strong>7 days</strong> for further review.</p>" +
+                        "    <p>Please note that repeated violations may result in <strong>permanent account deletion</strong>.</p>" +
+
+                        "    <p>For support, contact us at <a href='mailto:contact.hon@gmail.com'>contact.hon@gmail.com</a></p>" +
+
+                        "    <div class='footer'>© 2025 HotOrNot (HON). All rights reserved.</div>" +
+                        "  </div>" +
+                        "</body>" +
+                        "</html>";
+
+
+        helper.setText(htmlBody , true);
+        javaMailSender.send(message);
     }
 
 }
