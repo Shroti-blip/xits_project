@@ -28,21 +28,8 @@ public class AdminReportEntity {
     @JoinColumn(name = "user_master")
     private UserMaster userMaster;
 
-    public enum ReportStatus {
-        PENDING,        // newly reported, admin hasn't seen it
-        IN_REVIEW,      // admin opened it
-        ACTION_TAKEN,   // warning / block / delete done
-        REJECTED        // invalid / false report
-    }
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private ReportStatus status = ReportStatus.PENDING;
-
 
     private LocalDateTime actionAt = LocalDateTime.now();
-
-
 
 
     public AdminReportEntity() {
