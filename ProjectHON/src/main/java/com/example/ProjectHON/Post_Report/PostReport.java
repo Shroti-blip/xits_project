@@ -5,9 +5,9 @@ import com.example.ProjectHON.User_masterpackage.UserMaster;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name="")
 public class PostReport {
 
     @Id
@@ -23,7 +23,37 @@ public class PostReport {
     String comment;
 
 
-//reporters id and offenders id
+    public enum ReportStatus {
+        PENDING,
+        REJECTED,
+        WARNED,
+        POST_DELETED
+    }
+
+
+    @Enumerated(EnumType.STRING)
+    private ReportStatus status = ReportStatus.PENDING;
+
+    private LocalDateTime handledAt;
+
+    public ReportStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(ReportStatus status) {
+        this.status = status;
+    }
+
+    public LocalDateTime getHandledAt() {
+        return handledAt;
+    }
+
+    public void setHandledAt(LocalDateTime handledAt) {
+        this.handledAt = handledAt;
+    }
+
+
+    //reporters id and offenders id
 
     // reporter FK
     @ManyToOne
