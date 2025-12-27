@@ -178,11 +178,9 @@ public class AdminReportController {
         return "redirect:/user/adminReportPage";//success popup + before confirmation popup(with info)
     }
 
-//    @GetMapping("/user/blockeduser")
-//    public String blockedUser(){
-//        return "MergePart/blockeduser";
-//    }
 
+
+//    for showing all blocked users
     @GetMapping("/user/get-all-blocked-user-admin")
     public String blockedUser(Model model){
 
@@ -191,15 +189,74 @@ public class AdminReportController {
         return "MergePart/blocked_user_by_admin";
     }
 
+    //for getting unblocked page (admin)
+        @GetMapping("/user/get-unblocked/{uid}")
+        public String getUnbloked(@PathVariable("uid") Long blockedUserId  , Model model){
+            UserMaster blockedUser =  userMasterRepository.findById(blockedUserId).orElse(null);
+            int totalCount = userReportRepository.countTotalReportsForUser(blockedUserId);
+            model.addAttribute("totalCount" , totalCount);
+
+            model.addAttribute("blockedUser" , blockedUser);
+            return "MergePart/unblock_admin";
+        }
 
 
-    @GetMapping("/user/get-unblocked/{uid}")
-    public String getUnbloked(@PathVariable("uid") Long blockedUserId  , Model model){
-        UserMaster blockedUser =  userMasterRepository.findById(blockedUserId).orElse(null);
-        model.addAttribute("blockedUser" , blockedUser);
-        return "MergePart/unblock_admin";
-    }
+//        for search with username
+        @GetMapping("/user/blocked-users/search")
+        public String searchBlockedUsers(
+                @RequestParam(required = false) String username,
+                Model model) {
 
+            List<UserMaster> blockedList;
+
+            if (username == null || username.isBlank()) {
+                blockedList =
+                        userMasterRepository.findAllByStatus(UserMaster.AccountStatus.BLOCKED);
+            } else {
+                blockedList = userMasterRepository.findByUsernameContainingIgnoreCase(username)
+                        .stream()
+                        .filter(u -> u.getAccountStatus() == UserMaster.AccountStatus.BLOCKED)
+                        .toList();
+            }
+
+            model.addAttribute("blockedList", blockedList);
+            return "MergePart/fragments/blocked_user_list :: userList";
+        }
+
+//        for search with email
+        @GetMapping("/user/blocked-users/search2")
+        public String searchBlokedUsersEmail(
+                @RequestParam(required = false) String email,
+                Model model){
+
+        List<UserMaster> blockedList;
+        if(email==null || email.isBlank()){
+            blockedList = userMasterRepository.findAllByStatus(UserMaster.AccountStatus.BLOCKED);
+        }else{
+            blockedList = userMasterRepository.findByEmailContainingIgnoreCase(email)
+                    .stream()
+                    .filter(u->u.getAccountStatus() == UserMaster.AccountStatus.BLOCKED)
+                    .toList();
+        }
+            model.addAttribute("blockedList", blockedList);
+
+            return "MergePart/fragments/blocked_user_list :: userList";
+        }
+
+//for unblocking / changing status of that user
+        @PostMapping("/user/unblockUserAdmin")
+        public String getUnbloked(@RequestParam("userId") Long userId ,
+                                  RedirectAttributes redirectAttributes){
+
+        UserMaster user = userMasterRepository.findById(userId).orElse(null);
+        user.setAccountStatus(UserMaster.AccountStatus.SUSPENDED);
+        user.setStatus(true);
+        userMasterRepository.save(user);
+
+        redirectAttributes.addFlashAttribute("success" , true);
+
+        return "redirect:/user/get-all-blocked-user-admin";
+        }
 
 }
 
