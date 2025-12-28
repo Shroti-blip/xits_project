@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Reported Posts</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    :root {
+        --theme-orange: #F73B20;
+    }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        background: white;
+        min-height: 100vh;
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    /* Header */
+    .inbox-header {
+        background: var(--theme-orange);
+        padding: 20px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 6px rgba(247, 59, 32, 0.2);
+    }
+
+    .back-btn {
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        width: 45px;
+        height: 45px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s;
+        color: white;
+    }
+
+    .back-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateX(-3px);
+    }
+
+    .back-btn i {
+        font-size: 20px;
+    }
+
+    .inbox-title {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 24px;
+        font-weight: 700;
+        color: white;
+    }
+
+    .inbox-title i {
+        font-size: 28px;
+    }
+
+    .pending-badge {
+        background: white;
+        color: var(--theme-orange);
+        padding: 10px 20px;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .pending-badge span {
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    /* Filters */
+    .filters {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 15px;
+        margin-bottom: 25px;
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        border: 1px solid #e9ecef;
+    }
+
+    .filter-btn {
+        padding: 10px 20px;
+        border: 2px solid #e2e8f0;
+        background: white;
+        border-radius: 25px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s;
+        font-size: 14px;
+        color: #495057;
+    }
+
+    .filter-btn:hover {
+        border-color: var(--theme-orange);
+        color: var(--theme-orange);
+    }
+
+    .filter-btn.active {
+        background: var(--theme-orange);
+        color: white;
+        border-color: var(--theme-orange);
+    }
+
+    /* Report Cards */
+    .reports-grid {
+        display: grid;
+        gap: 20px;
+    }
+
+    .report-card {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        border: 1px solid #e9ecef;
+        transition: all 0.3s;
+    }
+
+    .report-card:hover {
+        box-shadow: 0 8px 20px rgba(247, 59, 32, 0.15);
+        transform: translateY(-2px);
+    }
+
+    .report-header {
+        padding: 20px;
+        border-bottom: 2px solid #f8f9fa;
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+    }
+
+    .report-info {
+        flex: 1;
+    }
+
+    .report-date {
+        color: #6c757d;
+        font-size: 14px;
+        margin-bottom: 8px;
+    }
+
+    .report-reason {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 10px;
+    }
+
+    .reason-badge {
+        background: #fff5f5;
+        color: var(--theme-orange);
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+        border: 1px solid #ffe5e5;
+    }
+
+    .status-badge {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-pending {
+        background: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeaa7;
+    }
+
+    .status-rejected {
+        background: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+    }
+
+    .status-warned {
+        background: #ffe5d9;
+        color: #d63384;
+        border: 1px solid #ffd4c4;
+    }
+
+    .status-post_deleted {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+
+    .report-body {
+        display: flex;
+        padding: 20px;
+        gap: 20px;
+    }
+
+    .post-image {
+        width: 150px;
+        height: 150px;
+        border-radius: 12px;
+        object-fit: cover;
+        flex-shrink: 0;
+        border: 2px solid #f8f9fa;
+    }
+
+    .post-details {
+        flex: 1;
+    }
+
+    .offender-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 15px;
+    }
+
+    .offender-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--theme-orange);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+    }
+
+    .offender-name {
+        font-weight: 600;
+        color: #212529;
+    }
+
+    .post-caption {
+        color: #495057;
+        line-height: 1.6;
+        margin-bottom: 12px;
+    }
+
+    .post-meta {
+        display: flex;
+        gap: 15px;
+        color: #6c757d;
+        font-size: 14px;
+    }
+
+    .post-meta i {
+        color: var(--theme-orange);
+    }
+
+    .report-comment {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 10px;
+        margin-top: 15px;
+        border: 1px solid #e9ecef;
+    }
+
+    .comment-label {
+        font-weight: 600;
+        color: #212529;
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+
+    .comment-text {
+        color: #495057;
+        line-height: 1.5;
+        font-size: 14px;
+    }
+
+    .admin-response {
+        background: #d4edda;
+        border-left: 4px solid #28a745;
+        padding: 15px;
+        margin: 20px;
+        border-radius: 8px;
+    }
+
+    .admin-response-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .admin-label {
+        font-weight: 700;
+        color: #155724;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .handled-date {
+        color: #155724;
+        font-size: 13px;
+    }
+
+    .empty-state {
+        background: #f8f9fa;
+        padding: 60px 20px;
+        border-radius: 15px;
+        text-align: center;
+        border: 1px solid #e9ecef;
+    }
+
+    .empty-state i {
+        font-size: 64px;
+        color: #dee2e6;
+        margin-bottom: 20px;
+    }
+
+    .empty-state h3 {
+        color: #212529;
+        margin-bottom: 10px;
+    }
+
+    .empty-state p {
+        color: #6c757d;
+    }
+
+    @media (max-width: 768px) {
+        .inbox-header {
+            flex-wrap: wrap;
+        }
+
+        .report-body {
+            flex-direction: column;
+        }
+
+        .post-image {
+            width: 100%;
+            height: 200px;
+        }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <!-- Header -->
+  <div class="inbox-header">
+    <button class="back-btn" onclick="window.history.back()">
+      <i class="bi bi-arrow-left"></i>
+    </button>
+    <h1 class="inbox-title">
+      <i class="bi bi-flag-fill"></i>
+      <span>My Reported Posts</span>
+    </h1>
+    <div class="pending-badge">
+      <span th:text="${pendingCount}">1</span> Pending
+    </div>
+  </div>
+
+<!--  &lt;!&ndash; Filters &ndash;&gt;-->
+<!--  <div class="filters">-->
+<!--    <button class="filter-btn active" data-filter="all">All Reports</button>-->
+<!--    <button class="filter-btn" data-filter="PENDING">Pending</button>-->
+<!--    <button class="filter-btn" data-filter="REJECTED">Rejected</button>-->
+<!--    <button class="filter-btn" data-filter="WARNED">Warned</button>-->
+<!--    <button class="filter-btn" data-filter="POST_DELETED">Post Deleted</button>-->
+<!--  </div>-->
+
+  <!-- Reports Grid -->
+  <div class="reports-grid">
+    <!-- Single Report Card with Thymeleaf -->
+    <div class="report-card" th:each="report : ${reports}" th:data-status="${report.status}">
+      <div class="report-header">
+        <div class="report-info">
+          <div class="report-date">
+            <i class="bi bi-calendar3"></i>
+            Reported on <span th:text="${#temporals.format(report.timestamp, 'MMM dd, yyyy')}">Dec 20, 2024</span>
+          </div>
+          <div class="report-reason">
+            <i class="bi bi-exclamation-circle"></i>
+            <span class="reason-badge" th:text="${report.reason}">Inappropriate Content</span>
+          </div>
+        </div>
+        <div class="status-badge"
+             th:classappend="${'status-' + #strings.toLowerCase(report.status)}"
+             th:text="${report.status}">
+          PENDING
+        </div>
+      </div>
+
+      <div class="report-body">
+        <!-- Post Image -->
+        <div th:if="${report.postreport.photo != null}">
+    <span style="color: var(--muted); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; display: block; margin-top: 20px;">
+        Reported Image
+    </span>
+          <div class="post-image-wrapper">
+            <img th:src="@{'/post/image/' + ${report.postreport.postId}}"
+                 alt="Reported Post Image"
+                 class="post-image" />
+          </div>
+        </div>
+
+        <!-- Placeholder if no image -->
+        <div th:unless="${report.postreport.photo != null}">
+    <span style="color: var(--muted); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; display: block; margin-top: 20px;">
+        No Image Available
+    </span>
+          <div class="post-image-wrapper">
+            <img src="https://via.placeholder.com/150"
+                 alt="No image"
+                 class="post-image" />
+          </div>
+        </div>
+
+        <div class="post-details">
+          <div class="offender-info">
+            <div class="offender-avatar"
+                 th:text="${#strings.substring(report.offender.username, 0, 2).toUpperCase()}">
+              JD
+            </div>
+            <div>
+              <div class="offender-name">
+                @<span th:text="${report.offender.username}">john_doe</span>
+              </div>
+            </div>
+          </div>
+          <div class="post-caption" th:text="${report.postreport.caption}">
+            Amazing sunset at the beach! #nature #photography
+          </div>
+          <div class="post-meta">
+                            <span>
+                                <i class="bi bi-hash"></i>
+                                <span th:text="${report.postreport.hashtag}">#nature</span>
+                            </span>
+            <span>
+                                <i class="bi bi-clock"></i>
+                                <span th:text="${#temporals.format(report.postreport.dateTime, 'MMM dd, yyyy')}">Dec 19, 2024</span>
+                            </span>
+          </div>
+<!--          <div class="report-comment">-->
+<!--            <div class="comment-label">Your Report:</div>-->
+<!--            <div class="comment-text" th:text="${report.comment}">-->
+<!--              This post contains offensive language and inappropriate imagery.-->
+<!--            </div>-->
+<!--          </div>-->
+        </div>
+      </div>
+
+
+
+      <!-- Admin Response (only if handled) -->
+<!--      <div class="admin-response" th:if="${report.status != T(com.example.ProjectHON.Post_Report.PostReport.ReportStatus)-->
+<!--}">-->
+<!--        <div class="admin-response-header">-->
+<!--          <div class="admin-label">-->
+<!--&lt;!&ndash;            <i class="bi"&ndash;&gt;-->
+<!--&lt;!&ndash;               th:classappend="${report.status == T(com.yourpackage.model.PostReport.ReportStatus).REJECTED ? 'bi-x-circle' :&ndash;&gt;-->
+<!--&lt;!&ndash;                                               report.status == T(com.yourpackage.model.PostReport.ReportStatus).WARNED ? 'bi-exclamation-triangle' :&ndash;&gt;-->
+<!--&lt;!&ndash;                                               'bi-trash'}"></i>&ndash;&gt;-->
+<!--            Admin Decision: <span th:text="${report.status}">WARNED</span>-->
+<!--          </div>-->
+<!--        </div>-->
+<!--        <div class="handled-date">-->
+<!--          <i class="bi bi-calendar-check"></i>-->
+<!--          Handled on <span th:text="${#temporals.format(report.handledAt, 'MMM dd, yyyy hh:mm a')}">Dec 19, 2024 10:15 AM</span>-->
+<!--        </div>-->
+<!--      </div>-->
+<!--      -->
+
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" th:if="${#lists.isEmpty(reports)}">
+      <i class="bi bi-inbox"></i>
+      <h3>No reports found</h3>
+      <p>You haven't reported any posts yet.</p>
+    </div>
+  </div>
+</div>
+
+<script th:inline="javascript">
+  /*<![CDATA[*/
+  // Get reports data from Thymeleaf
+  const reportsData = /*[[${reports}]]*/ [];
+
+  // Filter functionality
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+          document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+
+          const filter = btn.dataset.filter;
+          const cards = document.querySelectorAll('.report-card');
+
+          cards.forEach(card => {
+              if (filter === 'all' || card.dataset.status === filter) {
+                  card.style.display = 'block';
+              } else {
+                  card.style.display = 'none';
+              }
+          });
+      });
+  });
+  /*]]>*/
+</script>
+</body>
+</html>

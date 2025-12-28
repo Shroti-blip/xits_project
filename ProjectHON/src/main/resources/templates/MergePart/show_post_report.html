@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Post Reports Manager</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --theme-orange: #F73B20;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: white;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .inbox-header {
+            background: var(--theme-orange);
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: 0 2px 8px rgba(247, 59, 32, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateX(-3px);
+        }
+
+        .inbox-title {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .inbox-title i {
+            font-size: 1.75rem;
+        }
+
+        .pending-badge {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-left: auto;
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            border: 2px solid #f5f5f5;
+        }
+
+        .card-header {
+            background: #f9f9f9;
+            padding: 1.5rem 2rem;
+            border-bottom: 2px solid #f5f5f5;
+        }
+
+        .card-header h2 {
+            font-size: 1.25rem;
+            color: #333;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .card-header h2 i {
+            color: var(--theme-orange);
+            font-size: 1.5rem;
+        }
+
+        .card-header p {
+            font-size: 0.875rem;
+            color: #666;
+            margin-top: 0.25rem;
+            margin-left: 2.25rem;
+        }
+
+        /* Table */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #f8f8f8;
+            border-bottom: 2px solid #eee;
+        }
+
+        th {
+            padding: 1rem 1.5rem;
+            text-align: left;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        td {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #f5f5f5;
+            font-size: 0.875rem;
+            color: #333;
+        }
+
+        tbody tr {
+            transition: background 0.2s;
+        }
+
+        tbody tr:hover {
+            background: #fafafa;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.375rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-rejected {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .status-warned {
+            background: #fed7aa;
+            color: #9a3412;
+        }
+
+        .status-deleted {
+            background: #fee;
+            color: #c00;
+        }
+
+        .reason-tag {
+            font-weight: 600;
+        }
+
+        .reason-inappropriate {
+            color: var(--theme-orange);
+        }
+
+        .reason-spam {
+            color: #ea580c;
+        }
+
+        .reason-harassment {
+            color: #9333ea;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-view {
+            background: var(--theme-orange);
+            color: white;
+        }
+
+        .btn-view:hover {
+            background: #e02e15;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(247, 59, 32, 0.4);
+        }
+
+        .btn-reject {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .btn-reject:hover {
+            background: #e5e7eb;
+        }
+
+        .btn-warn {
+            background: #ffeaa7;
+            color: #d63031;
+        }
+
+        .btn-warn:hover {
+            background: #ffd97d;
+        }
+
+        .btn-delete {
+            background: var(--theme-orange);
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #e02e15;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 1rem;
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-header {
+            background: var(--theme-orange);
+            color: white;
+            padding: 1.5rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-header h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .close-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+            font-size: 1.25rem;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .detail-section {
+            margin-bottom: 2rem;
+        }
+
+        .detail-section h4 {
+            font-size: 1rem;
+            color: #333;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .detail-section h4 i {
+            color: var(--theme-orange);
+            font-size: 1.25rem;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            background: #f9f9f9;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            border: 2px solid #f5f5f5;
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .detail-label {
+            font-size: 0.75rem;
+            color: #666;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .detail-value {
+            font-size: 0.875rem;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .detail-value.highlight {
+            color: var(--theme-orange);
+            font-weight: 600;
+        }
+
+        .post-content {
+            background: #f9f9f9;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            border: 2px solid #f5f5f5;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            padding: 1.5rem 2rem;
+            background: #f9f9f9;
+            border-top: 2px solid #f5f5f5;
+        }
+
+        .modal-actions .btn {
+            flex: 1;
+            justify-content: center;
+            padding: 0.75rem 1.5rem;
+        }
+
+        .icon {
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+
+        @media (max-width: 768px) {
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-actions {
+                flex-direction: column;
+            }
+
+            .table-container {
+                font-size: 0.75rem;
+            }
+
+            th,
+            td {
+                padding: 0.75rem;
+            }
+        }
+
+
+         .success-banner {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            z-index: 9999;
+            box-shadow: 0 12px 32px rgba(34,197,94,0.4);
+            animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+    </style>
+</head>
+
+<body>
+<!-- Header -->
+<div class="inbox-header">
+    <button class="back-btn" onclick="window.history.back()">
+        <i class="bi bi-arrow-left"></i>
+    </button>
+    <h1 class="inbox-title">
+        <i class="bi bi-flag-fill"></i>
+        <span>Reported Posts</span>
+    </h1>
+    <div class="pending-badge">
+        <span id="pendingCount">3</span> Pending
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            <h2>
+                <i class="bi bi-clipboard-data"></i>
+                Reported Content
+            </h2>
+            <p>Review and take action on reported posts</p>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                <tr>
+<!--                    <th>Report ID</th>-->
+                    <th>Type</th>
+                    <th>Reason</th>
+                    <th>Reporter</th>
+                    <th>Offender</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody id="reportsTable">
+
+                <tr th:each="report : ${postReports}">
+<!--                    <td th:text="${report.id}">1</td>-->
+
+                    <td th:text="${report.contentType}">POST</td>
+
+                    <td>
+                                <span class="reason-tag" th:text="${report.reason}" th:classappend="
+                ${report.reason == 'SPAM'} ? 'reason-spam' :
+                (${report.reason == 'HARASSMENT'} ? 'reason-harassment' :
+                'reason-inappropriate')">
+                                </span>
+                    </td>
+
+                    <td th:text="${report.reporter.username}">@reporter</td>
+
+                    <td th:text="${report.offender.username}">@offender</td>
+
+                    <td th:text="${#temporals.format(report.timestamp, 'dd MMM yyyy')}">
+                        12 Aug 2025
+                    </td>
+
+                    <td>
+                                <span class="status-badge status-pending" th:text="${report.status}">
+                                    Pending
+                                </span>
+                    </td>
+
+                    <td>
+
+                        <a th:href="@{/user/report/post/{id}(id=${report.id})}" class="btn btn-view">
+                            <i class="bi bi-eye"></i> View Post
+                        </a>
+
+                        <!--                        <a th:href="@{/user/report/post/{id}(id=${report.postreport.postId})}" class="btn btn-view">-->
+<!--                            <i class="bi bi-eye"></i> View Post-->
+<!--                        </a>-->
+
+                    </td>
+                </tr>
+
+                <tr th:if="${#lists.isEmpty(postReports)}">
+                    <td colspan="8" style="text-align:center; padding:2rem;">
+                        No reported posts found
+                    </td>
+                </tr>
+
+                </tbody>
+
+            </table>
+        </div>
+    </div>
+</div>
+
+<<div th:if="${success}" id="success" class="success-banner">
+    <i class="bi bi-check-circle-fill"></i>
+    Successfully Deleted Post.
+</div>
+
+
+<<div th:if="${successWarn}" id="successWarn" class="success-banner">
+    <i class="bi bi-check-circle-fill"></i>
+    Successfully sent Warning.
+</div>
+
+<<div th:if="${successReject}" id="successReject" class="success-banner">
+    <i class="bi bi-check-circle-fill"></i>
+    Successfully Rejected Report.
+</div>
+
+
+
+<script>
+    window.addEventListener("DOMContentLoaded", function() {
+        const msg = document.getElementById("success");
+        if(msg){
+            setTimeout(() => {
+                msg.style.opacity = "0";
+                msg.style.transform = "translateX(100px)";
+                setTimeout(() => {
+                    msg.style.display = "none";
+                }, 300);
+            }, 3000);
+        }
+    });
+</script>
+
+<script>
+    window.addEventListener("DOMContentLoaded", function() {
+        const msg2 = document.getElementById("successReject");
+        if(msg2){
+            setTimeout(() => {
+                msg2.style.opacity = "0";
+                msg2.style.transform = "translateX(100px)";
+                setTimeout(() => {
+                    msg2.style.display = "none";
+                }, 300);
+            }, 3000);
+        }
+    });
+</script>
+
+<script>
+    window.addEventListener("DOMContentLoaded", function() {
+        const msg = document.getElementById("successWarn");
+        if(msg){
+            setTimeout(() => {
+                msg.style.opacity = "0";
+                msg.style.transform = "translateX(100px)";
+                setTimeout(() => {
+                    msg.style.display = "none";
+                }, 300);
+            }, 3000);
+        }
+    });
+</script>
+
+
+
+</body>
+
+</html>
