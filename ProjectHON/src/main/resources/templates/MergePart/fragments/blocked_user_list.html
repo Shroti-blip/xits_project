@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+</head>
+<body>
+<div th:fragment="userList">
+
+  <div class="user-card" th:each="list : ${blockedList}">
+    <input type="hidden" name="userId" th:value="${list.userId}">
+
+    <div class="user-avatar">J</div>
+
+    <div class="user-info">
+      <a href="#" class="user-name" th:text="${list.username}"></a>
+
+      <div class="user-details">
+        <div class="user-detail-item">
+          <i class="bi bi-envelope"></i>
+          <span th:text="${list.email}"></span>
+        </div>
+
+        <div class="user-detail-item">
+          <i class="bi bi-exclamation-triangle"></i>
+          <strong>Reason:</strong>
+          <span th:text="${list.userReports[0].reason}"></span>
+        </div>
+      </div>
+    </div>
+
+    <a th:href="@{/user/get-unblocked/{uid}(uid=${list.userId})}">
+      <button class="unblock-btn">
+        <i class="bi bi-unlock"></i> Unblock User
+      </button>
+    </a>
+  </div>
+
+  <div th:if="${#lists.isEmpty(blockedList)}" class="empty-state">
+    No blocked users found
+  </div>
+
+</div>
+
+
+
+</body>
+</html>
