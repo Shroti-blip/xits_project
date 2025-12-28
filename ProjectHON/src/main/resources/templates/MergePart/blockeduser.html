@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Account Blocked • HON</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <style>
+        :root{
+            --bg:#f6f7fb;
+            --panel:#ffffff;
+            --text:#1c1c24;
+            --muted:#6b6f85;
+            --danger:#F73B20;
+            --danger-soft:rgba(247,59,32,0.12);
+            --radius:16px;
+        }
+
+        *{
+            box-sizing:border-box;
+            margin:0;
+            padding:0;
+        }
+
+        body{
+            background:var(--bg);
+            font-family:Inter,system-ui,sans-serif;
+            min-height:100vh;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            padding:24px;
+            color:var(--text);
+        }
+
+        .blocked-card{
+            max-width:420px;
+            width:100%;
+            background:var(--panel);
+            border-radius:var(--radius);
+            padding:28px 26px;
+            text-align:center;
+            border:1px solid #e6e8f0;
+        }
+
+        .icon{
+            width:64px;
+            height:64px;
+            border-radius:50%;
+            background:var(--danger-soft);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            margin:0 auto 16px;
+            font-size:30px;
+            color:var(--danger);
+        }
+
+        h1{
+            font-size:1.4rem;
+            margin-bottom:10px;
+        }
+
+        p{
+            font-size:0.9rem;
+            color:var(--muted);
+            line-height:1.5;
+            margin-bottom:14px;
+        }
+
+        .notice{
+            background:#fff5f5;
+            border-left:4px solid var(--danger);
+            padding:12px;
+            font-size:0.85rem;
+            border-radius:8px;
+            color:#7f1d1d;
+            margin-bottom:18px;
+        }
+
+        .actions{
+            display:flex;
+            flex-direction:column;
+            gap:10px;
+        }
+
+        .btn{
+            padding:12px;
+            border-radius:12px;
+            border:none;
+            cursor:pointer;
+            font-weight:600;
+            font-size:0.9rem;
+        }
+
+        .btn.support{
+            background:var(--danger);
+            color:white;
+        }
+
+        .btn.logout{
+            background:#f1f2f7;
+            color:#333;
+        }
+
+        .footer-note{
+            margin-top:16px;
+            font-size:0.75rem;
+            color:#9aa0b4;
+        }
+
+        @media (max-width:480px){
+            h1{
+                font-size:1.25rem;
+            }
+            .blocked-card{
+                padding:22px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="blocked-card">
+    <div class="icon">⛔</div>
+
+    <h1>Account Blocked</h1>
+
+    <p>
+        Your account has been temporarily or permanently blocked
+        due to violations of our community guidelines.
+    </p>
+
+    <div class="notice">
+        Access to your account and services is currently restricted.
+    </div>
+
+    <div class="actions">
+        <a href="/support" class="btn support">Contact Support</a>
+        <a href="/logout" class="btn logout">Log Out</a>
+    </div>
+
+    <div class="footer-note">
+        If you believe this is a mistake, please contact support.
+    </div>
+</div>
+
+</body>
+</html>

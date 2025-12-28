@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>HON • Admin Blocked Users</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        :root{
+     --bg:#f6f7fb;
+     --panel:#ffffff;
+     --panel-2:#f1f2f7;
+     --text:#1c1c24;
+     --muted:#6b6f85;
+
+     --theme-orange:#F73B20;
+     --theme-orange-10: rgba(247, 59, 32, 0.10);
+     --theme-orange-20: rgba(247, 59, 32, 0.20);
+
+     --radius:16px;
+   }
+
+   *{
+     box-sizing:border-box;
+     margin:0;
+     padding:0;
+   }
+
+   html,body{
+     width:100%;
+     overflow-x:hidden;
+   }
+
+   body{
+     background:var(--bg);
+     font-family:Inter,system-ui,sans-serif;
+     color:var(--text);
+     padding:0;
+   }
+
+   /* ===== HEADER ===== */
+   .inbox-header {
+        background: linear-gradient(135deg, #F73B20 0%, #ff5238 100%);
+        padding: 20px 32px;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        box-shadow: 0 4px 20px rgba(247, 59, 32, 0.25);
+      }
+
+      .inbox-title {
+        font-size: 26px;
+        font-weight: 700;
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .back-btn {
+        background: rgba(255,255,255,0.95);
+        border: none;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        transition: all 0.3s ease;
+        cursor: pointer;
+      }
+
+      .back-btn:hover {
+        transform: scale(1.08);
+        background: white;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+      }
+
+      .back-btn i {
+        font-size: 20px;
+        color: var(--theme-orange);
+      }
+
+   /* ===== CONTAINER ===== */
+   .container{
+     max-width:1200px;
+     margin:auto;
+     padding: 32px 24px;
+   }
+
+   /* ===== PAGE HEADER ===== */
+   .page-header{
+     display:flex;
+     justify-content:space-between;
+     align-items:center;
+     gap:16px;
+     flex-wrap:wrap;
+     margin-bottom:32px;
+   }
+
+   .page-header h1{
+     font-size:1.75rem;
+     font-weight: 700;
+     color: var(--text);
+     display: flex;
+     align-items: center;
+     gap: 12px;
+   }
+
+   .stats-badge{
+     padding:10px 20px;
+     border-radius:24px;
+     font-size:.85rem;
+     font-weight:600;
+     background:var(--theme-orange-10);
+     color:var(--theme-orange);
+     border: 2px solid var(--theme-orange-20);
+   }
+
+
+   /* ===== USER CARD ===== */
+   .user-card {
+     background: var(--panel);
+     border-radius: var(--radius);
+     padding: 24px;
+     border: 1px solid #e6e8f0;
+     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+     margin-bottom: 16px;
+     display: flex;
+     align-items: center;
+     gap: 20px;
+     transition: all 0.3s ease;
+   }
+
+   .user-card:hover {
+     box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+     transform: translateY(-2px);
+   }
+
+   .user-avatar {
+     width: 64px;
+     height: 64px;
+     border-radius: 50%;
+     background: linear-gradient(135deg, var(--theme-orange), #ff5238);
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     color: white;
+     font-size: 1.5rem;
+     font-weight: 700;
+     flex-shrink: 0;
+   }
+
+   .user-info {
+     flex: 1;
+     min-width: 0;
+   }
+
+   .user-name {
+     font-size: 1.1rem;
+     font-weight: 700;
+     color: var(--text);
+     margin-bottom: 4px;
+     text-decoration: none;
+     display: inline-block;
+     transition: color 0.3s ease;
+   }
+
+   .user-name:hover {
+     color: var(--theme-orange);
+   }
+
+   .user-details {
+     display: flex;
+     gap: 20px;
+     flex-wrap: wrap;
+     margin-top: 8px;
+   }
+
+   .user-detail-item {
+     display: flex;
+     align-items: center;
+     gap: 6px;
+     font-size: 0.85rem;
+     color: var(--muted);
+   }
+
+   .user-detail-item i {
+     color: var(--theme-orange);
+   }
+
+   .user-detail-item strong {
+     color: var(--text);
+     font-weight: 600;
+   }
+
+   /* ===== UNBLOCK BUTTON ===== */
+   .unblock-btn {
+     padding: 12px 24px;
+     border-radius: 12px;
+     border: none;
+     cursor: pointer;
+     font-weight: 600;
+     font-size: 0.85rem;
+     transition: all 0.3s ease;
+     display: inline-flex;
+     align-items: center;
+     gap: 8px;
+     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+     background: var(--theme-orange-20);
+     color: var(--theme-orange);
+     border: 2px solid var(--theme-orange);
+     flex-shrink: 0;
+   }
+
+   .unblock-btn:hover {
+     background: var(--theme-orange);
+     color: white;
+     transform: translateY(-2px);
+     box-shadow: 0 4px 12px rgba(247, 59, 32, 0.4);
+   }
+
+   /* ===== EMPTY STATE ===== */
+   .empty-state {
+     text-align: center;
+     padding: 80px 20px;
+     color: var(--muted);
+   }
+
+   .empty-state i {
+     font-size: 4rem;
+     color: var(--theme-orange-20);
+     margin-bottom: 20px;
+   }
+
+   .empty-state h3 {
+     font-size: 1.3rem;
+     color: var(--text);
+     margin-bottom: 8px;
+   }
+
+   .empty-state p {
+     font-size: 0.95rem;
+   }
+
+   /* ===== CONFIRM OVERLAY ===== */
+   .confirm-overlay {
+       position: fixed;
+       inset: 0;
+       background: rgba(15, 23, 42, 0.6);
+       display: none;
+       align-items: center;
+       justify-content: center;
+       z-index: 9999;
+       backdrop-filter: blur(8px);
+   }
+
+   /* ===== MODAL BOX ===== */
+   .confirm-box {
+       width: min(460px, 92%);
+       background: #ffffff;
+       border-radius: 20px;
+       padding: 32px;
+       box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+       animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+       border: 1px solid rgba(247, 59, 32, 0.15);
+   }
+
+   .confirm-box h3 {
+       margin: 0 0 16px;
+       font-size: 1.5rem;
+       font-weight: 700;
+       color: #1c1c24;
+       display: flex;
+       align-items: center;
+       gap: 10px;
+   }
+
+   .confirm-box p {
+       margin: 10px 0;
+       font-size: 0.95rem;
+       line-height: 1.6;
+       color: #555;
+   }
+
+   .confirm-box p strong {
+       color: var(--theme-orange);
+       font-weight: 600;
+   }
+
+   .confirm-actions {
+       display: flex;
+       justify-content: flex-end;
+       gap: 12px;
+       margin-top: 28px;
+       flex-wrap: wrap;
+   }
+
+   .confirm-actions .btn {
+       padding: 12px 24px;
+       border-radius: 12px;
+       font-size: 0.9rem;
+       font-weight: 600;
+       cursor: pointer;
+       border: none;
+       transition: all 0.3s ease;
+       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+   }
+
+   .confirm-actions .btn.cancel {
+       background: #f1f2f7;
+       color: #444;
+   }
+
+   .confirm-actions .btn.cancel:hover {
+       background: #e4e6ee;
+       transform: translateY(-2px);
+   }
+
+   .confirm-actions .btn.success {
+       background: linear-gradient(135deg, #F73B20, #ff5238);
+       color: #ffffff;
+       box-shadow: 0 8px 20px rgba(247, 59, 32, 0.35);
+   }
+
+   .confirm-actions .btn.success:hover {
+       transform: translateY(-3px);
+       box-shadow: 0 12px 28px rgba(247, 59, 32, 0.45);
+   }
+
+   @keyframes scaleIn {
+       from {
+           opacity: 0;
+           transform: scale(0.9);
+       }
+       to {
+           opacity: 1;
+           transform: scale(1);
+       }
+   }
+
+   /* ===== SUCCESS BANNER ===== */
+   .success-banner {
+       background: linear-gradient(135deg, #10b981, #059669);
+       color: white;
+       padding: 16px 24px;
+       border-radius: 12px;
+       font-weight: 600;
+       text-align: center;
+       width: fit-content;
+       margin: 0 auto 24px;
+       box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+       display: flex;
+       align-items: center;
+       justify-content: center;
+       gap: 10px;
+       opacity: 1;
+       transition: opacity 0.5s ease;
+   }
+
+   .success-banner i {
+       font-size: 1.2rem;
+   }
+
+   /* ===== RESPONSIVE ===== */
+   @media(max-width:768px){
+     .user-card {
+       flex-direction: column;
+       text-align: center;
+     }
+
+     .user-details {
+       justify-content: center;
+     }
+
+     .unblock-btn {
+       width: 100%;
+       justify-content: center;
+     }
+   }
+
+   @media(max-width:600px){
+     .container {
+       padding: 24px 16px;
+     }
+
+     .inbox-header {
+       padding: 18px 16px;
+     }
+
+     .inbox-title {
+       font-size: 20px;
+     }
+
+     .page-header h1{
+       font-size:1.4rem;
+     }
+
+     .confirm-box {
+       padding: 24px;
+     }
+
+     .confirm-actions {
+       flex-direction: column;
+     }
+
+     .confirm-actions .btn {
+       width: 100%;
+       text-align: center;
+       justify-content: center;
+     }
+   }
+
+
+
+   /* ===== SEARCH FILTERS ===== */
+   .search-section {
+     background: var(--panel);
+     border-radius: var(--radius);
+     padding: 24px;
+     margin-bottom: 32px;
+     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+     border: 1px solid #e6e8f0;
+   }
+
+   .search-title {
+     font-size: 1.1rem;
+     font-weight: 700;
+     color: var(--text);
+     margin-bottom: 20px;
+     display: flex;
+     align-items: center;
+     gap: 10px;
+   }
+
+   .search-title i {
+     color: var(--theme-orange);
+   }
+
+   .search-filters {
+     display: grid;
+     grid-template-columns: 1fr 1fr;
+     gap: 16px;
+   }
+
+   .search-group {
+     position: relative;
+   }
+
+   .search-group label {
+     display: block;
+     font-size: 0.85rem;
+     font-weight: 600;
+     color: var(--text);
+     margin-bottom: 8px;
+   }
+
+   .search-input {
+     width: 100%;
+     padding: 12px 16px 12px 44px;
+     border: 2px solid #e6e8f0;
+     border-radius: 12px;
+     font-size: 0.95rem;
+     transition: all 0.3s ease;
+     background: var(--bg);
+   }
+
+   .search-input:focus {
+     outline: none;
+     border-color: var(--theme-orange);
+     background: white;
+     box-shadow: 0 0 0 4px var(--theme-orange-10);
+   }
+
+   .search-icon {
+     position: absolute;
+     left: 16px;
+     bottom: 14px;
+     color: var(--muted);
+     font-size: 1rem;
+   }
+
+   .search-input:focus + .search-icon {
+     color: var(--theme-orange);
+   }
+
+   /* ===== FILTER RESPONSIVENESS ===== */
+@media (max-width: 900px) {
+  .search-filters {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .search-section {
+    padding: 20px;
+  }
+
+  .search-input {
+    padding: 14px 16px 14px 44px;
+    font-size: 1rem;
+  }
+
+  .search-icon {
+    bottom: 16px;
+  }
+}
+
+.search-filters,
+.search-group,
+.search-input {
+  max-width: 100%;
+}
+
+
+        .success-banner {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            z-index: 9999;
+            box-shadow: 0 12px 32px rgba(34,197,94,0.4);
+            animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="inbox-header">
+    <button class="back-btn" onclick="window.history.back();">
+        <i class="bi bi-arrow-left"></i>
+    </button>
+    <h1 class="inbox-title">
+        <i class="bi bi-shield-x"></i><span>Blocked Users</span>
+    </h1>
+</div>
+
+<div class="container">
+    <!-- Success Banner (hidden by default) -->
+    <div class="success-banner" id="successMsg" style="display: none;">
+        <i class="bi bi-check-circle-fill"></i>
+        <span>Successfully unblocked user!</span>
+    </div>
+
+
+    <!-- Page Header with Stats -->
+    <div class="page-header">
+        <h1>
+            <i class="bi bi-people-fill"></i>
+            Blocked Users Management
+        </h1>
+        <div class="stats-badge">
+            <i class="bi bi-shield-fill-x"></i>
+            <span id="blockedCount" th:text="${blockedList.size()}">3</span> Blocked
+<!--            <span id="blockedCount2" th:text="${#lists.size(blockedList)}">3</span> Blocked-->
+
+        </div>
+    </div>
+
+    <!-- Search Filters Section -->
+    <div class="search-section">
+        <div class="search-title">
+            <i class="bi bi-search"></i>
+            Search Blocked Users
+        </div>
+        <div class="search-filters">
+            <div class="search-group">
+                <label for="searchUsername">Username</label>
+                <input
+                        type="text"
+                        id="searchUsername"
+                        class="search-input"
+                        placeholder="Search by username..."
+                        oninput="searchBlockedUsers()"
+                />
+                <i class="bi bi-person-circle search-icon"></i>
+            </div>
+            <div class="search-group">
+                <label for="searchEmail">Email</label>
+                <input
+                        type="text"
+                        id="searchEmail"
+                        class="search-input"
+                        placeholder="Search by email..."
+                        oninput="searchBlockedUsersMail()"
+                />
+                <i class="bi bi-envelope search-icon"></i>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- User List -->
+    <div id="userList"
+         th:include="~{MergePart/fragments/blocked_user_list :: userList}">
+    </div>
+
+
+    <!-- Empty State (hidden by default) -->
+    <div class="empty-state" id="emptyState" style="display: none;" th:if="${#lists.isEmpty(blockedList)}">
+        <i class="bi bi-shield-check"></i>
+        <h3>No Blocked Users</h3>
+        <p>All users are currently active. Blocked users will appear here.</p>
+    </div>
+</div>
+
+<!-- Success Banners -->
+<div th:if="${success}" id="success" class="success-banner">
+    <i class="bi bi-check-circle-fill"></i>
+    Successfully sent warning mail to user.
+</div>
+
+<script>
+    let searchTimeout = null;
+    function searchBlockedUsers() {
+    console.log("typing detected");
+        const username = document.getElementById("searchUsername").value;
+
+        // debounce (avoid request on every millisecond)
+        clearTimeout(searchTimeout);
+
+        searchTimeout = setTimeout(() => {
+            fetch(`/user/blocked-users/search?username=${encodeURIComponent(username)}`)
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById("userList").innerHTML = html;
+                })
+                .catch(err => console.error("Search error:", err));
+        }, 300);
+    }
+</script>
+
+<script>
+    let searchTimeout2 = null;
+    function searchBlockedUsersMail(){
+    const email = document.getElementById("searchEmail").value;
+     clearTimeout(searchTimeout2);
+
+     searchTimeout2 = setTimeout(() => {
+     fetch(`/user/blocked-users/search2?email=${encodeURIComponent(email)}`)
+            .then(response=>response.text())
+            .then(html => {
+            document.getElementById("userList").innerHTML = html;
+            })
+            .catch(err => console.error("search error mail: " , err));
+     },300);
+    }
+</script>
+
+
+<script>
+    window.addEventListener("DOMContentLoaded", function() {
+        const msg = document.getElementById("success");
+        if(msg){
+            setTimeout(() => {
+                msg.style.opacity = "0";
+                msg.style.transform = "translateX(100px)";
+                setTimeout(() => {
+                    msg.style.display = "none";
+                }, 300);
+            }, 3000);
+        }
+    });
+</script>
+
+
+
+
+</body>
+</html>
+
+
+
+
+<!-- User List -->
+<!--    <div id="userList">-->
+<!--        &lt;!&ndash; User Card 1 &ndash;&gt;-->
+<!--        <div class="user-card"  th:each="list :${blockedList}">-->
+
+<!--            <input type="hidden" name="userId" th:value="${list.userId}">-->
+<!--            <div class="user-avatar">J</div>-->
+<!--            <div class="user-info">-->
+<!--                <a href="#" class="user-name" th:text="${list.username}">@johndoe</a>-->
+<!--                <div class="user-details">-->
+<!--                    <div class="user-detail-item">-->
+<!--                        <i class="bi bi-envelope"></i>-->
+<!--                        <span th:text="${list.email}">john.doe@example.com</span>-->
+<!--                    </div>-->
+
+<!--                    <div class="user-detail-item">-->
+<!--                        <i class="bi bi-exclamation-triangle"></i>-->
+<!--                        <strong>Reason:</strong>-->
+<!--                        <span th:text="${list.userReports[0].reason}">Spam activity</span>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--            <a th:href="@{/user/get-unblocked/{uid}(uid=${list.userId}) }"><button class="unblock-btn" >-->
+<!--                <i class="bi bi-unlock"></i> Unblock User-->
+<!--            </button></a>-->
+<!--        </div>-->
+
+<!--    </div>-->
