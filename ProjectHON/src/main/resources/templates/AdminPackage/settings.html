@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Settings - HON</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: #fafafa;
+        overflow-x: hidden;
+    }
+
+    .bg-gradient {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        overflow: hidden;
+        background: #fafafa;
+    }
+
+    .gradient-orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(100px);
+        opacity: 0.1;
+        animation: float 20s ease-in-out infinite;
+    }
+
+    .orb-1 {
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, #F73B20, transparent);
+        top: -10%;
+        right: -10%;
+        animation-duration: 25s;
+    }
+
+    .orb-2 {
+        width: 500px;
+        height: 500px;
+        background: radial-gradient(circle, #ff5238, transparent);
+        bottom: -15%;
+        left: -10%;
+        animation-duration: 20s;
+        animation-delay: 2s;
+    }
+
+    .orb-3 {
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, #F73B20, transparent);
+        top: 40%;
+        left: 50%;
+        animation-duration: 18s;
+        animation-delay: 1s;
+    }
+
+    @keyframes float {
+
+        0%,
+        100% {
+            transform: translate(0, 0) scale(1);
+        }
+
+        33% {
+            transform: translate(50px, -80px) scale(1.1);
+        }
+
+        66% {
+            transform: translate(-50px, 50px) scale(0.9);
+        }
+    }
+
+    .header {
+        background: white;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        padding: 1rem 0;
+        position: sticky;
+        top: 0;
+        z-index: 2000;
+    }
+
+    .header h1 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin: 0;
+    }
+
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #F73B20, #ff5238);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+    }
+
+    .sidebar {
+        background: white;
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+        min-height: calc(100vh - 76px);
+        padding: 2rem 1rem;
+    }
+
+    .nav-item {
+        margin-bottom: 0.5rem;
+    }
+
+    .nav-link {
+        color: #4a5568;
+        padding: 0.875rem 1.25rem;
+        border-radius: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+    .nav-link i {
+        font-size: 1.25rem;
+        width: 24px;
+    }
+
+    .nav-link:hover {
+        background: #f7f7f7;
+        color: #F73B20;
+    }
+
+    .nav-link.active {
+        background: linear-gradient(135deg, #F73B20, #ff5238);
+        color: white;
+        box-shadow: 0 4px 15px rgba(247, 59, 32, 0.3);
+    }
+
+    .main-content {
+        padding: 2rem;
+        min-height: calc(100vh - 76px);
+    }
+
+    .page-header {
+        margin-bottom: 2rem;
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-subtitle {
+        color: #6b7280;
+        font-size: 0.95rem;
+    }
+
+    /* Custom Tabs */
+    .settings-tabs {
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        border: 1px solid #f0f0f0;
+        overflow: hidden;
+    }
+
+    .tabs-header {
+        display: flex;
+        border-bottom: 2px solid #f0f0f0;
+        overflow-x: auto;
+        background: #fafafa;
+    }
+
+    .tabs-header::-webkit-scrollbar {
+        height: 4px;
+    }
+
+    .tabs-header::-webkit-scrollbar-thumb {
+        background: #d1d5db;
+        border-radius: 4px;
+    }
+
+    .tab-button {
+        padding: 1.25rem 2rem;
+        border: none;
+        background: transparent;
+        color: #6b7280;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border-bottom: 3px solid transparent;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .tab-button:hover {
+        color: #F73B20;
+        background: rgba(247, 59, 32, 0.05);
+    }
+
+    .tab-button.active {
+        color: #F73B20;
+        border-bottom-color: #F73B20;
+        background: white;
+    }
+
+    .tab-button i {
+        font-size: 1.1rem;
+    }
+
+    .tabs-content {
+        padding: 2rem;
+    }
+
+    .tab-pane {
+        display: none;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .tab-pane.active {
+        display: block;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Settings Sections */
+    .settings-section {
+        margin-bottom: 2.5rem;
+    }
+
+    .settings-section:last-child {
+        margin-bottom: 0;
+    }
+
+    .section-header {
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin-bottom: 0.25rem;
+    }
+
+    .section-description {
+        font-size: 0.875rem;
+        color: #6b7280;
+    }
+
+    .setting-item {
+        padding: 1.25rem;
+        background: #fafafa;
+        border-radius: 0.75rem;
+        margin-bottom: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .setting-item:hover {
+        background: #f3f4f6;
+    }
+
+    .setting-info {
+        flex: 1;
+    }
+
+    .setting-label {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #1a1a1a;
+        margin-bottom: 0.25rem;
+    }
+
+    .setting-description {
+        font-size: 0.8rem;
+        color: #6b7280;
+    }
+
+    .setting-control {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    /* Toggle Switch */
+    .toggle-switch {
+        position: relative;
+        width: 52px;
+        height: 28px;
+    }
+
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #cbd5e1;
+        transition: 0.3s;
+        border-radius: 34px;
+    }
+
+    .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 20px;
+        width: 20px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: 0.3s;
+        border-radius: 50%;
+    }
+
+    .toggle-switch input:checked+.toggle-slider {
+        background: linear-gradient(135deg, #F73B20, #ff5238);
+    }
+
+    .toggle-switch input:checked+.toggle-slider:before {
+        transform: translateX(24px);
+    }
+
+    /* Form Elements */
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #4a5568;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .form-control,
+    .form-select {
+        border: 2px solid #e5e7eb;
+        border-radius: 0.5rem;
+        padding: 0.75rem 1rem;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #F73B20;
+        box-shadow: 0 0 0 3px rgba(247, 59, 32, 0.1);
+        outline: none;
+    }
+
+    textarea.form-control {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #F73B20, #ff5238);
+        color: white;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 0.75rem;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(247, 59, 32, 0.3);
+    }
+
+    .btn-secondary {
+        background: white;
+        color: #4a5568;
+        border: 2px solid #e5e7eb;
+        padding: 0.75rem 2rem;
+        border-radius: 0.75rem;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .btn-secondary:hover {
+        border-color: #F73B20;
+        color: #F73B20;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 2px solid #f0f0f0;
+    }
+
+    /* Stats Cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: linear-gradient(135deg, #F73B20, #ff5238);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 0.75rem;
+        box-shadow: 0 4px 15px rgba(247, 59, 32, 0.2);
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        font-size: 0.875rem;
+        opacity: 0.9;
+    }
+
+    /* Alert Boxes */
+    .alert-box {
+        padding: 1rem 1.25rem;
+        border-radius: 0.75rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .alert-box i {
+        font-size: 1.25rem;
+        margin-top: 0.125rem;
+    }
+
+    .alert-info {
+        background: #dbeafe;
+        color: #1e40af;
+        border-left: 4px solid #3b82f6;
+    }
+
+    .alert-warning {
+        background: #fef3c7;
+        color: #92400e;
+        border-left: 4px solid #f59e0b;
+    }
+
+    .alert-success {
+        background: #d1fae5;
+        color: #065f46;
+        border-left: 4px solid #10b981;
+    }
+
+    @media (max-width: 991.98px) {
+        .main-content {
+            padding: 1.5rem;
+        }
+
+        .tabs-content {
+            padding: 1.5rem;
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .page-title {
+            font-size: 1.5rem;
+        }
+
+        .tab-button {
+            padding: 1rem 1.5rem;
+            font-size: 0.875rem;
+        }
+
+        .setting-item {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .form-actions button {
+            width: 100%;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+  </style>
+</head>
+
+<body>
+<div class="bg-gradient">
+  <div class="gradient-orb orb-1"></div>
+  <div class="gradient-orb orb-2"></div>
+  <div class="gradient-orb orb-3"></div>
+</div>
+
+<header class="header">
+  <div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center">
+      <div class="d-flex align-items-center gap-3">
+        <button class="btn d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar">
+          <i class="fas fa-bars"></i>
+        </button>
+        <h1>HON Dashboard</h1>
+      </div>
+      <div class="user-avatar">A</div>
+    </div>
+  </div>
+</header>
+
+<div class="container-fluid">
+  <div class="row">
+
+
+    <!-- Sidebar for Desktop -->
+    <div class="col-lg-3 col-xl-2 d-none d-lg-block p-0">
+      <nav class="sidebar" style="position:sticky;top:70px;">
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link " href="/admin/dashboard">
+              <i class="fas fa-chart-line"></i>
+              <span>Dashboard</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/hon/users">
+              <i class="fas fa-users"></i>
+              <span>HON Users</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/badge/management">
+              <i class="fas fa-award"></i>
+              <span>Badges</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link " href="/admin/get-all-post-report">
+              <i class="fas fa-flag"></i>
+              <span>Reported Posts</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/reports">
+              <i class="fas fa-file-alt"></i>
+              <span>Report Section</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/virtual/gift">
+              <i class="fas fa-gift"></i>
+              <span>Virtual Gift</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link " href="/admin/quiz/management">
+              <i class="fas fa-question-circle"></i>
+              <span>Quiz Management</span>
+            </a>
+          </li>
+          <!-- NEW: Contact Admin Section -->
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/contact/requests">
+              <i class="fas fa-envelope"></i>
+              <span>Contact Admin</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="/admin/settings">
+              <i class="fas fa-cog"></i>
+              <span>Settings</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+
+    <!-- Offcanvas Sidebar for Mobile -->
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebar">
+      <div class="offcanvas-header">
+        <h5 class="offcanvas-title">Menu</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+      </div>
+      <div class="offcanvas-body p-0">
+        <nav class="sidebar">
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <a class="nav-link " href="/admin/dashboard">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/admin/hon/users">
+                <i class="fas fa-users"></i>
+                <span>HON Users</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/admin/badge/management">
+                <i class="fas fa-award"></i>
+                <span>Badges</span>
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a class="nav-link " href="/admin/get-all-post-report">
+                <i class="fas fa-flag"></i>
+                <span>Reported Posts</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/admin/reports">
+                <i class="fas fa-file-alt"></i>
+                <span>Report Section</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/admin/virtual/gift">
+                <i class="fas fa-gift"></i>
+                <span>Virtual Gift</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link " href="/admin/quiz/management">
+                <i class="fas fa-question-circle"></i>
+                <span>Quiz Management</span>
+              </a>
+            </li>
+            <!-- NEW: Contact Admin Section -->
+            <li class="nav-item">
+              <a class="nav-link" href="/admin/contact/requests">
+                <i class="fas fa-envelope"></i>
+                <span>Contact Admin</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="/admin/settings">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+
+
+
+
+    <div class="col-lg-9 col-xl-10">
+      <main class="main-content">
+        <div class="page-header">
+          <h2 class="page-title">Admin Settings</h2>
+          <p class="page-subtitle">Manage your application settings and configurations</p>
+        </div>
+
+        <div class="settings-tabs">
+          <div class="tabs-header">
+            <button class="tab-button active" data-tab="profile">
+              <i class="fas fa-user-shield"></i>
+              Profile & Security
+            </button>
+            <button class="tab-button" data-tab="user-management">
+              <i class="fas fa-users-cog"></i>
+              User Management
+            </button>
+            <button class="tab-button" data-tab="content">
+              <i class="fas fa-file-alt"></i>
+              Content Moderation
+            </button>
+            <button class="tab-button" data-tab="points">
+              <i class="fas fa-star"></i>
+              Points & Streak
+            </button>
+            <button class="tab-button" data-tab="badges">
+              <i class="fas fa-award"></i>
+              Badges
+            </button>
+            <button class="tab-button" data-tab="referrals">
+              <i class="fas fa-share-alt"></i>
+              Referrals
+            </button>
+            <button class="tab-button" data-tab="reports">
+              <i class="fas fa-flag"></i>
+              Reports
+            </button>
+            <button class="tab-button" data-tab="notifications">
+              <i class="fas fa-bell"></i>
+              Notifications
+            </button>
+            <button class="tab-button" data-tab="system">
+              <i class="fas fa-server"></i>
+              System Settings
+            </button>
+            <button class="tab-button" data-tab="admin-roles">
+              <i class="fas fa-user-tag"></i>
+              Admin Roles
+            </button>
+          </div>
+
+          <div class="tabs-content">
+            <!-- Profile & Security Tab -->
+            <div class="tab-pane active" id="profile">
+              <div class="settings-section">
+                <div class="section-header">
+                  <h3 class="section-title">Points Configuration</h3>
+                  <p class="section-description">Configure point rewards for various activities
+                  </p>
+                </div>
+
+                <div class="row">
+                  <div class="col-md-4">
+                    <div class="form-group">
+                      <label class="form-label">Daily Login Points</label>
+                      <input type="number" class="form-control" value="500">
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="form-group">
+                      <label class="form-label">Post Creation Points</label>
+                      <input type="number" class="form-control" value="1000">
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="form-group">
+                      <label class="form-label">Comment Points</label>
+                      <input type="number" class="form-control" value="200">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label class="form-label">Streak Bonus Multiplier</label>
+                      <select class="form-select">
+                        <option>1.5x</option>
+                        <option selected>2x</option>
+                        <option>2.5x</option>
+                        <option>3x</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label class="form-label">Minimum Streak Days</label>
+                      <input type="number" class="form-control" value="7">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-actions">
+                  <button type="button" class="btn-primary">
+                    <i class="fas fa-save"></i> Save Settings
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Badges Tab -->
+            <div class="tab-pane" id="badges">
+              <div class="alert-box alert-success">
+                <i class="fas fa-check-circle"></i>
+                <div>
+                  <strong>Badge System Active</strong><br>
+                  Users can earn badges for various achievements. <a
+                        href="/admin/badge/management"
+                        style="color: inherit; text-decoration: underline;">Manage badges here</a>.
+                </div>
+              </div>
+
+              <div class="settings-section">
+                <div class="section-header">
+                  <h3 class="section-title">Badge Settings</h3>
+                  <p class="section-description">Configure badge earning criteria</p>
+                </div>
+
+                <div class="setting-item">
+                  <div class="setting-info">
+                    <div class="setting-label">Enable Badge System</div>
+                    <div class="setting-description">Allow users to earn and display badges
+                    </div>
+                  </div>
+                  <div class="setting-control">
+                    <label class="toggle-switch">
+                      <input type="checkbox" checked>
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="setting-item">
+                  <div class="setting-info">
+                    <div class="setting-label">Show Badges on Profile</div>
+                    <div class="setting-description">Display earned badges on user profiles
+                    </div>
+                  </div>
+                  <div class="setting-control">
+                    <label class="toggle-switch">
+                      <input type="checkbox" checked>
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="form-actions">
+                  <button type="button" class="btn-primary">
+                    <i class="fas fa-save"></i> Save Settings
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Referrals Tab -->
+            <div class="tab-pane" id="referrals">
+              <div class="settings-section">
+                <div class="section-header">
+                  <h3 class="section-title">Referral Program</h3>
+                  <p class="section-description">Configure referral rewards and limits</p>
+                </div>
+
+                <div class="setting-item">
+                  <div class="setting-info">
+                    <div class="setting-label">Enable Referral Program</div>
+                    <div class="setting-description">Allow users to refer new members</div>
+                  </div>
+                  <div class="setting-control">
+                    <label class="toggle-switch">
+                      <input type="checkbox" checked>
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label class="form-label">Referrer Reward Points</label>
+                      <input type="number" class="form-control" value="2000">
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label class="form-label">Referee Bonus Points</label>
+                      <input type="number" class="form-control" value="1000">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Maximum Referrals per User</label>
+                  <input type="number" class="form-control" value="50">
+                </div>
+
+                <div class="form-actions">
+                  <button type="button" class="btn-primary">
+                    <i class="fas fa-save"></i> Save Settings
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Reports Tab -->
+            <div class="tab-pane" id="reports">
+              <div class="settings-section">
+                <div class="section-header">
+                  <h3 class="section-title">Report Management</h3>
+                  <p class="section-description">Configure how user reports are handled</p>
+                </div>
+
+                <div class="setting-item">
+                  <div class="setting-info">
+                    <div class="setting-label">Auto-Review Reports</div>
+                    <div class="setting-description">Automatically review and categorize reports
+                    </div>
+                  </div>
+                  <div class="setting-control">
+                    <label class="toggle-switch">
+                      <input type="checkbox" checked>
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="setting-item">
+                  <div class="setting-info">
+                    <div class="setting-label">Email Notifications</div>
+                    <div class="setting-description">Receive email alerts for new reports</div>
+                  </div>
+                  <div class="setting-control">
+                    <label class="toggle-switch">
+                      <input type="checkbox" checked>
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Auto-Action Threshold</label>
+                  <select class="form-select">
+                    <option>3 reports</option>
+                    <option selected>5 reports</option>
+                    <option>10 reports</option>
+                    <option>Never</option>
+                  </select>
+                </div>
+
+                <div class="form-actions">
+                  <button type="button" class="btn-primary">
+                    <i class="fas fa-save"></i> Save Settings
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Notifications Tab -->
+            <div class="tab-pane" id="notifications">
+              <div class="settings-section">
+                <div class="section-header">
+                  <h3 class="section-title">Notification Preferences</h3>
+                  <p class="section-description">Manage admin notification settings</p>
+                </div>
+
+                <div class="setting-item">
+                  <div class="setting-info">
+                    <div class="setting-label">New User Registration</div>
+                    <div class="setting-description">Get notified when new users register</div>
+                  </div>
+                  <div class="setting-control">
+                    <label class="toggle-switch">
+                      <input type="checkbox" checked>
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="setting-item">
+                  <div class="setting-info">
+                    <div class="setting-label">Content Reports</div>
+                    <div class="setting-description">Get notified about content reports</div>
+                  </div>
+                  <div class="setting-control">
+                    <label class="toggle-switch">
+                      <input type="checkbox" checked>
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="setting-item">
+                  <div class="setting-info">
+                    <div class="setting-label">System Alerts</div>
+                    <div class="setting-description">Receive critical system notifications</div>
+                  </div>
+                  <div class="setting-control">
+                    <label class="toggle-switch">
+                      <input type="checkbox" checked>
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Notification Email</label>
+                  <input type="email" class="form-control" value="admin@hon.com">
+                </div>
+
+                <div class="form-actions">
+                  <button type="button" class="btn-primary">
+                    <i class="fas fa-save"></i> Save Settings
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- System Settings Tab -->
+            <div class="tab-pane" id="system">
+              <div class="alert-box alert-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div>
+                  <strong>Warning</strong><br>
+                  Changing system settings may affect application performance. Proceed with
+                  caution.
+                </div>
+              </div>
+
+              <div class="settings-section">
+                <div class="section-header">
+                  <h3 class="section-title">System Configuration</h3>
+                  <p class="section-description">Manage core system settings</p>
+                </div>
+
+                <div class="setting-item">
+                  <div class="setting-info">
+                    <div class="setting-label">Maintenance Mode</div>
+                    <div class="setting-description">Enable maintenance mode for system updates
+                    </div>
+                  </div>
+                  <div class="setting-control">
+                    <label class="toggle-switch">
+                      <input type="checkbox">
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Application Name</label>
+                  <input type="text" class="form-control" value="HON Platform">
+                </div>
+
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label class="form-label">Time Zone</label>
+                      <select class="form-select">
+                        <option>UTC</option>
+                        <option selected>Asia/Kolkata (IST)</option>
+                        <option>America/New_York (EST)</option>
+                        <option>Europe/London (GMT)</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label class="form-label">Date Format</label>
+                      <select class="form-select">
+                        <option selected>DD/MM/YYYY</option>
+                        <option>MM/DD/YYYY</option>
+                        <option>YYYY-MM-DD</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-actions">
+                  <button type="button" class="btn-primary">
+                    <i class="fas fa-save"></i> Save Settings
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Admin Roles Tab -->
+            <div class="tab-pane" id="admin-roles">
+              <div class="settings-section">
+                <div class="section-header">
+                  <h3 class="section-title">Admin Role Management</h3>
+                  <p class="section-description">Configure admin permissions and access levels</p>
+                </div>
+
+                <div class="alert-box alert-info">
+                  <i class="fas fa-info-circle"></i>
+                  <div>
+                    Define roles and permissions for administrative users.
+                  </div>
+                </div>
+
+                <div class="setting-item">
+                  <div class="setting-info">
+                    <div class="setting-label">Super Admin</div>
+                    <div class="setting-description">Full system access and control</div>
+                  </div>
+                  <div class="setting-control">
+                    <button type="button" class="btn-secondary" style="padding: 0.5rem 1rem;">
+                      <i class="fas fa-edit"></i> Configure
+                    </button>
+                  </div>
+                </div>
+
+                <div class="setting-item">
+                  <div class="setting-info">
+                    <div class="setting-label">Moderator</div>
+                    <div class="setting-description">Content moderation and user management
+                    </div>
+                  </div>
+                  <div class="setting-control">
+                    <button type="button" class="btn-secondary" style="padding: 0.5rem 1rem;">
+                      <i class="fas fa-edit"></i> Configure
+                    </button>
+                  </div>
+                </div>
+
+                <div class="setting-item">
+                  <div class="setting-info">
+                    <div class="setting-label">Support Admin</div>
+                    <div class="setting-description">Handle user support and reports</div>
+                  </div>
+                  <div class="setting-control">
+                    <button type="button" class="btn-secondary" style="padding: 0.5rem 1rem;">
+                      <i class="fas fa-edit"></i> Configure
+                    </button>
+                  </div>
+                </div>
+
+                <div class="form-actions">
+                  <button type="button" class="btn-primary">
+                    <i class="fas fa-plus"></i> Add New Role
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Tab switching functionality
+  const tabButtons = document.querySelectorAll('.tab-button');
+  const tabPanes = document.querySelectorAll('.tab-pane');
+
+  tabButtons.forEach(button => {
+      button.addEventListener('click', () => {
+          const targetTab = button.getAttribute('data-tab');
+
+          // Remove active class from all buttons and panes
+          tabButtons.forEach(btn => btn.classList.remove('active'));
+          tabPanes.forEach(pane => pane.classList.remove('active'));
+
+          // Add active class to clicked button and corresponding pane
+          button.classList.add('active');
+          document.getElementById(targetTab).classList.add('active');
+      });
+  });
+</script>
+</body>
+
+</html>

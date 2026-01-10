@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>HON • Group Chat Reports</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        :root{
+     --bg:#f6f7fb;
+     --panel:#ffffff;
+     --panel-2:#f1f2f7;
+     --text:#1c1c24;
+     --muted:#6b6f85;
+
+     --theme-orange:#F73B20;
+     --theme-orange-10: rgba(247, 59, 32, 0.10);
+     --theme-orange-20: rgba(247, 59, 32, 0.20);
+
+     --radius:16px;
+   }
+
+   *{
+     box-sizing:border-box;
+     margin:0;
+     padding:0;
+   }
+
+   html,body{
+     width:100%;
+     overflow-x:hidden;
+   }
+
+   body{
+     background:var(--bg);
+     font-family:Inter,system-ui,sans-serif;
+     color:var(--text);
+     padding:0;
+   }
+
+   /* ===== HEADER ===== */
+   .inbox-header {
+        background: linear-gradient(135deg, #F73B20 0%, #ff5238 100%);
+        padding: 20px 32px;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        box-shadow: 0 4px 20px rgba(247, 59, 32, 0.25);
+      }
+
+      .inbox-title {
+        font-size: 26px;
+        font-weight: 700;
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .back-btn {
+        background: rgba(255,255,255,0.95);
+        border: none;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        transition: all 0.3s ease;
+        cursor: pointer;
+      }
+
+      .back-btn:hover {
+        transform: scale(1.08);
+        background: white;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+      }
+
+      .back-btn i {
+        font-size: 20px;
+        color: var(--theme-orange);
+      }
+
+   /* ===== CONTAINER ===== */
+   .container{
+     max-width:1400px;
+     margin:auto;
+     padding: 32px 24px;
+   }
+
+   /* ===== PAGE HEADER ===== */
+   .page-header{
+     display:flex;
+     justify-content:space-between;
+     align-items:center;
+     gap:16px;
+     flex-wrap:wrap;
+     margin-bottom:32px;
+   }
+
+   .page-header h1{
+     font-size:1.75rem;
+     font-weight: 700;
+     color: var(--text);
+     display: flex;
+     align-items: center;
+     gap: 12px;
+   }
+
+   .stats-row {
+     display: flex;
+     gap: 20px;
+     flex-wrap: wrap;
+   }
+
+   .stat-badge {
+     padding: 10px 20px;
+     border-radius: 24px;
+     font-size: 0.8rem;
+     font-weight: 700;
+     background: var(--theme-orange-10);
+     color: var(--theme-orange);
+     border: 2px solid var(--theme-orange-20);
+     display: flex;
+     align-items: center;
+     gap: 8px;
+   }
+
+   /* ===== REPORT CARD ===== */
+   .report-card {
+     background: var(--panel);
+     border-radius: var(--radius);
+     padding: 24px;
+     border: 1px solid #e6e8f0;
+     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+     transition: all 0.3s ease;
+     margin-bottom: 20px;
+   }
+
+   .report-card:hover {
+     box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+     border-color: var(--theme-orange-20);
+   }
+
+   .report-header {
+     display: flex;
+     justify-content: space-between;
+     align-items: flex-start;
+     margin-bottom: 20px;
+     gap: 16px;
+     flex-wrap: wrap;
+   }
+
+   .report-meta {
+     display: flex;
+     flex-direction: column;
+     gap: 8px;
+   }
+
+   .report-id {
+     font-size: 0.85rem;
+     color: var(--muted);
+     font-weight: 500;
+   }
+
+   .group-name {
+     font-size: 1.2rem;
+     font-weight: 700;
+     color: var(--text);
+     display: flex;
+     align-items: center;
+     gap: 8px;
+   }
+
+   .report-date {
+     font-size: 0.85rem;
+     color: var(--muted);
+     display: flex;
+     align-items: center;
+     gap: 6px;
+   }
+
+   .status-badge-inline {
+     padding: 6px 14px;
+     border-radius: 20px;
+     font-size: 0.75rem;
+     font-weight: 700;
+     text-transform: uppercase;
+     letter-spacing: 0.5px;
+   }
+
+   .status-badge-inline.pending {
+     background: rgba(251, 191, 36, 0.15);
+     color: #f59e0b;
+     border: 2px solid rgba(251, 191, 36, 0.3);
+   }
+
+   .status-badge-inline.in-review {
+     background: var(--theme-orange-10);
+     color: var(--theme-orange);
+     border: 2px solid var(--theme-orange-20);
+   }
+
+   .status-badge-inline.action-taken {
+     background: rgba(34, 197, 94, 0.15);
+     color: #16a34a;
+     border: 2px solid rgba(34, 197, 94, 0.3);
+   }
+
+   .status-badge-inline.rejected {
+     background: rgba(107, 111, 133, 0.15);
+     color: #6b6f85;
+     border: 2px solid rgba(107, 111, 133, 0.3);
+   }
+
+   /* ===== INFO GRID ===== */
+   .info-grid {
+     display: grid;
+     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+     gap: 16px;
+     margin-bottom: 20px;
+   }
+
+   .info-item {
+     display: flex;
+     flex-direction: column;
+     gap: 6px;
+     padding: 14px;
+     background: var(--panel-2);
+     border-radius: 10px;
+     transition: all 0.2s ease;
+   }
+
+   .info-item:hover {
+     background: #e8e9f0;
+   }
+
+   .info-label {
+     font-size: 0.8rem;
+     color: var(--muted);
+     font-weight: 500;
+     text-transform: uppercase;
+     letter-spacing: 0.5px;
+   }
+
+   .info-value {
+     font-size: 0.95rem;
+     color: var(--text);
+     font-weight: 600;
+   }
+
+   .info-value.highlight {
+     color: var(--theme-orange);
+     font-weight: 700;
+   }
+
+   /* ===== MESSAGE PREVIEW ===== */
+   .message-preview {
+     background: var(--panel-2);
+     border-left: 4px solid var(--theme-orange);
+     padding: 16px;
+     border-radius: 10px;
+     margin-bottom: 20px;
+   }
+
+   .message-preview h4 {
+     font-size: 0.85rem;
+     color: var(--muted);
+     margin-bottom: 10px;
+     font-weight: 600;
+     text-transform: uppercase;
+     letter-spacing: 0.5px;
+   }
+
+   .message-content {
+     font-size: 0.9rem;
+     color: var(--text);
+     line-height: 1.6;
+     font-style: italic;
+   }
+
+   /* ===== ADMIN NOTES ===== */
+   .admin-notes {
+     margin-bottom: 20px;
+   }
+
+   .admin-notes textarea {
+     width: 100%;
+     min-height: 90px;
+     border-radius: 12px;
+     border: 2px solid #e6e8f0;
+     padding: 14px;
+     font-family: inherit;
+     resize: vertical;
+     font-size: 0.9rem;
+     transition: all 0.3s ease;
+   }
+
+   .admin-notes textarea:focus {
+     outline: none;
+     border-color: var(--theme-orange);
+     box-shadow: 0 0 0 3px var(--theme-orange-10);
+   }
+
+   .admin-notes textarea::placeholder {
+     color: #aaa;
+   }
+
+   /* ===== ACTION BUTTONS ===== */
+   .actions{
+     display:flex;
+     gap:12px;
+     flex-wrap:wrap;
+   }
+
+   .btn{
+     padding:12px 20px;
+     border-radius:12px;
+     border:none;
+     cursor:pointer;
+     font-weight:600;
+     font-size:.85rem;
+     transition:all 0.3s ease;
+     display: inline-flex;
+     align-items: center;
+     gap: 8px;
+     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+   }
+
+   .btn.warn{
+     background:rgba(255,176,32,0.15);
+     color:#F73B20;
+     border: 2px solid rgba(255,176,32,0.3);
+   }
+
+   .btn.warn:hover {
+     background:rgba(255,176,32,0.25);
+     transform:translateY(-2px);
+     box-shadow: 0 4px 12px rgba(255,176,32,0.3);
+   }
+
+   .btn.reject{
+     background:#f1f2f7;
+     color:#F73B20;
+     border: 2px solid #ddd;
+   }
+
+   .btn.reject:hover {
+     background:#e4e6ee;
+     transform:translateY(-2px);
+     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+   }
+
+   /* ===== CONFIRM OVERLAY ===== */
+   .confirm-overlay {
+       position: fixed;
+       inset: 0;
+       background: rgba(15, 23, 42, 0.6);
+       display: none;
+       align-items: center;
+       justify-content: center;
+       z-index: 9999;
+       backdrop-filter: blur(8px);
+   }
+
+   /* ===== MODAL BOX ===== */
+   .confirm-box {
+       width: min(460px, 92%);
+       background: #ffffff;
+       border-radius: 20px;
+       padding: 32px;
+       box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+       animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+       border: 1px solid rgba(247, 59, 32, 0.15);
+   }
+
+   .confirm-box h3 {
+       margin: 0 0 16px;
+       font-size: 1.5rem;
+       font-weight: 700;
+       color: #1c1c24;
+       display: flex;
+       align-items: center;
+       gap: 10px;
+   }
+
+   .confirm-box p {
+       margin: 10px 0;
+       font-size: 0.95rem;
+       line-height: 1.6;
+       color: #555;
+   }
+
+   .confirm-box p strong {
+       color: #F73B20;
+       font-weight: 600;
+   }
+
+   .confirm-actions {
+       display: flex;
+       justify-content: flex-end;
+       gap: 12px;
+       margin-top: 28px;
+       flex-wrap: wrap;
+   }
+
+   .confirm-actions .btn {
+       padding: 12px 24px;
+       border-radius: 12px;
+       font-size: 0.9rem;
+       font-weight: 600;
+       cursor: pointer;
+       border: none;
+       transition: all 0.3s ease;
+       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+   }
+
+   .confirm-actions .btn.cancel {
+       background: #f1f2f7;
+       color: #444;
+   }
+
+   .confirm-actions .btn.cancel:hover {
+       background: #e4e6ee;
+       transform: translateY(-2px);
+   }
+
+   .confirm-actions .btn.danger {
+       background: linear-gradient(135deg, #F73B20, #ff5238);
+       color: #ffffff;
+       box-shadow: 0 8px 20px rgba(247, 59, 32, 0.35);
+   }
+
+   .confirm-actions .btn.danger:hover {
+       transform: translateY(-3px);
+       box-shadow: 0 12px 28px rgba(247, 59, 32, 0.45);
+   }
+
+   .confirm-actions .btn.warning-color {
+       background: linear-gradient(135deg, #F73B20, #ff5238);
+       color: #ffffff;
+       box-shadow: 0 8px 20px rgba(255, 176, 32, 0.35);
+   }
+
+   .confirm-actions .btn.warning-color:hover {
+       transform: translateY(-3px);
+       box-shadow: 0 12px 28px rgba(255, 176, 32, 0.45);
+   }
+
+   @keyframes scaleIn {
+       from {
+           opacity: 0;
+           transform: scale(0.9);
+       }
+       to {
+           opacity: 1;
+           transform: scale(1);
+       }
+   }
+
+   /* ===== EMPTY STATE ===== */
+   .empty-state {
+     text-align: center;
+     padding: 60px 20px;
+     color: var(--muted);
+   }
+
+   .empty-state i {
+     font-size: 64px;
+     color: var(--theme-orange-20);
+     margin-bottom: 20px;
+   }
+
+   .empty-state h3 {
+     font-size: 1.3rem;
+     margin-bottom: 10px;
+     color: var(--text);
+   }
+
+   /* ===== RESPONSIVE ===== */
+   @media(max-width:600px){
+     .container {
+       padding: 24px 16px;
+     }
+
+     .inbox-header {
+       padding: 18px 16px;
+     }
+
+     .inbox-title {
+       font-size: 20px;
+     }
+
+     .page-header h1{
+       font-size:1.4rem;
+     }
+
+     .report-card {
+       padding: 18px;
+     }
+
+     .info-grid {
+       grid-template-columns: 1fr;
+     }
+
+     .actions {
+       flex-direction: column;
+     }
+
+     .actions .btn{
+       width:100%;
+       justify-content: center;
+     }
+
+     .confirm-box {
+       padding: 24px;
+     }
+
+     .confirm-actions {
+       flex-direction: column;
+     }
+
+     .confirm-actions .btn {
+       width: 100%;
+       text-align: center;
+       justify-content: center;
+     }
+   }
+
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="inbox-header">
+    <button class="back-btn" onclick="window.history.back();">
+        <i class="bi bi-arrow-left"></i>
+    </button>
+    <h1 class="inbox-title">
+        <i class="bi bi-chat-left-dots"></i><span>Group Chat Reports</span>
+    </h1>
+</div>
+
+<div class="container">
+
+    <div class="page-header">
+        <h1>
+            <i class="bi bi-flag-fill" style="color: var(--theme-orange);"></i>
+            Reported Messages
+        </h1>
+        <div class="stats-row">
+            <div class="stat-badge">
+                <i class="bi bi-exclamation-circle"></i>
+<!--                <span th:text="${totalReports != null ? totalReports : reportList.size()}">0</span> Pending Reports-->
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Cards Container -->
+    <div class="reports-container">
+
+        <!-- Loop through all reports -->
+        <div class="report-card" th:with="adminReport=${reportedCircleChat}">
+
+        <div class="report-header">
+                <div class="report-meta">
+                    <!-- <div class="report-id" th:text="'#CR-' + ${adminReport.id}">Report ID</div> -->
+                    <div class="group-name">
+                        <i class="bi bi-people-fill"></i>
+                        <span th:text="${adminReport.groupMaster != null ? adminReport.groupMaster.groupName : 'Unknown Group'}">Group Name</span>
+                    </div>
+                    <div class="report-date">
+                        <i class="bi bi-clock"></i>
+                        <span th:text="${#temporals.format(adminReport.dateTime, 'dd MMM yyyy • hh:mm a')}">Date & Time</span>
+                    </div>
+                </div>
+                <div class="status-badge-inline"
+                     th:classappend="${adminReport.status.name() == 'PENDING' ? 'pending' :
+                                     (adminReport.status.name() == 'IN_REVIEW' ? 'in-review' :
+                                     (adminReport.status.name() == 'ACTION_TAKEN' ? 'action-taken' : 'rejected'))}"
+                     th:text="${adminReport.status.name()}">STATUS</div>
+            </div>
+
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Reported User</div>
+                    <div class="info-value" th:text="${adminReport.owner != null ? '@' + adminReport.owner.username : 'Unknown'}">@username</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Reported By</div>
+                    <div class="info-value" th:text="${adminReport.reporter != null ? '@' + adminReport.reporter.username : 'Unknown'}">@reporter</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Report Reason</div>
+                    <div class="info-value" th:text="${adminReport.reason != null ? adminReport.reason : 'No reason provided'}">Reason</div>
+                </div>
+
+            </div>
+
+            <div class="message-preview" th:if="${adminReport.groupChatMaster.message != null}">
+                <h4><i class="bi bi-chat-quote"></i> Additional Comments/Messages</h4>
+                <div class="message-content" th:text="${adminReport.groupChatMaster.message}">
+                    Comment text here
+                </div>
+            </div>
+
+            <div class="admin-notes">
+                <textarea th:name="'adminNotes_' + ${adminReport.id}" placeholder="Add admin notes here (optional) - Document your decision..."></textarea>
+            </div>
+
+            <div class="actions" th:if="${adminReport.status.name() == 'PENDING' || adminReport.status.name() == 'IN_REVIEW'}">
+                <form method="post" th:action="@{/user/warn/circle/chat/report}">
+                    <input type="hidden" name="reportId" th:value="${adminReport.id}">
+                    <button type="button" class="btn warn" onclick="openWarningModal(this)">
+                        <i class="bi bi-exclamation-triangle"></i> Warn User
+                    </button>
+                </form>
+
+                <form method="post" th:action="@{/user/reject/circle/chat/report}">
+                    <input type="hidden" name="reportId" th:value="${adminReport.id}">
+                    <button type="button" class="btn reject" onclick="openRejectModal(this)">
+                        <i class="bi bi-x-circle"></i> Reject Report
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Empty State (show when no reports) -->
+        <div class="empty-state" th:if="${reportList == null || reportList.isEmpty()}">
+            <i class="bi bi-inbox"></i>
+            <h3>No Reports Found</h3>
+            <p>There are no pending group chat reports at this time.</p>
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- Warning Confirmation Modal -->
+<div class="confirm-overlay" id="warningModal">
+    <div class="confirm-box">
+        <h3><i class="bi bi-exclamation-triangle" style="color:#F73B20;"></i> Send Warning to User?</h3>
+
+        <p>
+            This action will send a <strong>warning notification</strong>
+            to the reported user about their behavior in the group chat.
+        </p>
+
+        <p style="color:#fca5a5; font-weight:500;">
+            The user's warning count will be incremented.
+            Multiple warnings may result in account suspension.
+        </p>
+
+        <div class="confirm-actions">
+            <button class="btn cancel" onclick="closeWarningModal()">
+                Cancel
+            </button>
+
+            <button class="btn warning-color" onclick="confirmWarning()">
+                <i class="bi bi-send"></i> Send Warning
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Reject Report Confirmation Modal -->
+<div class="confirm-overlay" id="rejectModal">
+    <div class="confirm-box">
+        <h3><i class="bi bi-trash" style="color:#F73B20;"></i> Reject This Report?</h3>
+
+        <p style="color:#fca5a5; font-weight:500;">
+            This action is <strong>permanent</strong>.
+        </p>
+
+        <p>
+            If you reject this report, it will be
+            <strong>deleted permanently</strong> from the system.
+        </p>
+
+        <p style="color:#cbd5e1;">
+            This action <strong>cannot be undone</strong>.
+        </p>
+
+        <div class="confirm-actions">
+            <button class="btn cancel" onclick="closeRejectModal()">
+                Cancel
+            </button>
+
+            <button class="btn danger" onclick="confirmReject()">
+                <i class="bi bi-trash"></i> Reject & Delete Report
+            </button>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+    let currentForm = null;
+
+    // Warning Modal Functions
+    function openWarningModal(btn) {
+        currentForm = btn.closest('form');
+        document.getElementById("warningModal").style.display = "flex";
+    }
+
+    function closeWarningModal() {
+        document.getElementById("warningModal").style.display = "none";
+        currentForm = null;
+    }
+
+    function confirmWarning() {
+        if (currentForm) {
+            currentForm.submit();
+        }
+    }
+
+    // Reject Modal Functions
+    function openRejectModal(btn) {
+        currentForm = btn.closest('form');
+        document.getElementById("rejectModal").style.display = "flex";
+    }
+
+    function closeRejectModal() {
+        document.getElementById("rejectModal").style.display = "none";
+        currentForm = null;
+    }
+
+    function confirmReject() {
+        if (currentForm) {
+            currentForm.submit();
+        }
+    }
+
+    // Close modals on background click
+    document.querySelectorAll('.confirm-overlay').forEach(overlay => {
+        overlay.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.style.display = 'none';
+                currentForm = null;
+            }
+        });
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>HON • Review Group Report</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #f6f7fb;
+            --panel: #ffffff;
+            --panel-2: #f1f2f7;
+            --text: #1c1c24;
+            --muted: #6b6f85;
+            --theme-orange: #F73B20;
+            --theme-orange-10: rgba(247, 59, 32, 0.10);
+            --theme-orange-20: rgba(247, 59, 32, 0.20);
+            --radius: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            width: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            background: var(--bg);
+            font-family: Inter, system-ui, sans-serif;
+            color: var(--text);
+            padding: 0;
+        }
+
+        /* ===== HEADER ===== */
+        .inbox-header {
+            background: linear-gradient(135deg, #F73B20 0%, #ff5238 100%);
+            padding: 20px 32px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(247, 59, 32, 0.25);
+        }
+
+        .inbox-title {
+            font-size: 26px;
+            font-weight: 700;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.95);
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .back-btn:hover {
+            transform: scale(1.08);
+            background: white;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+        }
+
+        .back-btn i {
+            font-size: 20px;
+            color: var(--theme-orange);
+        }
+
+        /* ===== CONTAINER ===== */
+        .container {
+            max-width: 1400px;
+            margin: auto;
+            padding: 32px 24px;
+        }
+
+        /* ===== STATUS BADGE ===== */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .status-badge.pending {
+            background: rgba(255, 176, 32, 0.15);
+            color: #b67800;
+            border: 2px solid rgba(255, 176, 32, 0.25);
+        }
+
+        .status-badge.in-review {
+            background: rgba(59, 130, 246, 0.15);
+            color: #1e40af;
+            border: 2px solid rgba(59, 130, 246, 0.25);
+        }
+
+        .status-badge.action-taken {
+            background: rgba(34, 197, 94, 0.15);
+            color: #15803d;
+            border: 2px solid rgba(34, 197, 94, 0.25);
+        }
+
+        .status-badge.rejected {
+            background: rgba(107, 114, 128, 0.15);
+            color: #374151;
+            border: 2px solid rgba(107, 114, 128, 0.25);
+        }
+
+        /* ===== GRID LAYOUT ===== */
+        .review-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        /* ===== CARD ===== */
+        .card {
+            background: var(--panel);
+            border-radius: var(--radius);
+            border: 1px solid #e6e8f0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            padding: 24px;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--panel-2);
+        }
+
+        .card-header i {
+            font-size: 24px;
+            color: var(--theme-orange);
+        }
+
+        .card-header h2 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 0;
+            border-bottom: 1px solid #e6e8f0;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-value {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text);
+            text-align: right;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+        }
+
+        .username {
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .user-detail {
+            font-size: 0.75rem;
+            color: var(--muted);
+        }
+
+        /* ===== FULL WIDTH SECTIONS ===== */
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .reason-box {
+            background: var(--panel-2);
+            padding: 16px;
+            border-radius: 12px;
+            border-left: 4px solid var(--theme-orange);
+        }
+
+        .reason-text {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: var(--text);
+        }
+
+        .comment-text {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--muted);
+            font-style: italic;
+        }
+
+        /* ===== CHAT MESSAGES ===== */
+        .chat-container {
+            background: var(--panel-2);
+            border-radius: 12px;
+            padding: 16px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .chat-message {
+            background: white;
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border-left: 3px solid var(--theme-orange-20);
+        }
+
+        .chat-message:last-child {
+            margin-bottom: 0;
+        }
+
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .message-sender {
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: var(--theme-orange);
+        }
+
+        .message-time {
+            font-size: 0.75rem;
+            color: var(--muted);
+        }
+
+        .message-content {
+            font-size: 0.88rem;
+            color: var(--text);
+            line-height: 1.4;
+        }
+
+        .message-media {
+            margin-top: 8px;
+            padding: 8px;
+            background: var(--panel-2);
+            border-radius: 6px;
+            font-size: 0.8rem;
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .no-messages {
+            text-align: center;
+            padding: 40px;
+            color: var(--muted);
+        }
+
+        .no-messages i {
+            font-size: 48px;
+            color: var(--theme-orange-20);
+            margin-bottom: 12px;
+        }
+
+        /* ===== ACTION BUTTONS ===== */
+        .action-section {
+            display: flex;
+            gap: 16px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 12px 24px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            text-decoration: none;
+        }
+
+        .action-btn.warn {
+            background: linear-gradient(135deg, #F73B20, #ff5238);
+            color: white;
+        }
+
+        .action-btn.warn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(247, 59, 32, 0.4);
+        }
+
+        .action-btn.reject {
+            background: linear-gradient(135deg, #6b7280, #9ca3af);
+            color: white;
+        }
+
+        .action-btn.reject:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(107, 114, 128, 0.4);
+        }
+
+        .action-btn.dismiss {
+            background: white;
+            color: var(--text);
+            border: 2px solid #e6e8f0;
+        }
+
+        .action-btn.dismiss:hover {
+            border-color: var(--theme-orange);
+            color: var(--theme-orange);
+        }
+
+        /* ===== CONFIRMATION MODAL ===== */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: var(--radius);
+            padding: 32px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .modal-header i {
+            font-size: 32px;
+            color: var(--theme-orange);
+        }
+
+        .modal-header h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .modal-body {
+            margin-bottom: 24px;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media(max-width: 968px) {
+            .review-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 24px 16px;
+            }
+
+            .inbox-header {
+                padding: 18px 16px;
+            }
+
+            .inbox-title {
+                font-size: 20px;
+            }
+
+            .action-section {
+                justify-content: stretch;
+            }
+
+            .action-btn {
+                flex: 1;
+                justify-content: center;
+            }
+        }
+
+        /* Custom Scrollbar */
+        .chat-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-container::-webkit-scrollbar-track {
+            background: #e6e8f0;
+            border-radius: 10px;
+        }
+
+        .chat-container::-webkit-scrollbar-thumb {
+            background: var(--theme-orange);
+            border-radius: 10px;
+        }
+
+        /* popup css*/
+      /* ---------- Modal Overlay ---------- */
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal.show {
+    display: flex;
+}
+
+/* ---------- Modal Box ---------- */
+.modal-content {
+    background: #ffffff;
+    width: 340px;
+    padding: 26px 24px;
+    border-radius: 14px;
+    text-align: center;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+    animation: popupScale 0.25s ease;
+}
+
+/* ---------- Title ---------- */
+.modal-content h3 {
+    margin: 0 0 10px;
+    font-size: 20px;
+    font-weight: 600;
+    color: #f97316; /* coral */
+}
+
+/* ---------- Message ---------- */
+.modal-content p {
+    font-size: 15px;
+    color: #555;
+    line-height: 1.5;
+    margin-bottom: 22px;
+}
+
+/* ---------- Actions ---------- */
+.modal-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+/* ---------- Buttons ---------- */
+.modal-actions .btn {
+    flex: 1;
+    padding: 10px 0;
+    border-radius: 8px;
+    border: none;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* Cancel */
+.modal-actions .btn.cancel {
+    background: #f1f1f1;
+    color: #444;
+}
+
+.modal-actions .btn.cancel:hover {
+    background: #e2e2e2;
+}
+
+/* Warn (coral) */
+.modal-actions .btn.warn {
+    background: #f97316;
+    color: #fff;
+}
+
+.modal-actions .btn.warn:hover {
+    background: #ea580c;
+}
+
+/* Reject (danger coral-red) */
+.modal-actions .btn.reject {
+    background: #ef4444;
+    color: #fff;
+}
+
+.modal-actions .btn.reject:hover {
+    background: #dc2626;
+}
+
+/* ---------- Animation ---------- */
+@keyframes popupScale {
+    from {
+        transform: scale(0.92);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="inbox-header">
+    <button class="back-btn" onclick="window.history.back()">
+        <i class="bi bi-arrow-left"></i>
+    </button>
+    <h1 class="inbox-title">
+        <i class="bi bi-clipboard-check"></i>
+        <span>Review Group Report</span>
+    </h1>
+</div>
+
+<div class="container">
+    <div class="review-grid">
+        <!-- Report Details Card -->
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-info-circle-fill"></i>
+                <h2>Report Details</h2>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">
+                    <i class="bi bi-hash"></i>
+                    Report ID
+                </span>
+                <span class="info-value" th:text="${report.id}">12345</span>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">
+                    <i class="bi bi-calendar3"></i>
+                    Reported On
+                </span>
+                <span class="info-value" th:text="${#temporals.format(report.dateTime, 'MMM dd, yyyy HH:mm')}">
+                    Jan 08, 2026 14:30
+                </span>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">
+                    <i class="bi bi-flag-fill"></i>
+                    Status
+                </span>
+                <span class="status-badge"
+                      th:classappend="${report.status.name() == 'PENDING' ? 'pending' :
+                                       report.status.name() == 'IN_REVIEW' ? 'in-review' :
+                                       report.status.name() == 'ACTION_TAKEN' ? 'action-taken' : 'rejected'}"
+                      th:text="${report.status.name().replace('_', ' ')}">
+                    <i class="bi bi-clock-history"></i>
+                    PENDING
+                </span>
+            </div>
+        </div>
+
+        <!-- Group Information Card -->
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-people-fill"></i>
+                <h2>Group Information</h2>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">
+                    <i class="bi bi-chat-dots"></i>
+                    Group Name
+                </span>
+                <span class="info-value" th:text="${report.groupMaster.groupName}">Tech Enthusiasts Hub</span>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">
+                    <i class="bi bi-person-badge"></i>
+                    Group Admin
+                </span>
+                <div class="user-info">
+                    <span class="username" th:text="${report.groupMaster.groupAdmin.username}">@admin_tech</span>
+<!--                    <span class="user-detail" th:text="${report.groupMaster.groupAdmin.email}">admin@example.com</span>-->
+                </div>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">
+                    <i class="bi bi-shield-check"></i>
+                    Group Status
+                </span>
+                <span class="info-value">
+                    <span th:if="${report.groupMaster.groupStatus}" style="color: #15803d;">Active</span>
+                    <span th:unless="${report.groupMaster.groupStatus}" style="color: #dc2626;">Inactive</span>
+                </span>
+            </div>
+        </div>
+
+        <!-- Reporter Information -->
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-person-exclamation"></i>
+                <h2>Reporter Information</h2>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">
+                    <i class="bi bi-person"></i>
+                    Username
+                </span>
+                <span class="info-value" th:text="${report.reporter.username}">@reporter_user</span>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">
+                    <i class="bi bi-envelope"></i>
+                    Email
+                </span>
+                <span class="info-value" th:text="${report.reporter.email}">reporter@example.com</span>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">
+                    <i class="bi bi-phone"></i>
+                    Contact
+                </span>
+                <span class="info-value" th:text="${report.reporter.contactNo}">+91 98765 43210</span>
+            </div>
+        </div>
+
+        <!-- Reported User Information -->
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-person-x"></i>
+                <h2>Reported User</h2>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">
+                    <i class="bi bi-person"></i>
+                    Username
+                </span>
+                <span class="info-value" th:text="${report.groupMaster.groupAdmin.username}">@reported_user</span>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">
+                    <i class="bi bi-envelope"></i>
+                    Email
+                </span>
+                <span class="info-value" th:text="${report.groupMaster.groupAdmin.email}">reported@example.com</span>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">
+                    <i class="bi bi-phone"></i>
+                    Contact
+                </span>
+                <span class="info-value" th:text="${report.groupMaster.groupAdmin.contactNo}">+91 98765 12345</span>
+            </div>
+        </div>
+
+        <!-- Report Reason -->
+        <div class="card full-width">
+            <div class="card-header">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <h2>Report Reason</h2>
+            </div>
+            <div class="reason-box">
+                <p class="reason-text" th:text="${report.reason}">
+                    Inappropriate content being shared repeatedly. Multiple spam messages and offensive language towards other members. The user has been warned multiple times but continues to violate community guidelines.
+                </p>
+            </div>
+        </div>
+
+        <!-- Additional Comments -->
+        <div class="card full-width" th:if="${report.comment != null && !report.comment.isEmpty()}">
+            <div class="card-header">
+                <i class="bi bi-chat-square-quote"></i>
+                <h2>Additional Comments</h2>
+            </div>
+            <div class="reason-box">
+                <p class="comment-text" th:text="${report.comment}">
+                    This is a recurring issue with this user. Previous warnings have been ignored.
+                </p>
+            </div>
+        </div>
+
+        <!-- Recent Group Messages -->
+<!--        <div class="card full-width">-->
+<!--            <div class="card-header">-->
+<!--                <i class="bi bi-chat-left-text-fill"></i>-->
+<!--                <h2>Recent Group Messages (Last 10)</h2>-->
+<!--            </div>-->
+
+<!--            <div class="chat-container">-->
+<!--                <div th:if="${recentMessages != null && !recentMessages.isEmpty()}">-->
+<!--                    <div class="chat-message" th:each="msg : ${recentMessages}">-->
+<!--                        <div class="message-header">-->
+<!--                            <span class="message-sender" th:text="${msg.sentBy.username}">@john_doe</span>-->
+<!--                            <span class="message-time" th:text="${#temporals.format(msg.sentAt, 'MMM dd, HH:mm')}">-->
+<!--                                Jan 08, 14:25-->
+<!--                            </span>-->
+<!--                        </div>-->
+<!--                        <div class="message-content" th:text="${msg.message}" th:if="${msg.message != null}">-->
+<!--                            This is a sample message from the group chat.-->
+<!--                        </div>-->
+<!--                        <div class="message-media" th:if="${msg.media != null}">-->
+<!--                            <i class="bi bi-paperclip"></i>-->
+<!--                            <span th:text="${msg.mediaType != null ? msg.mediaType : 'Media attachment'}">Image/Video</span>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+
+<!--                <div class="no-messages" th:if="${recentMessages == null || recentMessages.isEmpty()}">-->
+<!--                    <i class="bi bi-chat-dots"></i>-->
+<!--                    <p>No recent messages available</p>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+
+
+
+        <!-- Action Buttons -->
+        <div class="card full-width">
+            <div class="action-section">
+                <button class="action-btn dismiss" onclick="window.history.back()">
+                    <i class="bi bi-x-circle"></i>
+                    Go Back
+                </button>
+
+                <form method="post"
+                      th:action="@{/user/warn/group/report/{reportId}(reportId=${report.id})}">
+                    <input type="hidden" name="reportId" th:value="${report.id}">
+                    <button type="button"
+                            class="action-btn warn"
+                            onclick="openWarnModal(this)">
+                        <i class="bi bi-shield-exclamation"></i>
+                        Warn User
+                    </button>
+                </form>
+
+                <form method="post"
+                      th:action="@{/user/reject/group/report/{reportId}(reportId=${report.id})}">
+                    <input type="hidden" name="reportId" th:value="${report.id}">
+                    <button type="button"
+                            class="action-btn reject"
+                            onclick="openRejectModal(this)">
+                        <i class="bi bi-x-octagon"></i>
+                        Reject Report
+                    </button>
+                </form>
+
+                <form method="post"
+                      th:action="@{/user/delete/reported/group/{reportId}(reportId=${report.id})}">
+                    <input type="hidden" name="reportId" th:value="${report.id}">
+                    <button type="button"
+                            class="action-btn reject"
+                            onclick="openDeleteModal(this)">
+                        <i class="bi bi-x-octagon"></i>
+                      Delete Group
+                    </button>
+                </form>
+
+
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--reject model-->
+<div id="rejectModal" class="modal">
+    <div class="modal-content">
+        <h3>Reject Report</h3>
+        <p>Are you sure you want to reject this report?</p>
+
+        <div class="modal-actions">
+            <button class="btn cancel" onclick="closeRejectModal()">Cancel</button>
+            <button class="btn reject" onclick="confirmReject()" id="rejectId">Yes, Reject</button>
+        </div>
+    </div>
+</div>
+
+<!-- warn model-->
+<div id="warnModal" class="modal">
+    <div class="modal-content">
+        <h3>Warn User</h3>
+        <p>Are you sure you want to warn this user?</p>
+
+        <div class="modal-actions">
+            <button class="btn cancel" onclick="closeWarnModal()">Cancel</button>
+            <button class="btn warn" onclick="confirmWarn()" id="warnId">Yes, Warn</button>
+        </div>
+    </div>
+</div>
+
+
+<!--for delete one popup-->
+<!-- delete modal -->
+<div id="deleteModal" class="modal">
+    <div class="modal-content">
+        <h3>Delete Item</h3>
+        <p>Are you sure you want to delete this item? This action cannot be undone.</p>
+
+        <div class="modal-actions">
+            <button class="btn cancel" onclick="closeDeleteModal()">Cancel</button>
+            <button class="btn delete" onclick="confirmDelete()" id="deleteId">
+                Yes, Delete
+            </button>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+<!--js for  popup-->
+
+<script>
+    let activeForm = null;
+
+    /* ---------- WARN ---------- */
+    function openWarnModal(button) {
+        activeForm = button.closest('form');
+        document.getElementById('warnModal').classList.add('show');
+    }
+
+    function closeWarnModal() {
+        document.getElementById('warnModal').classList.remove('show');
+        activeForm = null;
+    }
+
+    function confirmWarn() {
+    const btn = document.getElementById("warnId");
+    if (btn.disabled) return; // double safety
+
+    btn.disabled = true;
+    btn.textContent = "Submitting…";
+    activeForm.submit();
+        }
+
+
+
+    /* ---------- REJECT ---------- */
+    function openRejectModal(button) {
+        activeForm = button.closest('form');
+        document.getElementById('rejectModal').classList.add('show');
+    }
+
+    function closeRejectModal() {
+        document.getElementById('rejectModal').classList.remove('show');
+        activeForm = null;
+    }
+
+    function confirmReject() {
+    const btn = document.getElementById("rejectId");
+    if(btn.disabled) return;
+     btn.disabled = true;
+     btn.textContent = "Submitting…";
+
+        if (activeForm) activeForm.submit();
+    }
+
+
+
+/* ---------- DELETE ---------- */
+function openDeleteModal(button) {
+    activeForm = button.closest('form');
+    document.getElementById('deleteModal').classList.add('show');
+}
+
+function closeDeleteModal() {
+    document.getElementById('deleteModal').classList.remove('show');
+    activeForm = null;
+}
+
+function confirmDelete() {
+    const btn = document.getElementById("deleteId");
+
+    btn.disabled = true;             // prevent double click
+    btn.textContent = "Deleting…";   // feedback
+
+    if (activeForm) {
+        activeForm.submit();
+    }
+}
+
+
+</script>
+
+
+
+</body>
+</html>

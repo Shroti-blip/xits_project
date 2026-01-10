@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Virtual Gift - HON</title>
+  <meta name="_csrf" th:content="${_csrf.token}" />
+  <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: #fafafa;
+        overflow-x: hidden;
+    }
+
+    /* Gradient background */
+    .bg-gradient {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        overflow: hidden;
+        background: #fafafa;
+    }
+
+    .gradient-orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(100px);
+        opacity: 0.1;
+        animation: float 20s ease-in-out infinite;
+    }
+
+    .orb-1 {
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, #F73B20, transparent);
+        top: -10%;
+        right: -10%;
+        animation-duration: 25s;
+    }
+
+    .orb-2 {
+        width: 500px;
+        height: 500px;
+        background: radial-gradient(circle, #ff5238, transparent);
+        bottom: -15%;
+        left: -10%;
+        animation-duration: 20s;
+        animation-delay: 2s;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translate(0, 0) scale(1); }
+        33% { transform: translate(50px, -80px) scale(1.1); }
+        66% { transform: translate(-50px, 50px) scale(0.9); }
+    }
+
+    /* Header */
+    .header {
+        background: white;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        padding: 1rem 0;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+    }
+
+    .header h1 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin: 0;
+    }
+
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #F73B20, #ff5238);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+    }
+
+    /* Main Content */
+    .main-content {
+        padding: 2rem;
+        min-height: calc(100vh - 76px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Back Button */
+    .back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #4a5568;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.875rem;
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .back-btn:hover {
+        color: #F73B20;
+        transform: translateX(-5px);
+    }
+
+    /* Form Card */
+    .form-card {
+        background: white;
+        border-radius: 1.5rem;
+        padding: 2.5rem;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+        border: 1px solid #f0f0f0;
+        max-width: 600px;
+        width: 100%;
+    }
+
+    .form-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .form-title i {
+        color: #3b82f6;
+    }
+
+    .form-subtitle {
+        color: #6b7280;
+        margin-bottom: 2rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #4a5568;
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .form-label i {
+        color: #F73B20;
+        margin-right: 0.375rem;
+    }
+
+    .form-control, .form-select {
+        border: 2px solid #e5e7eb;
+        border-radius: 0.75rem;
+        padding: 0.875rem 1rem;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #F73B20;
+        box-shadow: 0 0 0 3px rgba(247, 59, 32, 0.1);
+    }
+
+    .form-text {
+        color: #9ca3af;
+        font-size: 0.75rem;
+        margin-top: 0.375rem;
+    }
+
+    /* Current Image Display */
+    .current-image-section {
+        background: #f9fafb;
+        border: 2px solid #e5e7eb;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        text-align: center;
+    }
+
+    .current-image-label {
+        font-weight: 600;
+        color: #4a5568;
+        font-size: 0.875rem;
+        margin-bottom: 1rem;
+        display: block;
+    }
+
+    .current-image {
+        max-width: 200px;
+        max-height: 200px;
+        border-radius: 0.75rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    /* Image Preview */
+    .image-preview-container {
+        background: #f9fafb;
+        border: 2px dashed #e5e7eb;
+        border-radius: 1rem;
+        padding: 2rem;
+        text-align: center;
+        margin-top: 0.75rem;
+        min-height: 250px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+    .image-preview-container:hover {
+        border-color: #F73B20;
+        background: #fff5f5;
+    }
+
+    .preview-placeholder {
+        color: #d1d5db;
+    }
+
+    .preview-placeholder i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        display: block;
+    }
+
+    .preview-placeholder p {
+        font-size: 0.875rem;
+        color: #9ca3af;
+    }
+
+    .image-preview {
+        max-width: 100%;
+        max-height: 300px;
+        border-radius: 0.75rem;
+        display: none;
+    }
+
+    /* Premium Toggle */
+    .premium-toggle {
+        background: linear-gradient(135deg, #fef3c7, #fde68a);
+        border: 2px solid #fbbf24;
+        border-radius: 1rem;
+        padding: 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .form-check-input {
+        width: 2.5rem;
+        height: 1.25rem;
+        cursor: pointer;
+    }
+
+    .form-check-input:checked {
+        background-color: #F73B20;
+        border-color: #F73B20;
+    }
+
+    .form-check-label {
+        font-weight: 600;
+        color: #92400e;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .premium-badge {
+        background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 0.5rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+
+    /* Buttons */
+    .btn-submit {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+        border: none;
+        padding: 1rem;
+        border-radius: 0.75rem;
+        font-weight: 600;
+        font-size: 1rem;
+        width: 100%;
+        transition: all 0.3s ease;
+        margin-top: 1.5rem;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn-cancel {
+        background: white;
+        color: #4a5568;
+        border: 2px solid #e5e7eb;
+        padding: 1rem;
+        border-radius: 0.75rem;
+        font-weight: 600;
+        font-size: 1rem;
+        width: 100%;
+        transition: all 0.3s ease;
+        margin-top: 0.75rem;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+
+    .btn-cancel:hover {
+        border-color: #F73B20;
+        color: #F73B20;
+    }
+
+    /* Responsive */
+    @media (max-width: 767.98px) {
+        .main-content {
+            padding: 1.5rem;
+        }
+
+        .form-card {
+            padding: 1.5rem;
+        }
+
+        .form-title {
+            font-size: 1.5rem;
+        }
+    }
+  </style>
+</head>
+<body>
+<!-- Animated Background -->
+<div class="bg-gradient">
+  <div class="gradient-orb orb-1"></div>
+  <div class="gradient-orb orb-2"></div>
+</div>
+
+<!-- Header -->
+<header class="header">
+  <div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center">
+      <h1>HON Dashboard</h1>
+      <div class="user-avatar">A</div>
+    </div>
+  </div>
+</header>
+
+<!-- Main Content -->
+<div class="main-content">
+  <div class="form-card">
+    <!-- Back Button -->
+    <a href="/admin/virtual/gift" class="back-btn">
+      <i class="fas fa-arrow-left"></i>
+      Back to Virtual Gifts
+    </a>
+
+    <!-- Form Title -->
+    <h2 class="form-title">
+      <i class="fas fa-edit"></i>
+      Edit Gift
+    </h2>
+    <p class="form-subtitle">Update the virtual gift details</p>
+
+    <!-- Current Image -->
+    <div class="current-image-section" th:if="${gift.giftData != null}">
+      <span class="current-image-label">
+        <i class="fas fa-image"></i> Current Gift Image
+      </span>
+      <img th:src="@{'/gift/image/' + ${gift.giftId}}"
+           alt="Current Gift Image"
+           class="current-image">
+    </div>
+
+    <!-- Gift Form -->
+    <form th:action="@{'/admin/virtual/gift/edit/' + ${gift.giftId}}" method="post" enctype="multipart/form-data" th:object="${gift}">
+
+      <!-- Gift Name -->
+      <div class="mb-4">
+        <label for="giftName" class="form-label">
+          <i class="fas fa-tag"></i> Gift Name
+        </label>
+        <input type="text"
+               class="form-control"
+               id="giftName"
+               name="giftName"
+               th:field="*{giftName}"
+               placeholder="e.g., Rose Bouquet, Diamond Ring, Love Heart"
+               required>
+        <div class="form-text">Choose a descriptive and attractive name</div>
+      </div>
+
+      <!-- Gift Price -->
+      <div class="mb-4">
+        <label for="price" class="form-label">
+          <i class="fas fa-coins"></i> Price (Points)
+        </label>
+        <input type="number"
+               class="form-control"
+               id="price"
+               name="price"
+               th:field="*{price}"
+               placeholder="e.g., 100"
+               min="1"
+               required>
+        <div class="form-text">Set the point cost for this gift</div>
+      </div>
+
+      <!-- Premium Toggle -->
+      <div class="premium-toggle">
+        <div class="form-check form-switch">
+          <input class="form-check-input"
+                 type="checkbox"
+                 id="premium"
+                 name="premium"
+                 th:field="*{premium}">
+          <label class="form-check-label" for="premium">
+            <i class="fas fa-star"></i>
+            Mark as Premium Gift
+            <span class="premium-badge">⭐ PREMIUM</span>
+          </label>
+        </div>
+        <small class="d-block mt-2" style="color: #78350f; font-size: 0.75rem;">
+          Premium gifts are highlighted and appear first in the store
+        </small>
+      </div>
+
+      <!-- Gift Image Upload -->
+      <div class="mb-4">
+        <label for="giftFile" class="form-label">
+          <i class="fas fa-image"></i> Upload New Image (Optional)
+        </label>
+        <input type="file"
+               class="form-control"
+               id="giftFile"
+               name="giftFile"
+               accept="image/*"
+               onchange="previewImage(event)">
+        <div class="form-text">Leave empty to keep the current image. Recommended: Square image (500x500px)</div>
+
+        <!-- Image Preview -->
+        <div class="image-preview-container" id="previewContainer">
+          <div class="preview-placeholder" id="previewPlaceholder">
+            <i class="fas fa-image"></i>
+            <p>New image preview will appear here</p>
+          </div>
+          <img id="imagePreview" class="image-preview" alt="Gift Preview">
+        </div>
+      </div>
+
+      <!-- Submit Buttons -->
+      <button type="submit" class="btn-submit">
+        <i class="fas fa-save"></i> Update Gift
+      </button>
+
+      <a href="/admin/virtual/gift" class="btn-cancel">
+        <i class="fas fa-times"></i> Cancel
+      </a>
+    </form>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Image preview function
+  function previewImage(event) {
+    const file = event.target.files[0];
+    const preview = document.getElementById('imagePreview');
+    const placeholder = document.getElementById('previewPlaceholder');
+
+    if (file) {
+      const reader = new FileReader();
+
+      reader.onload = function(e) {
+        preview.src = e.target.result;
+        preview.style.display = 'block';
+        placeholder.style.display = 'none';
+      }
+
+      reader.readAsDataURL(file);
+    } else {
+      preview.style.display = 'none';
+      placeholder.style.display = 'block';
+    }
+  }
+</script>
+</body>
+</html>

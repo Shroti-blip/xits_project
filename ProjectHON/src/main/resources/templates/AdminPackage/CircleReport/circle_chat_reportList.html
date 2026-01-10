@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>HON • Group Chat Reports</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        :root{
+     --bg:#f6f7fb;
+     --panel:#ffffff;
+     --panel-2:#f1f2f7;
+     --text:#1c1c24;
+     --muted:#6b6f85;
+
+     --theme-orange:#F73B20;
+     --theme-orange-10: rgba(247, 59, 32, 0.10);
+     --theme-orange-20: rgba(247, 59, 32, 0.20);
+
+     --radius:16px;
+   }
+
+   *{
+     box-sizing:border-box;
+     margin:0;
+     padding:0;
+   }
+
+   html,body{
+     width:100%;
+     overflow-x:hidden;
+   }
+
+   body{
+     background:var(--bg);
+     font-family:Inter,system-ui,sans-serif;
+     color:var(--text);
+     padding:0;
+   }
+
+   /* ===== HEADER ===== */
+   .inbox-header {
+        background: linear-gradient(135deg, #F73B20 0%, #ff5238 100%);
+        padding: 20px 32px;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        box-shadow: 0 4px 20px rgba(247, 59, 32, 0.25);
+      }
+
+      .inbox-title {
+        font-size: 26px;
+        font-weight: 700;
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .back-btn {
+        background: rgba(255,255,255,0.95);
+        border: none;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        transition: all 0.3s ease;
+        cursor: pointer;
+      }
+
+      .back-btn:hover {
+        transform: scale(1.08);
+        background: white;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+      }
+
+      .back-btn i {
+        font-size: 20px;
+        color: var(--theme-orange);
+      }
+
+   /* ===== CONTAINER ===== */
+   .container{
+     max-width:1600px;
+     margin:auto;
+     padding: 32px 24px;
+   }
+
+   /* ===== PAGE HEADER ===== */
+   .page-header{
+     display:flex;
+     justify-content:space-between;
+     align-items:center;
+     gap:16px;
+     flex-wrap:wrap;
+     margin-bottom:32px;
+   }
+
+   .page-header h1{
+     font-size:1.75rem;
+     font-weight: 700;
+     color: var(--text);
+     display: flex;
+     align-items: center;
+     gap: 12px;
+   }
+
+   .stats-row {
+     display: flex;
+     gap: 16px;
+     flex-wrap: wrap;
+   }
+
+   .stat-badge {
+     padding: 10px 18px;
+     border-radius: 24px;
+     font-size: 0.8rem;
+     font-weight: 700;
+     display: flex;
+     align-items: center;
+     gap: 8px;
+   }
+
+   .stat-badge.pending {
+     background: rgba(255,176,32,0.15);
+     color: #b67800;
+     border: 2px solid rgba(255,176,32,0.3);
+   }
+
+   .stat-badge.review {
+     background: rgba(59, 130, 246, 0.15);
+     color: #1e40af;
+     border: 2px solid rgba(59, 130, 246, 0.3);
+   }
+
+   .stat-badge.action {
+     background: rgba(34, 197, 94, 0.15);
+     color: #15803d;
+     border: 2px solid rgba(34, 197, 94, 0.3);
+   }
+
+   .stat-badge.rejected {
+     background: rgba(107, 114, 128, 0.15);
+     color: #374151;
+     border: 2px solid rgba(107, 114, 128, 0.3);
+   }
+
+   /* ===== FILTER SECTION ===== */
+   .filter-section {
+     background: var(--panel);
+     border-radius: var(--radius);
+     padding: 20px 24px;
+     margin-bottom: 24px;
+     border: 1px solid #e6e8f0;
+     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+     display: flex;
+     gap: 16px;
+     align-items: center;
+     flex-wrap: wrap;
+   }
+
+   .filter-section label {
+     font-size: 0.9rem;
+     font-weight: 600;
+     color: var(--text);
+   }
+
+   .filter-section select {
+     padding: 10px 16px;
+     border-radius: 10px;
+     border: 2px solid #e6e8f0;
+     font-size: 0.85rem;
+     font-weight: 500;
+     color: var(--text);
+     background: white;
+     cursor: pointer;
+     transition: all 0.3s ease;
+   }
+
+   .filter-section select:focus {
+     outline: none;
+     border-color: var(--theme-orange);
+     box-shadow: 0 0 0 3px var(--theme-orange-10);
+   }
+
+   /* ===== TABLE CONTAINER ===== */
+   .table-container {
+     background: var(--panel);
+     border-radius: var(--radius);
+     border: 1px solid #e6e8f0;
+     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+     overflow: hidden;
+   }
+
+   .table-wrapper {
+     overflow-x: auto;
+   }
+
+   table {
+     width: 100%;
+     border-collapse: collapse;
+   }
+
+   thead {
+     background: linear-gradient(135deg, #F73B20 0%, #ff5238 100%);
+   }
+
+   thead th {
+     padding: 18px 20px;
+     text-align: left;
+     font-size: 0.85rem;
+     font-weight: 700;
+     color: white;
+     text-transform: uppercase;
+     letter-spacing: 0.5px;
+     white-space: nowrap;
+   }
+
+   tbody tr {
+     border-bottom: 1px solid #e6e8f0;
+     transition: all 0.2s ease;
+   }
+
+   tbody tr:hover {
+     background: var(--panel-2);
+   }
+
+   tbody tr:last-child {
+     border-bottom: none;
+   }
+
+   tbody td {
+     padding: 18px 20px;
+     font-size: 0.88rem;
+     color: var(--text);
+   }
+
+   .report-id {
+     font-weight: 700;
+     color: var(--theme-orange);
+     font-size: 0.85rem;
+   }
+
+   .user-cell {
+     display: flex;
+     flex-direction: column;
+     gap: 4px;
+   }
+
+   .username {
+     font-weight: 600;
+     color: var(--text);
+   }
+
+   .user-role {
+     font-size: 0.75rem;
+     color: var(--muted);
+   }
+
+   .group-name {
+     font-weight: 600;
+     max-width: 200px;
+     overflow: hidden;
+     text-overflow: ellipsis;
+     white-space: nowrap;
+   }
+
+   .reason-cell {
+     max-width: 180px;
+     overflow: hidden;
+     text-overflow: ellipsis;
+     white-space: nowrap;
+   }
+
+   .comment-cell {
+     max-width: 250px;
+     overflow: hidden;
+     text-overflow: ellipsis;
+     white-space: nowrap;
+     font-style: italic;
+     color: var(--muted);
+   }
+
+   .date-cell {
+     font-size: 0.82rem;
+     color: var(--muted);
+     white-space: nowrap;
+   }
+
+   /* ===== STATUS BADGES ===== */
+   .status-badge {
+     display: inline-flex;
+     align-items: center;
+     gap: 6px;
+     padding: 6px 12px;
+     border-radius: 20px;
+     font-size: 0.75rem;
+     font-weight: 700;
+     text-transform: uppercase;
+     letter-spacing: 0.3px;
+     white-space: nowrap;
+   }
+
+   .status-badge.pending {
+     background: rgba(255,176,32,0.15);
+     color: #b67800;
+     border: 2px solid rgba(255,176,32,0.25);
+   }
+
+   .status-badge.in-review {
+     background: rgba(59, 130, 246, 0.15);
+     color: #1e40af;
+     border: 2px solid rgba(59, 130, 246, 0.25);
+   }
+
+   .status-badge.action-taken {
+     background: rgba(34, 197, 94, 0.15);
+     color: #15803d;
+     border: 2px solid rgba(34, 197, 94, 0.25);
+   }
+
+   .status-badge.rejected {
+     background: rgba(107, 114, 128, 0.15);
+     color: #374151;
+     border: 2px solid rgba(107, 114, 128, 0.25);
+   }
+
+   /* ===== ACTION BUTTONS ===== */
+   .action-btn {
+     padding: 8px 16px;
+     border-radius: 8px;
+     border: none;
+     cursor: pointer;
+     font-weight: 600;
+     font-size: 0.8rem;
+     transition: all 0.3s ease;
+     display: inline-flex;
+     align-items: center;
+     gap: 6px;
+     box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+     text-decoration: none;
+     color: white;
+   }
+
+   .action-btn.view {
+     background: linear-gradient(135deg, #F73B20, #ff5238);
+   }
+
+   .action-btn.view:hover {
+     transform: translateY(-2px);
+     box-shadow: 0 4px 12px rgba(247, 59, 32, 0.4);
+   }
+
+   /* ===== EMPTY STATE ===== */
+   .empty-state {
+     text-align: center;
+     padding: 80px 20px;
+     color: var(--muted);
+   }
+
+   .empty-state i {
+     font-size: 64px;
+     color: var(--theme-orange-20);
+     margin-bottom: 20px;
+   }
+
+   .empty-state h3 {
+     font-size: 1.3rem;
+     margin-bottom: 10px;
+     color: var(--text);
+   }
+
+   /* ===== RESPONSIVE ===== */
+   @media(max-width:768px){
+     .container {
+       padding: 24px 16px;
+     }
+
+     .inbox-header {
+       padding: 18px 16px;
+     }
+
+     .inbox-title {
+       font-size: 20px;
+     }
+
+     .page-header h1{
+       font-size:1.4rem;
+     }
+
+     .table-wrapper {
+       overflow-x: scroll;
+     }
+
+     table {
+       min-width: 1000px;
+     }
+
+     .filter-section {
+       flex-direction: column;
+       align-items: stretch;
+     }
+
+     .filter-section select {
+       width: 100%;
+     }
+   }
+
+        /* popup warned*/
+        .warn-popup {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+
+    background: linear-gradient(135deg, #22c55e, #4ade80);
+    color: #ffffff;
+
+    padding: 14px 22px;
+    border-radius: 10px;
+
+    font-size: 15px;
+    font-weight: 600;
+
+    box-shadow: 0 8px 25px rgba(34, 197, 94, 0.35);
+
+    z-index: 9999;
+
+    animation: slideIn 0.4s ease-out;
+}
+
+/* Slide in animation */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+
+
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="inbox-header">
+    <button class="back-btn" onclick="window.history.back()">
+        <i class="bi bi-arrow-left"></i>
+    </button>
+    <h1 class="inbox-title">
+        <i class="bi bi-chat-left-dots"></i><span>Group Chat Reports</span>
+    </h1>
+</div>
+
+<div class="container">
+
+
+    <div id="warnPopup" class="warn-popup" th:if="${warned}">
+        Successfully Warned User.
+    </div>
+
+    <div id="rejectPopup" class="warn-popup" th:if="${rejected}">
+        Successfully Rejected User Report.
+    </div>
+
+
+    <!--    <div class="page-header">-->
+<!--        <h1>-->
+<!--            <i class="bi bi-flag-fill" style="color: var(&#45;&#45;theme-orange);"></i>-->
+<!--            All Reports-->
+<!--        </h1>-->
+<!--        <div class="stats-row">-->
+<!--            <div class="stat-badge pending">-->
+<!--                <i class="bi bi-clock-history"></i>-->
+<!--                <span th:text="${pendingCount}">8</span> Pending-->
+<!--            </div>-->
+<!--            <div class="stat-badge review">-->
+<!--                <i class="bi bi-eye"></i>-->
+<!--                <span th:text="${inReviewCount}">4</span> In Review-->
+<!--            </div>-->
+<!--            <div class="stat-badge action">-->
+<!--                <i class="bi bi-check-circle"></i>-->
+<!--                <span th:text="${actionTakenCount}">15</span> Action Taken-->
+<!--            </div>-->
+<!--            <div class="stat-badge rejected">-->
+<!--                <i class="bi bi-x-circle"></i>-->
+<!--                <span th:text="${rejectedCount}">3</span> Rejected-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </div>-->
+
+    <!-- Filter Section -->
+<!--    <div class="filter-section">-->
+<!--        <label for="statusFilter">Filter by Status:</label>-->
+<!--        <select id="statusFilter" onchange="filterReports()">-->
+<!--            <option value="ALL">All Reports</option>-->
+<!--            <option value="PENDING">Pending</option>-->
+<!--            <option value="IN_REVIEW">In Review</option>-->
+<!--            <option value="ACTION_TAKEN">Action Taken</option>-->
+<!--            <option value="REJECTED">Rejected</option>-->
+<!--        </select>-->
+<!--    </div>-->
+
+    <!-- Table Container -->
+    <div class="table-container">
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                <tr>
+                    <th>Group</th>
+                    <th>Reported User</th>
+                    <th>Reporter</th>
+                    <th>Reason</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody th:if="${circleReportList != null && !circleReportList.isEmpty()}">
+                <tr th:each="report : ${circleReportList}">
+                    <td>
+                        <div class="group-name" th:text="${report.groupMaster.groupName}" th:title="${report.groupMaster.groupName}">
+                            Tech Enthusiasts Hub
+                        </div>
+                    </td>
+                    <td>
+                        <div class="user-cell">
+                            <span class="username" th:text="${report.owner.username}">@john_tech</span>
+                            <span class="user-role">Reported User</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="user-cell">
+                            <span class="username" th:text="${report.reporter.username}">@sarah_mod</span>
+                            <span class="user-role">Reporter</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="reason-cell" th:text="${report.reason}" th:title="${report.reason}">
+                            Spam / Offensive Content
+                        </div>
+                    </td>
+                    <td>
+                            <span class="status-badge"
+                                  th:classappend="${report.status.name() == 'PENDING' ? 'pending' :
+                                                   report.status.name() == 'IN_REVIEW' ? 'in-review' :
+                                                   report.status.name() == 'ACTION_TAKEN' ? 'action-taken' : 'rejected'}"
+                                  th:text="${report.status.name().replace('_', ' ')}">
+                                <i class="bi bi-clock-history"></i>
+                                PENDING
+                            </span>
+                    </td>
+                    <td>
+                        <a th:href="@{/user/circle/chat/report/review/{id}(id=${report.id})}" class="action-btn view">
+                            <i class="bi bi-clipboard-check"></i>
+                            Review
+                        </a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <!-- Empty State -->
+            <div class="empty-state" th:if="${reports == null || reports.isEmpty()}">
+                <i class="bi bi-inbox"></i>
+                <h3>No Reports Found</h3>
+                <p>There are no group chat reports matching your criteria.</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function filterReports() {
+        const filter = document.getElementById('statusFilter').value;
+        const rows = document.querySelectorAll('tbody tr');
+
+        rows.forEach(row => {
+            if (filter === 'ALL') {
+                row.style.display = '';
+            } else {
+                const statusBadge = row.querySelector('.status-badge');
+                const statusText = statusBadge.textContent.trim().replace(/\s+/g, '_').toUpperCase();
+
+                if (statusText === filter) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            }
+        });
+    }
+</script>
+
+
+<!--warning popup-->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const popup = document.getElementById("warnPopup");
+
+        if (popup) {
+            setTimeout(() => {
+                popup.style.opacity = "0";
+                popup.style.transform = "translateX(30px)";
+
+                setTimeout(() => popup.remove(), 400);
+            }, 3000);
+        }
+    });
+</script>
+
+
+<!--reject report popup-->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const popup = document.getElementById("rejectPopup");
+
+        if (popup) {
+            setTimeout(() => {
+                popup.style.opacity = "0";
+                popup.style.transform = "translateX(30px)";
+
+                setTimeout(() => popup.remove(), 400);
+            }, 3000);
+        }
+    });
+</script>
+
+
+
+
+
+</body>
+</html>

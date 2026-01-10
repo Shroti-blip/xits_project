@@ -1,0 +1,2616 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - HON</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #fafafa;
+            overflow-x: hidden;
+        }
+
+        /* Gradient background with floating orbs */
+        .bg-gradient {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+            background: #fafafa;
+        }
+
+        .gradient-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.1;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .orb-1 {
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, #F73B20, transparent);
+            top: -10%;
+            right: -10%;
+            animation-duration: 25s;
+        }
+
+        .orb-2 {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, #ff5238, transparent);
+            bottom: -15%;
+            left: -10%;
+            animation-duration: 20s;
+            animation-delay: 2s;
+        }
+
+        .orb-3 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, #F73B20, transparent);
+            top: 40%;
+            left: 50%;
+            animation-duration: 18s;
+            animation-delay: 1s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(50px, -80px) scale(1.1); }
+            66% { transform: translate(-50px, 50px) scale(0.9); }
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin: 0;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #F73B20, #ff5238);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+            min-height: calc(100vh - 76px);
+            padding: 2rem 1rem;
+        }
+
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            color: #4a5568;
+            padding: 0.875rem 1.25rem;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .nav-link i {
+            font-size: 1.25rem;
+            width: 24px;
+        }
+
+        .nav-link:hover {
+            background: #f7f7f7;
+            color: #F73B20;
+        }
+
+        .nav-link.active {
+            background: linear-gradient(135deg, #F73B20, #ff5238);
+            color: white;
+            box-shadow: 0 4px 15px rgba(247, 59, 32, 0.3);
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 2.5rem 3rem;
+            min-height: calc(100vh - 76px);
+        }
+
+        /* Topbar */
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 3px solid rgba(247,59,32,0.15);
+        }
+
+        .topbar h2 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            color: #1a1a1a;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 0;
+        }
+
+        .topbar h2 i {
+            color: #F73B20;
+        }
+
+        .admin {
+            padding: 0.8rem 2rem;
+            border-radius: 30px;
+            background: rgba(247,59,32,0.12);
+            color: #F73B20;
+            font-weight: 700;
+            border: 2px solid rgba(247,59,32,0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95rem;
+        }
+
+        /* Stats */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.8rem;
+            margin-bottom: 3.5rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2.2rem;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid rgba(247,59,32,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #F73B20, #ff5a3f);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 16px 40px rgba(247,59,32,0.25);
+            border-color: rgba(247,59,32,0.3);
+        }
+
+        .stat-title {
+            font-size: 0.85rem;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            color: #777;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stat-value {
+            font-size: 3rem;
+            color: #F73B20;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        /* Panels */
+        .panel {
+            background: white;
+            border-radius: 20px;
+            padding: 2.5rem;
+            margin-bottom: 3rem;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            border: 2px solid rgba(247,59,32,0.1);
+        }
+
+        .panel-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.2rem;
+            border-bottom: 3px solid rgba(247,59,32,0.15);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .panel-header h3 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #1a1a1a;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0;
+        }
+
+        .panel-header h3 i {
+            color: #F73B20;
+        }
+
+        /* Table - IMPROVED */
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        thead {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        thead th {
+            text-align: left;
+            padding: 1.2rem 1.5rem;
+            font-size: 0.85rem;
+            color: #fff;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            background: linear-gradient(135deg, #F73B20, #ff5238);
+            border: none;
+            white-space: nowrap;
+        }
+
+        thead tr th:first-child {
+            border-radius: 12px 0 0 0;
+        }
+
+        thead tr th:last-child {
+            border-radius: 0 12px 0 0;
+        }
+
+        tbody tr {
+            background: #fff;
+            transition: all 0.3s ease;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        tbody tr:hover {
+            background: rgba(247,59,32,0.02);
+            transform: translateX(4px);
+        }
+
+        tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        tbody tr:last-child td:first-child {
+            border-radius: 0 0 0 12px;
+        }
+
+        tbody tr:last-child td:last-child {
+            border-radius: 0 0 12px 0;
+        }
+
+        td {
+            padding: 1.2rem 1.5rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+            background: transparent;
+            color: #2d3748;
+            vertical-align: middle;
+        }
+
+        /* Badges - IMPROVED */
+        .badge {
+            padding: 0.55rem 1.2rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: 2px solid;
+            white-space: nowrap;
+        }
+
+        .badge i {
+            font-size: 0.9rem;
+        }
+
+        .badge.warning {
+            background: rgba(255,165,0,0.15);
+            color: #d97706;
+            border-color: rgba(255,165,0,0.5);
+        }
+
+        .badge.review {
+            background: rgba(59,130,246,0.15);
+            color: #2563eb;
+            border-color: rgba(59,130,246,0.5);
+        }
+
+        .badge.success {
+            background: rgba(34,197,94,0.15);
+            color: #16a34a;
+            border-color: rgba(34,197,94,0.5);
+        }
+
+        .badge.reject {
+            background: rgba(239,68,68,0.15);
+            color: #dc2626;
+            border-color: rgba(239,68,68,0.5);
+        }
+
+        /* Button - IMPROVED */
+        .action-btn {
+            background: linear-gradient(135deg, #F73B20, #ff5238);
+            color: white;
+            border: none;
+            padding: 0.65rem 1.5rem;
+            border-radius: 20px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(247,59,32,0.3);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            text-decoration: none;
+            display: inline-block;
+            white-space: nowrap;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(247,59,32,0.45);
+            color: white;
+            background: linear-gradient(135deg, #ff5238, #F73B20);
+        }
+
+        .action-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Success Banner */
+        .success-banner {
+            position: fixed;
+            top: 100px;
+            right: 30px;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            z-index: 9999;
+            box-shadow: 0 12px 32px rgba(34,197,94,0.4);
+            animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #9ca3af;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-state p {
+            font-size: 1rem;
+            color: #6b7280;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .main-content {
+                padding: 2rem;
+            }
+
+            .stats {
+                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            }
+        }
+
+        @media (max-width: 991.98px) {
+            .sidebar {
+                min-height: auto;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1.5rem;
+            }
+
+            .topbar {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+
+            .topbar h2 {
+                font-size: 2rem;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .panel {
+                padding: 1.5rem;
+            }
+
+            .success-banner {
+                left: 50%;
+                right: auto;
+                transform: translateX(-50%);
+                width: calc(100% - 40px);
+                text-align: center;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .table-wrapper {
+                overflow-x: scroll;
+            }
+
+            table {
+                min-width: 600px;
+            }
+
+            thead th {
+                padding: 1rem;
+                font-size: 0.75rem;
+            }
+
+            td {
+                padding: 1rem;
+                font-size: 0.85rem;
+            }
+
+            .stat-value {
+                font-size: 2.5rem;
+            }
+
+            .topbar h2 {
+                font-size: 1.5rem;
+            }
+
+            .badge {
+                padding: 0.45rem 1rem;
+                font-size: 0.75rem;
+            }
+
+            .action-btn {
+                padding: 0.5rem 1.2rem;
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- Animated Background -->
+<div class="bg-gradient">
+    <div class="gradient-orb orb-1"></div>
+    <div class="gradient-orb orb-2"></div>
+    <div class="gradient-orb orb-3"></div>
+</div>
+
+<!-- Header -->
+<header class="header">
+    <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-3">
+                <button class="btn d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1>HON Dashboard</h1>
+            </div>
+            <div class="user-avatar">A</div>
+        </div>
+    </div>
+</header>
+
+<div class="container-fluid">
+    <div class="row">
+
+        <!-- Sidebar for Desktop -->
+        <div class="col-lg-3 col-xl-2 d-none d-lg-block p-0">
+            <nav class="sidebar" style="position:sticky;top:70px;">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link " href="/admin/dashboard">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/hon/users">
+                            <i class="fas fa-users"></i>
+                            <span>HON Users</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/badge/management">
+                            <i class="fas fa-award"></i>
+                            <span>Badges</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link " href="/admin/get-all-post-report">
+                            <i class="fas fa-flag"></i>
+                            <span>Reported Posts</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/admin/reports">
+                            <i class="fas fa-file-alt"></i>
+                            <span>Report Section</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/virtual/gift">
+                            <i class="fas fa-gift"></i>
+                            <span>Virtual Gift</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/quiz/management">
+                            <i class="fas fa-question-circle"></i>
+                            <span>Quiz Management</span>
+                        </a>
+                    </li>
+                    <!-- NEW: Contact Admin Section -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/contact/requests">
+                            <i class="fas fa-envelope"></i>
+                            <span>Contact Admin</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/settings">
+                            <i class="fas fa-cog"></i>
+                            <span>Settings</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+        <!-- Offcanvas Sidebar for Mobile -->
+        <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebar">
+            <div class="offcanvas-header">
+                <h5 class="offcanvas-title">Menu</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+            </div>
+            <div class="offcanvas-body p-0">
+                <nav class="sidebar">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link " href="/admin/dashboard">
+                                <i class="fas fa-chart-line"></i>
+                                <span>Dashboard</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/hon/users">
+                                <i class="fas fa-users"></i>
+                                <span>HON Users</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/badge/management">
+                                <i class="fas fa-award"></i>
+                                <span>Badges</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link " href="/admin/get-all-post-report">
+                                <i class="fas fa-flag"></i>
+                                <span>Reported Posts</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/admin/reports">
+                                <i class="fas fa-file-alt"></i>
+                                <span>Report Section</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/virtual/gift">
+                                <i class="fas fa-gift"></i>
+                                <span>Virtual Gift</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/quiz/management">
+                                <i class="fas fa-question-circle"></i>
+                                <span>Quiz Management</span>
+                            </a>
+                        </li>
+                        <!-- NEW: Contact Admin Section -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/contact/requests">
+                                <i class="fas fa-envelope"></i>
+                                <span>Contact Admin</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/settings">
+                                <i class="fas fa-cog"></i>
+                                <span>Settings</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+
+
+
+        <!-- Main Content -->
+        <div class="col-lg-9 col-xl-10">
+            <main class="main-content">
+                <!-- Topbar -->
+                <div class="topbar">
+                    <h2><i class="bi bi-bar-chart-fill"></i> Reports Overview</h2>
+                    <div class="admin">
+                        <i class="bi bi-person-badge"></i>
+                        <span>Admin</span>
+                    </div>
+                </div>
+
+                <!-- Stats -->
+                <section class="stats">
+                    <div class="stat-card">
+                        <div class="stat-title">
+                            <i class="bi bi-flag"></i>
+                            Total Reports
+                        </div>
+                        <div class="stat-value" th:text="${userReport != null ? userReport : 0}">128</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">
+                            <i class="bi bi-chat-square-text"></i>
+                            Reported Chats
+                        </div>
+                        <div class="stat-value" th:text="${chatReport != null ? chatReport : 0}">74</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">
+                            <i class="bi bi-clock-history"></i>
+                            Pending Review
+                        </div>
+                        <div class="stat-value">12</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">
+                            <i class="bi bi-people-fill"></i>
+                            Active Users
+                        </div>
+                        <div class="stat-value">1,247</div>
+                    </div>
+                </section>
+
+                <!-- User Reports Table -->
+                <section class="panel">
+                    <div class="panel-header">
+                        <h3><i class="bi bi-file-earmark-text"></i> User Reports</h3>
+                    </div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>Reporter</th>
+                                <th>Reported User</th>
+                                <th>Reason</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                            </thead>
+                            <tbody th:if="${reportedUserList != null and !reportedUserList.isEmpty()}">
+                            <tr th:each="list : ${reportedUserList}">
+                                <td th:text="${list.reporterUser.username}">@elara</td>
+                                <td th:text="${list.ownerUser.username}">@unknown_soul</td>
+                                <td th:text="${list.reason}">Harassment</td>
+                                <td>
+                    <span th:switch="${list.status.name()}">
+                      <span th:case="'PENDING'" class="badge warning">
+                        <i class="bi bi-hourglass-split"></i> Pending
+                      </span>
+                      <span th:case="'IN_REVIEW'" class="badge review">
+                        <i class="bi bi-eye"></i> In Review
+                      </span>
+                      <span th:case="'ACTION_TAKEN'" class="badge success">
+                        <i class="bi bi-check-circle"></i> Action Taken
+                      </span>
+                      <span th:case="'REJECTED'" class="badge reject">
+                        <i class="bi bi-x-circle"></i> Rejected
+                      </span>
+                      <span th:case="*">Unknown</span>
+                    </span>
+                                </td>
+                                <td>
+                                    <a th:href="@{/admin/reportReview/{r}/{o}/{reportId}(
+                        r=${list.reporterUser.userId},
+                        o=${list.ownerUser.userId},
+                        reportId=${list.id}
+                      )}" class="action-btn">Review</a>
+                                </td>
+                            </tr>
+                            </tbody>
+                            <tbody th:if="${reportedUserList == null or reportedUserList.isEmpty()}">
+                            <tr>
+                                <td colspan="5">
+                                    <div class="empty-state">
+                                        <i class="bi bi-inbox"></i>
+                                        <p>No user reports found</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Reported Chats Table -->
+                <section class="panel">
+                    <div class="panel-header">
+                        <h3><i class="bi bi-chat-left-dots"></i> Reported Chats</h3>
+                    </div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>User A</th>
+                                <th>User B</th>
+                                <th>Reason</th>
+                                <th>Reports</th>
+                                <th>Action</th>
+                            </tr>
+                            </thead>
+                            <tbody th:if="${reportedChatList != null and !reportedChatList.isEmpty()}">
+                            <tr th:each="list : ${reportedChatList}">
+                                <td th:text="${list.reporter.username}">@elara</td>
+                                <td th:text="${list.owner.username}">@lostboy</td>
+                                <td th:text="${list.reason}">Inappropriate Content</td>
+                                <td>
+                             <span th:switch="${list.status.name()}">
+                                <span th:case="'PENDING'" class="badge warning">
+                                    <i class="bi bi-hourglass-split"></i> Pending
+                                </span>
+                                <span th:case="'IN_REVIEW'" class="badge review">
+                                    <i class="bi bi-eye"></i> In Review
+                                </span>
+                                <span th:case="'ACTION_TAKEN'" class="badge success">
+                                    <i class="bi bi-check-circle"></i> Action Taken
+                                </span>
+                                <span th:case="'REJECTED'" class="badge reject">
+                                    <i class="bi bi-x-circle"></i> Rejected
+                                </span>
+                                <span th:case="*">Unknown</span>
+                            </span>
+                                </td>
+<!--                                <td>-->
+<!--                                    <span class="badge warning">-->
+<!--                                      <i class="bi bi-exclamation-triangle"></i> 5-->
+<!--                                    </span>-->
+<!--                                </td>-->
+                                <td>
+                                    <a th:href="@{/user/chatreport/{r}/{o}/{wi}/{chatReportId}(
+                            r=${list.reporter.userId},
+                            o=${list.owner.userId} ,
+                             wi=${list.whisperMaster.whisperId},
+                             chatReportId=${list.id})}
+                                ">
+                                        <button class="action-btn">Open Chat</button>
+                                    </a>
+<!--                                    <a href="#" class="action-btn">Open Chat</a>-->
+                                </td>
+                            </tr>
+                            </tbody>
+                            <tbody th:if="${reportedChatList == null or reportedChatList.isEmpty()}">
+                            <tr>
+                                <td colspan="5">
+                                    <div class="empty-state">
+                                        <i class="bi bi-inbox"></i>
+                                        <p>No chat reports found</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+</div>
+
+<!-- Success Banners -->
+<div th:if="${warningSuccess}" id="successMsg" class="success-banner">
+    <i class="bi bi-check-circle-fill"></i>
+    Successfully sent warning mail to user.
+</div>
+
+<div th:if="${successMsgReport}" id="successMsgReport" class="success-banner">
+    <i class="bi bi-check-circle-fill"></i>
+    Successfully rejected report for that user.
+</div>
+
+<div th:if="${blockMsgReport}" id="blockMsgReport" class="success-banner">
+    <i class="bi bi-check-circle-fill"></i>
+    User has been blocked successfully!
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    window.addEventListener("DOMContentLoaded", function () {
+      const msg = document.getElementById("successMsg");
+      if (msg) {
+        setTimeout(() => {
+          msg.style.opacity = "0";
+          msg.style.transform = "translateX(100px)";
+          setTimeout(() => {
+            msg.style.display = "none";
+          }, 300);
+        }, 3000);
+      }
+
+      const msgReport = document.getElementById("successMsgReport");
+      if (msgReport) {
+        setTimeout(() => {
+          msgReport.style.opacity = "0";
+          msgReport.style.transform = "translateX(100px)";
+          setTimeout(() => {
+            msgReport.style.display = "none";
+          }, 300);
+        }, 3000);
+      }
+
+      const msgReport = document.getElementById("blockMsgReport");
+      if (msgReport) {
+        setTimeout(() => {
+          msgReport.style.opacity = "0";
+          msgReport.style.transform = "translateX(100px)";
+          setTimeout(() => {
+            msgReport.style.display = "none";
+          }, 300);
+        }, 3000);
+      }
+    });
+</script>
+</body>
+</html>
+
+
+<!--<!DOCTYPE html>-->
+<!--<html lang="en" xmlns:th="http://www.thymeleaf.org">-->
+<!--<head>-->
+<!--    <meta charset="UTF-8">-->
+<!--    <meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+<!--    <title>Reports - HON</title>-->
+<!--    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">-->
+<!--    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">-->
+<!--    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">-->
+<!--    <style>-->
+<!--        * {-->
+<!--            margin: 0;-->
+<!--            padding: 0;-->
+<!--            box-sizing: border-box;-->
+<!--        }-->
+
+<!--        body {-->
+<!--            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;-->
+<!--            background: #fafafa;-->
+<!--            overflow-x: hidden;-->
+<!--        }-->
+
+<!--        /* Gradient background with floating orbs */-->
+<!--        .bg-gradient {-->
+<!--            position: fixed;-->
+<!--            top: 0;-->
+<!--            left: 0;-->
+<!--            width: 100%;-->
+<!--            height: 100%;-->
+<!--            z-index: -1;-->
+<!--            overflow: hidden;-->
+<!--            background: #fafafa;-->
+<!--        }-->
+
+<!--        .gradient-orb {-->
+<!--            position: absolute;-->
+<!--            border-radius: 50%;-->
+<!--            filter: blur(100px);-->
+<!--            opacity: 0.1;-->
+<!--            animation: float 20s ease-in-out infinite;-->
+<!--        }-->
+
+<!--        .orb-1 {-->
+<!--            width: 600px;-->
+<!--            height: 600px;-->
+<!--            background: radial-gradient(circle, #F73B20, transparent);-->
+<!--            top: -10%;-->
+<!--            right: -10%;-->
+<!--            animation-duration: 25s;-->
+<!--        }-->
+
+<!--        .orb-2 {-->
+<!--            width: 500px;-->
+<!--            height: 500px;-->
+<!--            background: radial-gradient(circle, #ff5238, transparent);-->
+<!--            bottom: -15%;-->
+<!--            left: -10%;-->
+<!--            animation-duration: 20s;-->
+<!--            animation-delay: 2s;-->
+<!--        }-->
+
+<!--        .orb-3 {-->
+<!--            width: 400px;-->
+<!--            height: 400px;-->
+<!--            background: radial-gradient(circle, #F73B20, transparent);-->
+<!--            top: 40%;-->
+<!--            left: 50%;-->
+<!--            animation-duration: 18s;-->
+<!--            animation-delay: 1s;-->
+<!--        }-->
+
+<!--        @keyframes float {-->
+<!--            0%, 100% { transform: translate(0, 0) scale(1); }-->
+<!--            33% { transform: translate(50px, -80px) scale(1.1); }-->
+<!--            66% { transform: translate(-50px, 50px) scale(0.9); }-->
+<!--        }-->
+
+<!--        /* Header */-->
+<!--        .header {-->
+<!--            background: white;-->
+<!--            box-shadow: 0 2px 10px rgba(0,0,0,0.05);-->
+<!--            padding: 1rem 0;-->
+<!--            position: sticky;-->
+<!--            top: 0;-->
+<!--            z-index: 1000;-->
+<!--        }-->
+
+<!--        .header h1 {-->
+<!--            font-size: 1.75rem;-->
+<!--            font-weight: 700;-->
+<!--            color: #1a1a1a;-->
+<!--            margin: 0;-->
+<!--        }-->
+
+<!--        .user-avatar {-->
+<!--            width: 40px;-->
+<!--            height: 40px;-->
+<!--            border-radius: 50%;-->
+<!--            background: linear-gradient(135deg, #F73B20, #ff5238);-->
+<!--            display: flex;-->
+<!--            align-items: center;-->
+<!--            justify-content: center;-->
+<!--            color: white;-->
+<!--            font-weight: 600;-->
+<!--        }-->
+
+<!--        /* Sidebar */-->
+<!--        .sidebar {-->
+<!--            background: white;-->
+<!--            box-shadow: 2px 0 10px rgba(0,0,0,0.05);-->
+<!--            min-height: calc(100vh - 76px);-->
+<!--            padding: 2rem 1rem;-->
+<!--        }-->
+
+<!--        .nav-item {-->
+<!--            margin-bottom: 0.5rem;-->
+<!--        }-->
+
+<!--        .nav-link {-->
+<!--            color: #4a5568;-->
+<!--            padding: 0.875rem 1.25rem;-->
+<!--            border-radius: 0.75rem;-->
+<!--            display: flex;-->
+<!--            align-items: center;-->
+<!--            gap: 0.75rem;-->
+<!--            font-weight: 500;-->
+<!--            transition: all 0.3s ease;-->
+<!--            text-decoration: none;-->
+<!--        }-->
+
+<!--        .nav-link i {-->
+<!--            font-size: 1.25rem;-->
+<!--            width: 24px;-->
+<!--        }-->
+
+<!--        .nav-link:hover {-->
+<!--            background: #f7f7f7;-->
+<!--            color: #F73B20;-->
+<!--        }-->
+
+<!--        .nav-link.active {-->
+<!--            background: linear-gradient(135deg, #F73B20, #ff5238);-->
+<!--            color: white;-->
+<!--            box-shadow: 0 4px 15px rgba(247, 59, 32, 0.3);-->
+<!--        }-->
+
+<!--        /* Main Content */-->
+<!--        .main-content {-->
+<!--            padding: 2.5rem 3rem;-->
+<!--            min-height: calc(100vh - 76px);-->
+<!--        }-->
+
+<!--        /* Topbar */-->
+<!--        .topbar {-->
+<!--            display: flex;-->
+<!--            justify-content: space-between;-->
+<!--            align-items: center;-->
+<!--            margin-bottom: 3rem;-->
+<!--            padding-bottom: 1.5rem;-->
+<!--            border-bottom: 3px solid rgba(247,59,32,0.15);-->
+<!--        }-->
+
+<!--        .topbar h2 {-->
+<!--            font-size: 2.8rem;-->
+<!--            font-weight: 800;-->
+<!--            color: #1a1a1a;-->
+<!--            display: flex;-->
+<!--            align-items: center;-->
+<!--            gap: 12px;-->
+<!--            margin: 0;-->
+<!--        }-->
+
+<!--        .topbar h2 i {-->
+<!--            color: #F73B20;-->
+<!--        }-->
+
+<!--        .admin {-->
+<!--            padding: 0.8rem 2rem;-->
+<!--            border-radius: 30px;-->
+<!--            background: rgba(247,59,32,0.12);-->
+<!--            color: #F73B20;-->
+<!--            font-weight: 700;-->
+<!--            border: 2px solid rgba(247,59,32,0.3);-->
+<!--            display: flex;-->
+<!--            align-items: center;-->
+<!--            gap: 8px;-->
+<!--            font-size: 0.95rem;-->
+<!--        }-->
+
+<!--        /* Stats */-->
+<!--        .stats {-->
+<!--            display: grid;-->
+<!--            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));-->
+<!--            gap: 1.8rem;-->
+<!--            margin-bottom: 3.5rem;-->
+<!--        }-->
+
+<!--        .stat-card {-->
+<!--            background: white;-->
+<!--            border-radius: 20px;-->
+<!--            padding: 2.2rem;-->
+<!--            box-shadow: 0 8px 24px rgba(0,0,0,0.08);-->
+<!--            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);-->
+<!--            border: 2px solid rgba(247,59,32,0.1);-->
+<!--            position: relative;-->
+<!--            overflow: hidden;-->
+<!--        }-->
+
+<!--        .stat-card::before {-->
+<!--            content: '';-->
+<!--            position: absolute;-->
+<!--            top: 0;-->
+<!--            left: 0;-->
+<!--            right: 0;-->
+<!--            height: 4px;-->
+<!--            background: linear-gradient(90deg, #F73B20, #ff5a3f);-->
+<!--            transform: scaleX(0);-->
+<!--            transition: transform 0.3s ease;-->
+<!--        }-->
+
+<!--        .stat-card:hover::before {-->
+<!--            transform: scaleX(1);-->
+<!--        }-->
+
+<!--        .stat-card:hover {-->
+<!--            transform: translateY(-8px);-->
+<!--            box-shadow: 0 16px 40px rgba(247,59,32,0.25);-->
+<!--            border-color: rgba(247,59,32,0.3);-->
+<!--        }-->
+
+<!--        .stat-title {-->
+<!--            font-size: 0.85rem;-->
+<!--            letter-spacing: 1.2px;-->
+<!--            text-transform: uppercase;-->
+<!--            color: #777;-->
+<!--            margin-bottom: 1rem;-->
+<!--            font-weight: 600;-->
+<!--            display: flex;-->
+<!--            align-items: center;-->
+<!--            gap: 8px;-->
+<!--        }-->
+
+<!--        .stat-value {-->
+<!--            font-size: 3rem;-->
+<!--            color: #F73B20;-->
+<!--            font-weight: 800;-->
+<!--            line-height: 1;-->
+<!--        }-->
+
+<!--        /* Panels */-->
+<!--        .panel {-->
+<!--            background: white;-->
+<!--            border-radius: 20px;-->
+<!--            padding: 2.5rem;-->
+<!--            margin-bottom: 3rem;-->
+<!--            box-shadow: 0 8px 24px rgba(0,0,0,0.08);-->
+<!--            border: 2px solid rgba(247,59,32,0.1);-->
+<!--        }-->
+
+<!--        .panel-header {-->
+<!--            margin-bottom: 2rem;-->
+<!--            padding-bottom: 1.2rem;-->
+<!--            border-bottom: 3px solid rgba(247,59,32,0.15);-->
+<!--            display: flex;-->
+<!--            align-items: center;-->
+<!--            gap: 12px;-->
+<!--        }-->
+
+<!--        .panel-header h3 {-->
+<!--            font-size: 1.8rem;-->
+<!--            font-weight: 800;-->
+<!--            color: #1a1a1a;-->
+<!--            display: flex;-->
+<!--            align-items: center;-->
+<!--            gap: 10px;-->
+<!--            margin: 0;-->
+<!--        }-->
+
+<!--        .panel-header h3 i {-->
+<!--            color: #F73B20;-->
+<!--        }-->
+
+<!--        /* Table */-->
+<!--        .table-wrapper {-->
+<!--            overflow-x: auto;-->
+<!--        }-->
+
+<!--        table {-->
+<!--            width: 100%;-->
+<!--            border-collapse: separate;-->
+<!--            border-spacing: 0 12px;-->
+<!--        }-->
+
+<!--        thead th {-->
+<!--            text-align: left;-->
+<!--            padding: 1rem 1.2rem;-->
+<!--            font-size: 0.85rem;-->
+<!--            color: #F73B20;-->
+<!--            text-transform: uppercase;-->
+<!--            font-weight: 700;-->
+<!--            letter-spacing: 0.8px;-->
+<!--            background: rgba(247,59,32,0.06);-->
+<!--            border-radius: 10px;-->
+<!--        }-->
+
+<!--        thead tr th:first-child {-->
+<!--            border-radius: 10px 0 0 10px;-->
+<!--        }-->
+
+<!--        thead tr th:last-child {-->
+<!--            border-radius: 0 10px 10px 0;-->
+<!--        }-->
+
+<!--        tbody tr {-->
+<!--            background: #fff;-->
+<!--            border-radius: 12px;-->
+<!--            box-shadow: 0 4px 12px rgba(0,0,0,0.06);-->
+<!--            transition: all 0.3s ease;-->
+<!--        }-->
+
+<!--        tbody tr:hover {-->
+<!--            transform: translateY(-2px);-->
+<!--            box-shadow: 0 8px 20px rgba(0,0,0,0.12);-->
+<!--        }-->
+
+<!--        td {-->
+<!--            padding: 1.2rem 1.2rem;-->
+<!--            font-size: 0.95rem;-->
+<!--            font-weight: 500;-->
+<!--            background: white;-->
+<!--        }-->
+
+<!--        tbody tr td:first-child {-->
+<!--            border-radius: 12px 0 0 12px;-->
+<!--        }-->
+
+<!--        tbody tr td:last-child {-->
+<!--            border-radius: 0 12px 12px 0;-->
+<!--        }-->
+
+<!--        /* Badges */-->
+<!--        .badge {-->
+<!--            padding: 0.55rem 1.2rem;-->
+<!--            border-radius: 20px;-->
+<!--            font-size: 0.8rem;-->
+<!--            font-weight: 700;-->
+<!--            display: inline-flex;-->
+<!--            align-items: center;-->
+<!--            gap: 6px;-->
+<!--            text-transform: uppercase;-->
+<!--            letter-spacing: 0.5px;-->
+<!--            box-shadow: 0 2px 8px rgba(0,0,0,0.1);-->
+<!--        }-->
+
+<!--        .badge i {-->
+<!--            font-size: 0.9rem;-->
+<!--        }-->
+
+<!--        .badge.warning {-->
+<!--            background: linear-gradient(135deg, rgba(255,165,0,0.2), rgba(255,165,0,0.15));-->
+<!--            color: #d97706;-->
+<!--            border: 2px solid rgba(255,165,0,0.4);-->
+<!--        }-->
+
+<!--        .badge.review {-->
+<!--            background: linear-gradient(135deg, rgba(59,130,246,0.2), rgba(59,130,246,0.15));-->
+<!--            color: #2563eb;-->
+<!--            border: 2px solid rgba(59,130,246,0.4);-->
+<!--        }-->
+
+<!--        .badge.success {-->
+<!--            background: linear-gradient(135deg, rgba(34,197,94,0.2), rgba(34,197,94,0.15));-->
+<!--            color: #16a34a;-->
+<!--            border: 2px solid rgba(34,197,94,0.4);-->
+<!--        }-->
+
+<!--        .badge.reject {-->
+<!--            background: linear-gradient(135deg, rgba(239,68,68,0.2), rgba(239,68,68,0.15));-->
+<!--            color: #dc2626;-->
+<!--            border: 2px solid rgba(239,68,68,0.4);-->
+<!--        }-->
+
+<!--        /* Button */-->
+<!--        .action-btn {-->
+<!--            background: linear-gradient(135deg, #F73B20, #ff5238);-->
+<!--            color: white;-->
+<!--            border: none;-->
+<!--            padding: 0.7rem 1.8rem;-->
+<!--            border-radius: 20px;-->
+<!--            font-weight: 700;-->
+<!--            cursor: pointer;-->
+<!--            transition: all 0.3s ease;-->
+<!--            box-shadow: 0 4px 12px rgba(247,59,32,0.3);-->
+<!--            font-size: 0.85rem;-->
+<!--            text-transform: uppercase;-->
+<!--            letter-spacing: 0.5px;-->
+<!--            text-decoration: none;-->
+<!--            display: inline-block;-->
+<!--        }-->
+
+<!--        .action-btn:hover {-->
+<!--            transform: translateY(-3px);-->
+<!--            box-shadow: 0 8px 20px rgba(247,59,32,0.45);-->
+<!--            color: white;-->
+<!--        }-->
+
+<!--        /* Success Banner */-->
+<!--        .success-banner {-->
+<!--            position: fixed;-->
+<!--            top: 100px;-->
+<!--            right: 30px;-->
+<!--            background: linear-gradient(135deg, #22c55e, #16a34a);-->
+<!--            color: white;-->
+<!--            padding: 16px 24px;-->
+<!--            border-radius: 14px;-->
+<!--            font-weight: 700;-->
+<!--            font-size: 0.95rem;-->
+<!--            z-index: 9999;-->
+<!--            box-shadow: 0 12px 32px rgba(34,197,94,0.4);-->
+<!--            animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);-->
+<!--            display: flex;-->
+<!--            align-items: center;-->
+<!--            gap: 10px;-->
+<!--            border: 2px solid rgba(255,255,255,0.3);-->
+<!--        }-->
+
+<!--        @keyframes slideIn {-->
+<!--            from {-->
+<!--                opacity: 0;-->
+<!--                transform: translateX(100px);-->
+<!--            }-->
+<!--            to {-->
+<!--                opacity: 1;-->
+<!--                transform: translateX(0);-->
+<!--            }-->
+<!--        }-->
+
+<!--        /* Empty State */-->
+<!--        .empty-state {-->
+<!--            text-align: center;-->
+<!--            padding: 3rem;-->
+<!--            color: #9ca3af;-->
+<!--        }-->
+
+<!--        .empty-state i {-->
+<!--            font-size: 4rem;-->
+<!--            margin-bottom: 1rem;-->
+<!--            opacity: 0.5;-->
+<!--        }-->
+
+<!--        .empty-state p {-->
+<!--            font-size: 1rem;-->
+<!--            color: #6b7280;-->
+<!--        }-->
+
+<!--        /* Responsive */-->
+<!--        @media (max-width: 1024px) {-->
+<!--            .main-content {-->
+<!--                padding: 2rem;-->
+<!--            }-->
+
+<!--            .stats {-->
+<!--                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));-->
+<!--            }-->
+<!--        }-->
+
+<!--        @media (max-width: 991.98px) {-->
+<!--            .sidebar {-->
+<!--                min-height: auto;-->
+<!--            }-->
+<!--        }-->
+
+<!--        @media (max-width: 768px) {-->
+<!--            .main-content {-->
+<!--                padding: 1.5rem;-->
+<!--            }-->
+
+<!--            .topbar {-->
+<!--                flex-direction: column;-->
+<!--                gap: 1rem;-->
+<!--                align-items: flex-start;-->
+<!--            }-->
+
+<!--            .topbar h2 {-->
+<!--                font-size: 2rem;-->
+<!--            }-->
+
+<!--            .stats {-->
+<!--                grid-template-columns: 1fr;-->
+<!--            }-->
+
+<!--            .panel {-->
+<!--                padding: 1.5rem;-->
+<!--            }-->
+
+<!--            .success-banner {-->
+<!--                left: 50%;-->
+<!--                right: auto;-->
+<!--                transform: translateX(-50%);-->
+<!--                width: calc(100% - 40px);-->
+<!--                text-align: center;-->
+<!--                justify-content: center;-->
+<!--            }-->
+<!--        }-->
+
+<!--        @media (max-width: 600px) {-->
+<!--            .table-wrapper {-->
+<!--                overflow-x: scroll;-->
+<!--            }-->
+
+<!--            table {-->
+<!--                min-width: 600px;-->
+<!--            }-->
+
+<!--            .stat-value {-->
+<!--                font-size: 2.5rem;-->
+<!--            }-->
+
+<!--            .topbar h2 {-->
+<!--                font-size: 1.5rem;-->
+<!--            }-->
+<!--        }-->
+<!--    </style>-->
+<!--</head>-->
+<!--<body>-->
+<!--&lt;!&ndash; Animated Background &ndash;&gt;-->
+<!--<div class="bg-gradient">-->
+<!--    <div class="gradient-orb orb-1"></div>-->
+<!--    <div class="gradient-orb orb-2"></div>-->
+<!--    <div class="gradient-orb orb-3"></div>-->
+<!--</div>-->
+
+<!--&lt;!&ndash; Header &ndash;&gt;-->
+<!--<header class="header">-->
+<!--    <div class="container-fluid">-->
+<!--        <div class="d-flex justify-content-between align-items-center">-->
+<!--            <div class="d-flex align-items-center gap-3">-->
+<!--                <button class="btn d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar">-->
+<!--                    <i class="fas fa-bars"></i>-->
+<!--                </button>-->
+<!--                <h1>HON Dashboard</h1>-->
+<!--            </div>-->
+<!--            <div class="user-avatar">A</div>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</header>-->
+
+<!--<div class="container-fluid">-->
+<!--    <div class="row">-->
+<!--        &lt;!&ndash; Sidebar for Desktop &ndash;&gt;-->
+<!--        <div class="col-lg-3 col-xl-2 d-none d-lg-block p-0">-->
+<!--            <nav class="sidebar" style="position:sticky;top:70px;">-->
+<!--                <ul class="nav flex-column">-->
+<!--                    <li class="nav-item">-->
+<!--                        <a class="nav-link" href="/admin/dashboard">-->
+<!--                            <i class="fas fa-chart-line"></i>-->
+<!--                            <span>Dashboard</span>-->
+<!--                        </a>-->
+<!--                    </li>-->
+<!--                    <li class="nav-item">-->
+<!--                        <a class="nav-link" href="/admin/hon/users">-->
+<!--                            <i class="fas fa-users"></i>-->
+<!--                            <span>HON Users</span>-->
+<!--                        </a>-->
+<!--                    </li>-->
+<!--                    <li class="nav-item">-->
+<!--                        <a class="nav-link active" href="/admin/reports">-->
+<!--                            <i class="fas fa-file-alt"></i>-->
+<!--                            <span>Report Section</span>-->
+<!--                        </a>-->
+<!--                    </li>-->
+<!--                    <li class="nav-item">-->
+<!--                        <a class="nav-link" href="/admin/virtual/gift">-->
+<!--                            <i class="fas fa-gift"></i>-->
+<!--                            <span>Virtual Gift</span>-->
+<!--                        </a>-->
+<!--                    </li>-->
+<!--                    <li class="nav-item">-->
+<!--                        <a class="nav-link" href="/admin/settings">-->
+<!--                            <i class="fas fa-cog"></i>-->
+<!--                            <span>Settings</span>-->
+<!--                        </a>-->
+<!--                    </li>-->
+<!--                </ul>-->
+<!--            </nav>-->
+<!--        </div>-->
+
+<!--        &lt;!&ndash; Offcanvas Sidebar for Mobile &ndash;&gt;-->
+<!--        <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebar">-->
+<!--            <div class="offcanvas-header">-->
+<!--                <h5 class="offcanvas-title">Menu</h5>-->
+<!--                <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>-->
+<!--            </div>-->
+<!--            <div class="offcanvas-body p-0">-->
+<!--                <nav class="sidebar">-->
+<!--                    <ul class="nav flex-column">-->
+<!--                        <li class="nav-item">-->
+<!--                            <a class="nav-link" href="/admin/dashboard">-->
+<!--                                <i class="fas fa-chart-line"></i>-->
+<!--                                <span>Dashboard</span>-->
+<!--                            </a>-->
+<!--                        </li>-->
+<!--                        <li class="nav-item">-->
+<!--                            <a class="nav-link" href="/admin/hon/users">-->
+<!--                                <i class="fas fa-users"></i>-->
+<!--                                <span>HON Users</span>-->
+<!--                            </a>-->
+<!--                        </li>-->
+<!--                        <li class="nav-item">-->
+<!--                            <a class="nav-link active" href="/admin/reports">-->
+<!--                                <i class="fas fa-file-alt"></i>-->
+<!--                                <span>Report Section</span>-->
+<!--                            </a>-->
+<!--                        </li>-->
+<!--                        <li class="nav-item">-->
+<!--                            <a class="nav-link" href="/admin/virtual/gift">-->
+<!--                                <i class="fas fa-gift"></i>-->
+<!--                                <span>Virtual Gift</span>-->
+<!--                            </a>-->
+<!--                        </li>-->
+<!--                        <li class="nav-item">-->
+<!--                            <a class="nav-link" href="/admin/settings">-->
+<!--                                <i class="fas fa-cog"></i>-->
+<!--                                <span>Settings</span>-->
+<!--                            </a>-->
+<!--                        </li>-->
+<!--                    </ul>-->
+<!--                </nav>-->
+<!--            </div>-->
+<!--        </div>-->
+
+<!--        &lt;!&ndash; Main Content &ndash;&gt;-->
+<!--        <div class="col-lg-9 col-xl-10">-->
+<!--            <main class="main-content">-->
+<!--                &lt;!&ndash; Topbar &ndash;&gt;-->
+<!--                <div class="topbar">-->
+<!--                    <h2><i class="bi bi-bar-chart-fill"></i> Reports Overview</h2>-->
+<!--                    <div class="admin">-->
+<!--                        <i class="bi bi-person-badge"></i>-->
+<!--                        <span>Admin</span>-->
+<!--                    </div>-->
+<!--                </div>-->
+
+<!--                &lt;!&ndash; Stats &ndash;&gt;-->
+<!--                <section class="stats">-->
+<!--                    <div class="stat-card">-->
+<!--                        <div class="stat-title">-->
+<!--                            <i class="bi bi-flag"></i>-->
+<!--                            Total Reports-->
+<!--                        </div>-->
+<!--                        <div class="stat-value" th:text="${userReport != null ? userReport : 0}">128</div>-->
+<!--                    </div>-->
+<!--                    <div class="stat-card">-->
+<!--                        <div class="stat-title">-->
+<!--                            <i class="bi bi-chat-square-text"></i>-->
+<!--                            Reported Chats-->
+<!--                        </div>-->
+<!--                        <div class="stat-value" th:text="${chatReport != null ? chatReport : 0}">74</div>-->
+<!--                    </div>-->
+<!--                    <div class="stat-card">-->
+<!--                        <div class="stat-title">-->
+<!--                            <i class="bi bi-clock-history"></i>-->
+<!--                            Pending Review-->
+<!--                        </div>-->
+<!--                        <div class="stat-value">12</div>-->
+<!--                    </div>-->
+<!--                    <div class="stat-card">-->
+<!--                        <div class="stat-title">-->
+<!--                            <i class="bi bi-people-fill"></i>-->
+<!--                            Active Users-->
+<!--                        </div>-->
+<!--                        <div class="stat-value">1,247</div>-->
+<!--                    </div>-->
+<!--                </section>-->
+
+<!--                &lt;!&ndash; User Reports Table &ndash;&gt;-->
+<!--                <section class="panel">-->
+<!--                    <div class="panel-header">-->
+<!--                        <h3><i class="bi bi-file-earmark-text"></i> User Reports</h3>-->
+<!--                    </div>-->
+<!--                    <div class="table-wrapper">-->
+<!--                        <table>-->
+<!--                            <thead>-->
+<!--                            <tr>-->
+<!--                                <th>Reporter</th>-->
+<!--                                <th>Reported User</th>-->
+<!--                                <th>Reason</th>-->
+<!--                                <th>Status</th>-->
+<!--                                <th>Action</th>-->
+<!--                            </tr>-->
+<!--                            </thead>-->
+<!--                            <tbody th:if="${reportedUserList != null and !reportedUserList.isEmpty()}">-->
+<!--                            <tr th:each="list : ${reportedUserList}">-->
+<!--                                <td th:text="${list.reporterUser.username}">@elara</td>-->
+<!--                                <td th:text="${list.ownerUser.username}">@unknown_soul</td>-->
+<!--                                <td th:text="${list.reason}">Harassment</td>-->
+<!--                                <td>-->
+<!--                    <span th:switch="${list.status.name()}">-->
+<!--                      <span th:case="'PENDING'" class="badge warning">-->
+<!--                        <i class="bi bi-hourglass-split"></i> Pending-->
+<!--                      </span>-->
+<!--                      <span th:case="'IN_REVIEW'" class="badge review">-->
+<!--                        <i class="bi bi-eye"></i> In Review-->
+<!--                      </span>-->
+<!--                      <span th:case="'ACTION_TAKEN'" class="badge success">-->
+<!--                        <i class="bi bi-check-circle"></i> Action Taken-->
+<!--                      </span>-->
+<!--                      <span th:case="'REJECTED'" class="badge reject">-->
+<!--                        <i class="bi bi-x-circle"></i> Rejected-->
+<!--                      </span>-->
+<!--                      <span th:case="*">Unknown</span>-->
+<!--                    </span>-->
+<!--                                </td>-->
+<!--                                <td>-->
+<!--                                    <a th:href="@{/admin/reportReview/{r}/{o}/{reportId}(-->
+<!--                        r=${list.reporterUser.userId},-->
+<!--                        o=${list.ownerUser.userId},-->
+<!--                        reportId=${list.id}-->
+<!--                      )}" class="action-btn">Review</a>-->
+<!--                                </td>-->
+<!--                            </tr>-->
+<!--                            </tbody>-->
+<!--                            <tbody th:if="${reportedUserList == null or reportedUserList.isEmpty()}">-->
+<!--                            <tr>-->
+<!--                                <td colspan="5">-->
+<!--                                    <div class="empty-state">-->
+<!--                                        <i class="bi bi-inbox"></i>-->
+<!--                                        <p>No user reports found</p>-->
+<!--                                    </div>-->
+<!--                                </td>-->
+<!--                            </tr>-->
+<!--                            </tbody>-->
+<!--                        </table>-->
+<!--                    </div>-->
+<!--                </section>-->
+
+<!--                &lt;!&ndash; Reported Chats Table &ndash;&gt;-->
+<!--                <section class="panel">-->
+<!--                    <div class="panel-header">-->
+<!--                        <h3><i class="bi bi-chat-left-dots"></i> Reported Chats</h3>-->
+<!--                    </div>-->
+<!--                    <div class="table-wrapper">-->
+<!--                        <table>-->
+<!--                            <thead>-->
+<!--                            <tr>-->
+<!--                                <th>User A</th>-->
+<!--                                <th>User B</th>-->
+<!--                                <th>Reason</th>-->
+<!--                                <th>Reports</th>-->
+<!--                                <th>Action</th>-->
+<!--                            </tr>-->
+<!--                            </thead>-->
+<!--                            <tbody th:if="${reportedChatList != null and !reportedChatList.isEmpty()}">-->
+<!--                            <tr th:each="list : ${reportedChatList}">-->
+<!--                                <td th:text="${list.reporter.username}">@elara</td>-->
+<!--                                <td th:text="${list.owner.username}">@lostboy</td>-->
+<!--                                <td th:text="${list.reason}">Inappropriate Content</td>-->
+<!--                                <td>-->
+<!--                    <span class="badge warning">-->
+<!--                      <i class="bi bi-exclamation-triangle"></i> 5-->
+<!--                    </span>-->
+<!--                                </td>-->
+<!--                                <td>-->
+<!--                                    <a href="#" class="action-btn">Open Chat</a>-->
+<!--                                </td>-->
+<!--                            </tr>-->
+<!--                            </tbody>-->
+<!--                            <tbody th:if="${reportedChatList == null or reportedChatList.isEmpty()}">-->
+<!--                            <tr>-->
+<!--                                <td colspan="5">-->
+<!--                                    <div class="empty-state">-->
+<!--                                        <i class="bi bi-inbox"></i>-->
+<!--                                        <p>No chat reports found</p>-->
+<!--                                    </div>-->
+<!--                                </td>-->
+<!--                            </tr>-->
+<!--                            </tbody>-->
+<!--                        </table>-->
+<!--                    </div>-->
+<!--                </section>-->
+<!--            </main>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</div>-->
+
+<!--&lt;!&ndash; Success Banners &ndash;&gt;-->
+<!--<div th:if="${warningSuccess}" id="successMsg" class="success-banner">-->
+<!--    <i class="bi bi-check-circle-fill"></i>-->
+<!--    Successfully sent warning mail to user.-->
+<!--</div>-->
+
+<!--<div th:if="${successMsgReport}" id="successMsgReport" class="success-banner">-->
+<!--    <i class="bi bi-check-circle-fill"></i>-->
+<!--    Successfully rejected report for that user.-->
+<!--</div>-->
+
+<!--<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>-->
+<!--<script>-->
+<!--    window.addEventListener("DOMContentLoaded", function () {-->
+<!--      const msg = document.getElementById("successMsg");-->
+<!--      if (msg) {-->
+<!--        setTimeout(() => {-->
+<!--          msg.style.opacity = "0";-->
+<!--          msg.style.transform = "translateX(100px)";-->
+<!--          setTimeout(() => {-->
+<!--            msg.style.display = "none";-->
+<!--          }, 300);-->
+<!--        }, 3000);-->
+<!--      }-->
+
+<!--      const msgReport = document.getElementById("successMsgReport");-->
+<!--      if (msgReport) {-->
+<!--        setTimeout(() => {-->
+<!--          msgReport.style.opacity = "0";-->
+<!--          msgReport.style.transform = "translateX(100px)";-->
+<!--          setTimeout(() => {-->
+<!--            msgReport.style.display = "none";-->
+<!--          }, 300);-->
+<!--        }, 3000);-->
+<!--      }-->
+<!--    });-->
+<!--</script>-->
+<!--</body>-->
+<!--</html>-->
+
+
+
+<!--<!DOCTYPE html>-->
+<!--<html lang="en">-->
+<!--<head>-->
+<!--    <meta charset="UTF-8">-->
+<!--    <meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+<!--    <title>Reports - HON</title>-->
+<!--    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">-->
+<!--    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">-->
+<!--    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">-->
+<!--    <style>-->
+<!--        * {-->
+<!--            margin: 0;-->
+<!--            padding: 0;-->
+<!--            box-sizing: border-box;-->
+<!--        }-->
+
+<!--        body {-->
+<!--            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;-->
+<!--            background: #fafafa;-->
+<!--            overflow-x: hidden;-->
+<!--        }-->
+
+<!--        /* Gradient background with floating orbs */-->
+<!--        .bg-gradient {-->
+<!--            position: fixed;-->
+<!--            top: 0;-->
+<!--            left: 0;-->
+<!--            width: 100%;-->
+<!--            height: 100%;-->
+<!--            z-index: -1;-->
+<!--            overflow: hidden;-->
+<!--            background: #fafafa;-->
+<!--        }-->
+
+<!--        .gradient-orb {-->
+<!--            position: absolute;-->
+<!--            border-radius: 50%;-->
+<!--            filter: blur(100px);-->
+<!--            opacity: 0.1;-->
+<!--            animation: float 20s ease-in-out infinite;-->
+<!--        }-->
+
+<!--        .orb-1 {-->
+<!--            width: 600px;-->
+<!--            height: 600px;-->
+<!--            background: radial-gradient(circle, #F73B20, transparent);-->
+<!--            top: -10%;-->
+<!--            right: -10%;-->
+<!--            animation-duration: 25s;-->
+<!--        }-->
+
+<!--        .orb-2 {-->
+<!--            width: 500px;-->
+<!--            height: 500px;-->
+<!--            background: radial-gradient(circle, #ff5238, transparent);-->
+<!--            bottom: -15%;-->
+<!--            left: -10%;-->
+<!--            animation-duration: 20s;-->
+<!--            animation-delay: 2s;-->
+<!--        }-->
+
+<!--        .orb-3 {-->
+<!--            width: 400px;-->
+<!--            height: 400px;-->
+<!--            background: radial-gradient(circle, #F73B20, transparent);-->
+<!--            top: 40%;-->
+<!--            left: 50%;-->
+<!--            animation-duration: 18s;-->
+<!--            animation-delay: 1s;-->
+<!--        }-->
+
+<!--        @keyframes float {-->
+<!--            0%, 100% { transform: translate(0, 0) scale(1); }-->
+<!--            33% { transform: translate(50px, -80px) scale(1.1); }-->
+<!--            66% { transform: translate(-50px, 50px) scale(0.9); }-->
+<!--        }-->
+
+<!--        /* Header */-->
+<!--        .header {-->
+<!--            background: white;-->
+<!--            box-shadow: 0 2px 10px rgba(0,0,0,0.05);-->
+<!--            padding: 1rem 0;-->
+<!--            position: sticky;-->
+<!--            top: 0;-->
+<!--            z-index: 1000;-->
+<!--        }-->
+
+<!--        .header h1 {-->
+<!--            font-size: 1.75rem;-->
+<!--            font-weight: 700;-->
+<!--            color: #1a1a1a;-->
+<!--            margin: 0;-->
+<!--        }-->
+
+<!--        .user-avatar {-->
+<!--            width: 40px;-->
+<!--            height: 40px;-->
+<!--            border-radius: 50%;-->
+<!--            background: linear-gradient(135deg, #F73B20, #ff5238);-->
+<!--            display: flex;-->
+<!--            align-items: center;-->
+<!--            justify-content: center;-->
+<!--            color: white;-->
+<!--            font-weight: 600;-->
+<!--        }-->
+
+<!--        /* Sidebar */-->
+<!--        .sidebar {-->
+<!--            background: white;-->
+<!--            box-shadow: 2px 0 10px rgba(0,0,0,0.05);-->
+<!--            min-height: calc(100vh - 76px);-->
+<!--            padding: 2rem 1rem;-->
+<!--        }-->
+
+<!--        .nav-item {-->
+<!--            margin-bottom: 0.5rem;-->
+<!--        }-->
+
+<!--        .nav-link {-->
+<!--            color: #4a5568;-->
+<!--            padding: 0.875rem 1.25rem;-->
+<!--            border-radius: 0.75rem;-->
+<!--            display: flex;-->
+<!--            align-items: center;-->
+<!--            gap: 0.75rem;-->
+<!--            font-weight: 500;-->
+<!--            transition: all 0.3s ease;-->
+<!--            text-decoration: none;-->
+<!--        }-->
+
+<!--        .nav-link i {-->
+<!--            font-size: 1.25rem;-->
+<!--            width: 24px;-->
+<!--        }-->
+
+<!--        .nav-link:hover {-->
+<!--            background: #f7f7f7;-->
+<!--            color: #F73B20;-->
+<!--        }-->
+
+<!--        .nav-link.active {-->
+<!--            background: linear-gradient(135deg, #F73B20, #ff5238);-->
+<!--            color: white;-->
+<!--            box-shadow: 0 4px 15px rgba(247, 59, 32, 0.3);-->
+<!--        }-->
+
+<!--        /* Main Content */-->
+<!--        .main-content {-->
+<!--            padding: 2.5rem 3rem;-->
+<!--            min-height: calc(100vh - 76px);-->
+<!--        }-->
+
+<!--        /* Topbar */-->
+<!--        .topbar {-->
+<!--            display: flex;-->
+<!--            justify-content: space-between;-->
+<!--            align-items: center;-->
+<!--            margin-bottom: 3rem;-->
+<!--            padding-bottom: 1.5rem;-->
+<!--            border-bottom: 3px solid rgba(247,59,32,0.15);-->
+<!--        }-->
+
+<!--        .topbar h2 {-->
+<!--            font-size: 2.8rem;-->
+<!--            font-weight: 800;-->
+<!--            color: #1a1a1a;-->
+<!--            display: flex;-->
+<!--            align-items: center;-->
+<!--            gap: 12px;-->
+<!--            margin: 0;-->
+<!--        }-->
+
+<!--        .topbar h2 i {-->
+<!--            color: #F73B20;-->
+<!--        }-->
+
+<!--        .admin {-->
+<!--            padding: 0.8rem 2rem;-->
+<!--            border-radius: 30px;-->
+<!--            background: rgba(247,59,32,0.12);-->
+<!--            color: #F73B20;-->
+<!--            font-weight: 700;-->
+<!--            border: 2px solid rgba(247,59,32,0.3);-->
+<!--            display: flex;-->
+<!--            align-items: center;-->
+<!--            gap: 8px;-->
+<!--            font-size: 0.95rem;-->
+<!--        }-->
+
+<!--        /* Stats */-->
+<!--        .stats {-->
+<!--            display: grid;-->
+<!--            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));-->
+<!--            gap: 1.8rem;-->
+<!--            margin-bottom: 3.5rem;-->
+<!--        }-->
+
+<!--        .stat-card {-->
+<!--            background: white;-->
+<!--            border-radius: 20px;-->
+<!--            padding: 2.2rem;-->
+<!--            box-shadow: 0 8px 24px rgba(0,0,0,0.08);-->
+<!--            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);-->
+<!--            border: 2px solid rgba(247,59,32,0.1);-->
+<!--            position: relative;-->
+<!--            overflow: hidden;-->
+<!--        }-->
+
+<!--        .stat-card::before {-->
+<!--            content: '';-->
+<!--            position: absolute;-->
+<!--            top: 0;-->
+<!--            left: 0;-->
+<!--            right: 0;-->
+<!--            height: 4px;-->
+<!--            background: linear-gradient(90deg, #F73B20, #ff5a3f);-->
+<!--            transform: scaleX(0);-->
+<!--            transition: transform 0.3s ease;-->
+<!--        }-->
+
+<!--        .stat-card:hover::before {-->
+<!--            transform: scaleX(1);-->
+<!--        }-->
+
+<!--        .stat-card:hover {-->
+<!--            transform: translateY(-8px);-->
+<!--            box-shadow: 0 16px 40px rgba(247,59,32,0.25);-->
+<!--            border-color: rgba(247,59,32,0.3);-->
+<!--        }-->
+
+<!--        .stat-title {-->
+<!--            font-size: 0.85rem;-->
+<!--            letter-spacing: 1.2px;-->
+<!--            text-transform: uppercase;-->
+<!--            color: #777;-->
+<!--            margin-bottom: 1rem;-->
+<!--            font-weight: 600;-->
+<!--            display: flex;-->
+<!--            align-items: center;-->
+<!--            gap: 8px;-->
+<!--        }-->
+
+<!--        .stat-value {-->
+<!--            font-size: 3rem;-->
+<!--            color: #F73B20;-->
+<!--            font-weight: 800;-->
+<!--            line-height: 1;-->
+<!--        }-->
+
+<!--        /* Panels */-->
+<!--        .panel {-->
+<!--            background: white;-->
+<!--            border-radius: 20px;-->
+<!--            padding: 2.5rem;-->
+<!--            margin-bottom: 3rem;-->
+<!--            box-shadow: 0 8px 24px rgba(0,0,0,0.08);-->
+<!--            border: 2px solid rgba(247,59,32,0.1);-->
+<!--        }-->
+
+<!--        .panel-header {-->
+<!--            margin-bottom: 2rem;-->
+<!--            padding-bottom: 1.2rem;-->
+<!--            border-bottom: 3px solid rgba(247,59,32,0.15);-->
+<!--            display: flex;-->
+<!--            align-items: center;-->
+<!--            gap: 12px;-->
+<!--        }-->
+
+<!--        .panel-header h3 {-->
+<!--            font-size: 1.8rem;-->
+<!--            font-weight: 800;-->
+<!--            color: #1a1a1a;-->
+<!--            display: flex;-->
+<!--            align-items: center;-->
+<!--            gap: 10px;-->
+<!--            margin: 0;-->
+<!--        }-->
+
+<!--        .panel-header h3 i {-->
+<!--            color: #F73B20;-->
+<!--        }-->
+
+<!--        /* Table - IMPROVED */-->
+<!--        .table-wrapper {-->
+<!--            overflow-x: auto;-->
+<!--            border-radius: 12px;-->
+<!--        }-->
+
+<!--        table {-->
+<!--            width: 100%;-->
+<!--            border-collapse: separate;-->
+<!--            border-spacing: 0;-->
+<!--        }-->
+
+<!--        thead {-->
+<!--            position: sticky;-->
+<!--            top: 0;-->
+<!--            z-index: 10;-->
+<!--        }-->
+
+<!--        thead th {-->
+<!--            text-align: left;-->
+<!--            padding: 1.2rem 1.5rem;-->
+<!--            font-size: 0.85rem;-->
+<!--            color: #fff;-->
+<!--            text-transform: uppercase;-->
+<!--            font-weight: 700;-->
+<!--            letter-spacing: 0.8px;-->
+<!--            background: linear-gradient(135deg, #F73B20, #ff5238);-->
+<!--            border: none;-->
+<!--            white-space: nowrap;-->
+<!--        }-->
+
+<!--        thead tr th:first-child {-->
+<!--            border-radius: 12px 0 0 0;-->
+<!--        }-->
+
+<!--        thead tr th:last-child {-->
+<!--            border-radius: 0 12px 0 0;-->
+<!--        }-->
+
+<!--        tbody tr {-->
+<!--            background: #fff;-->
+<!--            transition: all 0.3s ease;-->
+<!--            border-bottom: 1px solid rgba(0,0,0,0.05);-->
+<!--        }-->
+
+<!--        tbody tr:hover {-->
+<!--            background: rgba(247,59,32,0.02);-->
+<!--            transform: translateX(4px);-->
+<!--        }-->
+
+<!--        tbody tr:last-child {-->
+<!--            border-bottom: none;-->
+<!--        }-->
+
+<!--        tbody tr:last-child td:first-child {-->
+<!--            border-radius: 0 0 0 12px;-->
+<!--        }-->
+
+<!--        tbody tr:last-child td:last-child {-->
+<!--            border-radius: 0 0 12px 0;-->
+<!--        }-->
+
+<!--        td {-->
+<!--            padding: 1.2rem 1.5rem;-->
+<!--            font-size: 0.95rem;-->
+<!--            font-weight: 500;-->
+<!--            background: transparent;-->
+<!--            color: #2d3748;-->
+<!--            vertical-align: middle;-->
+<!--        }-->
+
+<!--        /* Badges - IMPROVED */-->
+<!--        .badge {-->
+<!--            padding: 0.55rem 1.2rem;-->
+<!--            border-radius: 20px;-->
+<!--            font-size: 0.8rem;-->
+<!--            font-weight: 700;-->
+<!--            display: inline-flex;-->
+<!--            align-items: center;-->
+<!--            gap: 6px;-->
+<!--            text-transform: uppercase;-->
+<!--            letter-spacing: 0.5px;-->
+<!--            border: 2px solid;-->
+<!--            white-space: nowrap;-->
+<!--        }-->
+
+<!--        .badge i {-->
+<!--            font-size: 0.9rem;-->
+<!--        }-->
+
+<!--        .badge.warning {-->
+<!--            background: rgba(255,165,0,0.15);-->
+<!--            color: #d97706;-->
+<!--            border-color: rgba(255,165,0,0.5);-->
+<!--        }-->
+
+<!--        .badge.review {-->
+<!--            background: rgba(59,130,246,0.15);-->
+<!--            color: #2563eb;-->
+<!--            border-color: rgba(59,130,246,0.5);-->
+<!--        }-->
+
+<!--        .badge.success {-->
+<!--            background: rgba(34,197,94,0.15);-->
+<!--            color: #16a34a;-->
+<!--            border-color: rgba(34,197,94,0.5);-->
+<!--        }-->
+
+<!--        .badge.reject {-->
+<!--            background: rgba(239,68,68,0.15);-->
+<!--            color: #dc2626;-->
+<!--            border-color: rgba(239,68,68,0.5);-->
+<!--        }-->
+
+<!--        /* Button - IMPROVED */-->
+<!--        .action-btn {-->
+<!--            background: linear-gradient(135deg, #F73B20, #ff5238);-->
+<!--            color: white;-->
+<!--            border: none;-->
+<!--            padding: 0.65rem 1.5rem;-->
+<!--            border-radius: 20px;-->
+<!--            font-weight: 700;-->
+<!--            cursor: pointer;-->
+<!--            transition: all 0.3s ease;-->
+<!--            box-shadow: 0 4px 12px rgba(247,59,32,0.3);-->
+<!--            font-size: 0.85rem;-->
+<!--            text-transform: uppercase;-->
+<!--            letter-spacing: 0.5px;-->
+<!--            text-decoration: none;-->
+<!--            display: inline-block;-->
+<!--            white-space: nowrap;-->
+<!--        }-->
+
+<!--        .action-btn:hover {-->
+<!--            transform: translateY(-2px);-->
+<!--            box-shadow: 0 6px 20px rgba(247,59,32,0.45);-->
+<!--            color: white;-->
+<!--            background: linear-gradient(135deg, #ff5238, #F73B20);-->
+<!--        }-->
+
+<!--        .action-btn:active {-->
+<!--            transform: translateY(0);-->
+<!--        }-->
+
+<!--        /* Success Banner */-->
+<!--        .success-banner {-->
+<!--            position: fixed;-->
+<!--            top: 100px;-->
+<!--            right: 30px;-->
+<!--            background: linear-gradient(135deg, #22c55e, #16a34a);-->
+<!--            color: white;-->
+<!--            padding: 16px 24px;-->
+<!--            border-radius: 14px;-->
+<!--            font-weight: 700;-->
+<!--            font-size: 0.95rem;-->
+<!--            z-index: 9999;-->
+<!--            box-shadow: 0 12px 32px rgba(34,197,94,0.4);-->
+<!--            animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);-->
+<!--            display: flex;-->
+<!--            align-items: center;-->
+<!--            gap: 10px;-->
+<!--            border: 2px solid rgba(255,255,255,0.3);-->
+<!--        }-->
+
+<!--        @keyframes slideIn {-->
+<!--            from {-->
+<!--                opacity: 0;-->
+<!--                transform: translateX(100px);-->
+<!--            }-->
+<!--            to {-->
+<!--                opacity: 1;-->
+<!--                transform: translateX(0);-->
+<!--            }-->
+<!--        }-->
+
+<!--        /* Empty State */-->
+<!--        .empty-state {-->
+<!--            text-align: center;-->
+<!--            padding: 3rem;-->
+<!--            color: #9ca3af;-->
+<!--        }-->
+
+<!--        .empty-state i {-->
+<!--            font-size: 4rem;-->
+<!--            margin-bottom: 1rem;-->
+<!--            opacity: 0.5;-->
+<!--        }-->
+
+<!--        .empty-state p {-->
+<!--            font-size: 1rem;-->
+<!--            color: #6b7280;-->
+<!--        }-->
+
+<!--        /* Responsive */-->
+<!--        @media (max-width: 1024px) {-->
+<!--            .main-content {-->
+<!--                padding: 2rem;-->
+<!--            }-->
+
+<!--            .stats {-->
+<!--                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));-->
+<!--            }-->
+<!--        }-->
+
+<!--        @media (max-width: 991.98px) {-->
+<!--            .sidebar {-->
+<!--                min-height: auto;-->
+<!--            }-->
+<!--        }-->
+
+<!--        @media (max-width: 768px) {-->
+<!--            .main-content {-->
+<!--                padding: 1.5rem;-->
+<!--            }-->
+
+<!--            .topbar {-->
+<!--                flex-direction: column;-->
+<!--                gap: 1rem;-->
+<!--                align-items: flex-start;-->
+<!--            }-->
+
+<!--            .topbar h2 {-->
+<!--                font-size: 2rem;-->
+<!--            }-->
+
+<!--            .stats {-->
+<!--                grid-template-columns: 1fr;-->
+<!--            }-->
+
+<!--            .panel {-->
+<!--                padding: 1.5rem;-->
+<!--            }-->
+
+<!--            .success-banner {-->
+<!--                left: 50%;-->
+<!--                right: auto;-->
+<!--                transform: translateX(-50%);-->
+<!--                width: calc(100% - 40px);-->
+<!--                text-align: center;-->
+<!--                justify-content: center;-->
+<!--            }-->
+<!--        }-->
+
+<!--        @media (max-width: 600px) {-->
+<!--            .table-wrapper {-->
+<!--                overflow-x: scroll;-->
+<!--            }-->
+
+<!--            table {-->
+<!--                min-width: 600px;-->
+<!--            }-->
+
+<!--            thead th {-->
+<!--                padding: 1rem;-->
+<!--                font-size: 0.75rem;-->
+<!--            }-->
+
+<!--            td {-->
+<!--                padding: 1rem;-->
+<!--                font-size: 0.85rem;-->
+<!--            }-->
+
+<!--            .stat-value {-->
+<!--                font-size: 2.5rem;-->
+<!--            }-->
+
+<!--            .topbar h2 {-->
+<!--                font-size: 1.5rem;-->
+<!--            }-->
+
+<!--            .badge {-->
+<!--                padding: 0.45rem 1rem;-->
+<!--                font-size: 0.75rem;-->
+<!--            }-->
+
+<!--            .action-btn {-->
+<!--                padding: 0.5rem 1.2rem;-->
+<!--                font-size: 0.75rem;-->
+<!--            }-->
+<!--        }-->
+<!--    </style>-->
+<!--</head>-->
+<!--<body>-->
+<!--&lt;!&ndash; Animated Background &ndash;&gt;-->
+<!--<div class="bg-gradient">-->
+<!--    <div class="gradient-orb orb-1"></div>-->
+<!--    <div class="gradient-orb orb-2"></div>-->
+<!--    <div class="gradient-orb orb-3"></div>-->
+<!--</div>-->
+
+<!--&lt;!&ndash; Header &ndash;&gt;-->
+<!--<header class="header">-->
+<!--    <div class="container-fluid">-->
+<!--        <div class="d-flex justify-content-between align-items-center">-->
+<!--            <div class="d-flex align-items-center gap-3">-->
+<!--                <button class="btn d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar">-->
+<!--                    <i class="fas fa-bars"></i>-->
+<!--                </button>-->
+<!--                <h1>HON Dashboard</h1>-->
+<!--            </div>-->
+<!--            <div class="user-avatar">A</div>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</header>-->
+
+<!--<div class="container-fluid">-->
+<!--    <div class="row">-->
+<!--        &lt;!&ndash; Sidebar for Desktop &ndash;&gt;-->
+<!--        <div class="col-lg-3 col-xl-2 d-none d-lg-block p-0">-->
+<!--            <nav class="sidebar" style="position:sticky;top:70px;">-->
+<!--                <ul class="nav flex-column">-->
+<!--                    <li class="nav-item">-->
+<!--                        <a class="nav-link" href="#dashboard">-->
+<!--                            <i class="fas fa-chart-line"></i>-->
+<!--                            <span>Dashboard</span>-->
+<!--                        </a>-->
+<!--                    </li>-->
+<!--                    <li class="nav-item">-->
+<!--                        <a class="nav-link" href="#users">-->
+<!--                            <i class="fas fa-users"></i>-->
+<!--                            <span>HON Users</span>-->
+<!--                        </a>-->
+<!--                    </li>-->
+<!--                    <li class="nav-item">-->
+<!--                        <a class="nav-link active" href="#reports">-->
+<!--                            <i class="fas fa-file-alt"></i>-->
+<!--                            <span>Report Section</span>-->
+<!--                        </a>-->
+<!--                    </li>-->
+<!--                    <li class="nav-item">-->
+<!--                        <a class="nav-link" href="#gifts">-->
+<!--                            <i class="fas fa-gift"></i>-->
+<!--                            <span>Virtual Gift</span>-->
+<!--                        </a>-->
+<!--                    </li>-->
+<!--                    <li class="nav-item">-->
+<!--                        <a class="nav-link" href="#settings">-->
+<!--                            <i class="fas fa-cog"></i>-->
+<!--                            <span>Settings</span>-->
+<!--                        </a>-->
+<!--                    </li>-->
+<!--                </ul>-->
+<!--            </nav>-->
+<!--        </div>-->
+
+<!--        &lt;!&ndash; Main Content &ndash;&gt;-->
+<!--        <div class="col-lg-9 col-xl-10">-->
+<!--            <main class="main-content">-->
+<!--                &lt;!&ndash; Topbar &ndash;&gt;-->
+<!--                <div class="topbar">-->
+<!--                    <h2><i class="bi bi-bar-chart-fill"></i> Reports Overview</h2>-->
+<!--                    <div class="admin">-->
+<!--                        <i class="bi bi-person-badge"></i>-->
+<!--                        <span>Admin</span>-->
+<!--                    </div>-->
+<!--                </div>-->
+
+<!--                &lt;!&ndash; Stats &ndash;&gt;-->
+<!--                <section class="stats">-->
+<!--                    <div class="stat-card">-->
+<!--                        <div class="stat-title">-->
+<!--                            <i class="bi bi-flag"></i>-->
+<!--                            Total Reports-->
+<!--                        </div>-->
+<!--                        <div class="stat-value">128</div>-->
+<!--                    </div>-->
+<!--                    <div class="stat-card">-->
+<!--                        <div class="stat-title">-->
+<!--                            <i class="bi bi-chat-square-text"></i>-->
+<!--                            Reported Chats-->
+<!--                        </div>-->
+<!--                        <div class="stat-value">74</div>-->
+<!--                    </div>-->
+<!--                    <div class="stat-card">-->
+<!--                        <div class="stat-title">-->
+<!--                            <i class="bi bi-clock-history"></i>-->
+<!--                            Pending Review-->
+<!--                        </div>-->
+<!--                        <div class="stat-value">12</div>-->
+<!--                    </div>-->
+<!--                    <div class="stat-card">-->
+<!--                        <div class="stat-title">-->
+<!--                            <i class="bi bi-people-fill"></i>-->
+<!--                            Active Users-->
+<!--                        </div>-->
+<!--                        <div class="stat-value">1,247</div>-->
+<!--                    </div>-->
+<!--                </section>-->
+
+<!--                &lt;!&ndash; User Reports Table &ndash;&gt;-->
+<!--                <section class="panel">-->
+<!--                    <div class="panel-header">-->
+<!--                        <h3><i class="bi bi-file-earmark-text"></i> User Reports</h3>-->
+<!--                    </div>-->
+<!--                    <div class="table-wrapper">-->
+<!--                        <table>-->
+<!--                            <thead>-->
+<!--                            <tr>-->
+<!--                                <th>Reporter</th>-->
+<!--                                <th>Reported User</th>-->
+<!--                                <th>Reason</th>-->
+<!--                                <th>Status</th>-->
+<!--                                <th>Action</th>-->
+<!--                            </tr>-->
+<!--                            </thead>-->
+<!--                            <tbody>-->
+<!--                            <tr>-->
+<!--                                <td>@elara</td>-->
+<!--                                <td>@unknown_soul</td>-->
+<!--                                <td>Harassment</td>-->
+<!--                                <td>-->
+<!--                                    <span class="badge warning">-->
+<!--                                        <i class="bi bi-hourglass-split"></i> Pending-->
+<!--                                    </span>-->
+<!--                                </td>-->
+<!--                                <td>-->
+<!--                                    <a href="#" class="action-btn">Review</a>-->
+<!--                                </td>-->
+<!--                            </tr>-->
+<!--                            <tr>-->
+<!--                                <td>@darknight</td>-->
+<!--                                <td>@spammer123</td>-->
+<!--                                <td>Spam Content</td>-->
+<!--                                <td>-->
+<!--                                    <span class="badge review">-->
+<!--                                        <i class="bi bi-eye"></i> In Review-->
+<!--                                    </span>-->
+<!--                                </td>-->
+<!--                                <td>-->
+<!--                                    <a href="#" class="action-btn">Review</a>-->
+<!--                                </td>-->
+<!--                            </tr>-->
+<!--                            <tr>-->
+<!--                                <td>@safetyfirst</td>-->
+<!--                                <td>@badactor</td>-->
+<!--                                <td>Inappropriate Behavior</td>-->
+<!--                                <td>-->
+<!--                                    <span class="badge success">-->
+<!--                                        <i class="bi bi-check-circle"></i> Action Taken-->
+<!--                                    </span>-->
+<!--                                </td>-->
+<!--                                <td>-->
+<!--                                    <a href="#" class="action-btn">Review</a>-->
+<!--                                </td>-->
+<!--                            </tr>-->
+<!--                            <tr>-->
+<!--                                <td>@concerned_user</td>-->
+<!--                                <td>@suspicious_acc</td>-->
+<!--                                <td>Fake Profile</td>-->
+<!--                                <td>-->
+<!--                                    <span class="badge reject">-->
+<!--                                        <i class="bi bi-x-circle"></i> Rejected-->
+<!--                                    </span>-->
+<!--                                </td>-->
+<!--                                <td>-->
+<!--                                    <a href="#" class="action-btn">Review</a>-->
+<!--                                </td>-->
+<!--                            </tr>-->
+<!--                            <tr>-->
+<!--                                <td>@vigilant</td>-->
+<!--                                <td>@scammer99</td>-->
+<!--                                <td>Scam Attempt</td>-->
+<!--                                <td>-->
+<!--                                    <span class="badge warning">-->
+<!--                                        <i class="bi bi-hourglass-split"></i> Pending-->
+<!--                                    </span>-->
+<!--                                </td>-->
+<!--                                <td>-->
+<!--                                    <a href="#" class="action-btn">Review</a>-->
+<!--                                </td>-->
+<!--                            </tr>-->
+<!--                            </tbody>-->
+<!--                        </table>-->
+<!--                    </div>-->
+<!--                </section>-->
+
+<!--                &lt;!&ndash; Reported Chats Table &ndash;&gt;-->
+<!--                <section class="panel">-->
+<!--                    <div class="panel-header">-->
+<!--                        <h3><i class="bi bi-chat-left-dots"></i> Reported Chats</h3>-->
+<!--                    </div>-->
+<!--                    <div class="table-wrapper">-->
+<!--                        <table>-->
+<!--                            <thead>-->
+<!--                            <tr>-->
+<!--                                <th>User A</th>-->
+<!--                                <th>User B</th>-->
+<!--                                <th>Reason</th>-->
+<!--                                <th>Reports</th>-->
+<!--                                <th>Action</th>-->
+<!--                            </tr>-->
+<!--                            </thead>-->
+<!--                            <tbody>-->
+<!--                            <tr>-->
+<!--                                <td>@elara</td>-->
+<!--                                <td>@lostboy</td>-->
+<!--                                <td>Inappropriate Content</td>-->
+<!--                                <td>-->
+<!--                                    <span class="badge warning">-->
+<!--                                        <i class="bi bi-exclamation-triangle"></i> 5-->
+<!--                                    </span>-->
+<!--                                </td>-->
+<!--                                <td>-->
+<!--                                    <a href="#" class="action-btn">Open Chat</a>-->
+<!--                                </td>-->
+<!--                            </tr>-->
+<!--                            <tr>-->
+<!--                                <td>@midnight</td>-->
+<!--                                <td>@stranger</td>-->
+<!--                                <td>Harassment</td>-->
+<!--                                <td>-->
+<!--                                    <span class="badge warning">-->
+<!--                                        <i class="bi bi-exclamation-triangle"></i> 3-->
+<!--                                    </span>-->
+<!--                                </td>-->
+<!--                                <td>-->
+<!--                                    <a href="#" class="action-btn">Open Chat</a>-->
+<!--                                </td>-->
+<!--                            </tr>-->
+<!--                            <tr>-->
+<!--                                <td>@safespace</td>-->
+<!--                                <td>@toxic_user</td>-->
+<!--                                <td>Abusive Language</td>-->
+<!--                                <td>-->
+<!--                                    <span class="badge warning">-->
+<!--                                        <i class="bi bi-exclamation-triangle"></i> 8-->
+<!--                                    </span>-->
+<!--                                </td>-->
+<!--                                <td>-->
+<!--                                    <a href="#" class="action-btn">Open Chat</a>-->
+<!--                                </td>-->
+<!--                            </tr>-->
+<!--                            </tbody>-->
+<!--                        </table>-->
+<!--                    </div>-->
+<!--                </section>-->
+<!--            </main>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</div>-->
+
+<!--<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>-->
+<!--</body>-->
+<!--</html>-->
+
+

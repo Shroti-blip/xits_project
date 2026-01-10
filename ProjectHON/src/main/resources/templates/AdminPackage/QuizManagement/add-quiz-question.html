@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Quiz Question - HON</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: #fafafa;
+        overflow-x: hidden;
+    }
+
+    .bg-gradient {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        overflow: hidden;
+        background: #fafafa;
+    }
+
+    .gradient-orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(100px);
+        opacity: 0.1;
+        animation: float 20s ease-in-out infinite;
+    }
+
+    .orb-1 {
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, #F73B20, transparent);
+        top: -10%;
+        right: -10%;
+        animation-duration: 25s;
+    }
+
+    .orb-2 {
+        width: 500px;
+        height: 500px;
+        background: radial-gradient(circle, #ff5238, transparent);
+        bottom: -15%;
+        left: -10%;
+        animation-duration: 20s;
+        animation-delay: 2s;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translate(0, 0) scale(1); }
+        33% { transform: translate(50px, -80px) scale(1.1); }
+        66% { transform: translate(-50px, 50px) scale(0.9); }
+    }
+
+    .header {
+        background: white;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        padding: 1rem 0;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+    }
+
+    .header h1 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin: 0;
+    }
+
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #F73B20, #ff5238);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+    }
+
+    .sidebar {
+        background: white;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+        min-height: calc(100vh - 76px);
+        padding: 2rem 1rem;
+    }
+
+    .nav-item {
+        margin-bottom: 0.5rem;
+    }
+
+    .nav-link {
+        color: #4a5568;
+        padding: 0.875rem 1.25rem;
+        border-radius: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+    .nav-link i {
+        font-size: 1.25rem;
+        width: 24px;
+    }
+
+    .nav-link:hover {
+        background: #f7f7f7;
+        color: #F73B20;
+    }
+
+    .nav-link.active {
+        background: linear-gradient(135deg, #F73B20, #ff5238);
+        color: white;
+        box-shadow: 0 4px 15px rgba(247, 59, 32, 0.3);
+    }
+
+    .main-content {
+        padding: 2rem;
+        min-height: calc(100vh - 76px);
+    }
+
+    .page-header {
+        margin-bottom: 2rem;
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-subtitle {
+        color: #6b7280;
+        font-size: 0.95rem;
+    }
+
+    .breadcrumb-custom {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+        font-size: 0.875rem;
+    }
+
+    .breadcrumb-custom a {
+        color: #6b7280;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .breadcrumb-custom a:hover {
+        color: #F73B20;
+    }
+
+    .breadcrumb-custom span {
+        color: #d1d5db;
+    }
+
+    .form-container {
+        background: white;
+        border-radius: 1rem;
+        padding: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        border: 1px solid #f0f0f0;
+        max-width: 900px;
+    }
+
+    .form-section {
+        margin-bottom: 2rem;
+    }
+
+    .form-section-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .form-section-title i {
+        color: #F73B20;
+        font-size: 1.5rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.5rem;
+        font-size: 0.95rem;
+    }
+
+    .form-label .required {
+        color: #F73B20;
+    }
+
+    .form-control, .form-select {
+        border: 2px solid #e5e7eb;
+        border-radius: 0.75rem;
+        padding: 0.875rem 1rem;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #F73B20;
+        box-shadow: 0 0 0 3px rgba(247, 59, 32, 0.1);
+    }
+
+    textarea.form-control {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .option-input-group {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .option-label-badge {
+        background: linear-gradient(135deg, #F73B20, #ff5238);
+        color: white;
+        width: 45px;
+        height: 45px;
+        border-radius: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.125rem;
+        flex-shrink: 0;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 2px solid #f0f0f0;
+    }
+
+    .btn-submit {
+        background: linear-gradient(135deg, #F73B20, #ff5238);
+        color: white;
+        border: none;
+        padding: 0.875rem 2rem;
+        border-radius: 0.75rem;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(247, 59, 32, 0.3);
+    }
+
+    .btn-cancel {
+        background: #f3f4f6;
+        color: #4b5563;
+        border: none;
+        padding: 0.875rem 2rem;
+        border-radius: 0.75rem;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-cancel:hover {
+        background: #e5e7eb;
+        color: #374151;
+    }
+
+    .helper-text {
+        font-size: 0.875rem;
+        color: #6b7280;
+        margin-top: 0.375rem;
+    }
+
+    @media (max-width: 767.98px) {
+        .form-container {
+            padding: 1.5rem;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .btn-submit, .btn-cancel {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+  </style>
+</head>
+<body>
+<div class="bg-gradient">
+  <div class="gradient-orb orb-1"></div>
+  <div class="gradient-orb orb-2"></div>
+</div>
+
+<header class="header">
+  <div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center">
+      <div class="d-flex align-items-center gap-3">
+        <button class="btn d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar">
+          <i class="fas fa-bars"></i>
+        </button>
+        <h1>HON Dashboard</h1>
+      </div>
+      <div class="user-avatar">A</div>
+    </div>
+  </div>
+</header>
+
+<div class="container-fluid">
+  <div class="row">
+
+    <!-- Sidebar for Desktop -->
+    <div class="col-lg-3 col-xl-2 d-none d-lg-block p-0">
+      <nav class="sidebar" style="position:sticky;top:70px;">
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link " href="/admin/dashboard">
+              <i class="fas fa-chart-line"></i>
+              <span>Dashboard</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/hon/users">
+              <i class="fas fa-users"></i>
+              <span>HON Users</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/badge/management">
+              <i class="fas fa-award"></i>
+              <span>Badges</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link " href="/admin/get-all-post-report">
+              <i class="fas fa-flag"></i>
+              <span>Reported Posts</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/reports">
+              <i class="fas fa-file-alt"></i>
+              <span>Report Section</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/virtual/gift">
+              <i class="fas fa-gift"></i>
+              <span>Virtual Gift</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="/admin/quiz/management">
+              <i class="fas fa-question-circle"></i>
+              <span>Quiz Management</span>
+            </a>
+          </li>
+          <!-- NEW: Contact Admin Section -->
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/contact/requests">
+              <i class="fas fa-envelope"></i>
+              <span>Contact Admin</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/settings">
+              <i class="fas fa-cog"></i>
+              <span>Settings</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+
+    <!-- Offcanvas Sidebar for Mobile -->
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebar">
+      <div class="offcanvas-header">
+        <h5 class="offcanvas-title">Menu</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+      </div>
+      <div class="offcanvas-body p-0">
+        <nav class="sidebar">
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <a class="nav-link " href="/admin/dashboard">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/admin/hon/users">
+                <i class="fas fa-users"></i>
+                <span>HON Users</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/admin/badge/management">
+                <i class="fas fa-award"></i>
+                <span>Badges</span>
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a class="nav-link " href="/admin/get-all-post-report">
+                <i class="fas fa-flag"></i>
+                <span>Reported Posts</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/admin/reports">
+                <i class="fas fa-file-alt"></i>
+                <span>Report Section</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/admin/virtual/gift">
+                <i class="fas fa-gift"></i>
+                <span>Virtual Gift</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="/admin/quiz/management">
+                <i class="fas fa-question-circle"></i>
+                <span>Quiz Management</span>
+              </a>
+            </li>
+            <!-- NEW: Contact Admin Section -->
+            <li class="nav-item">
+              <a class="nav-link" href="/admin/contact/requests">
+                <i class="fas fa-envelope"></i>
+                <span>Contact Admin</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/admin/settings">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+
+
+
+    <div class="col-lg-9 col-xl-10">
+      <main class="main-content">
+        <div class="breadcrumb-custom">
+          <a href="/admin/dashboard">
+            <i class="fas fa-home"></i>
+          </a>
+          <span>/</span>
+          <a href="/admin/quiz/management">Quiz Management</a>
+          <span>/</span>
+          <span style="color: #1a1a1a; font-weight: 600;">Add Question</span>
+        </div>
+
+        <div class="page-header">
+          <h2 class="page-title">Add New Quiz Question</h2>
+          <p class="page-subtitle">Create a new quiz question with two options</p>
+        </div>
+
+        <div class="form-container">
+          <form th:action="@{/admin/quiz/save}" method="post" th:object="${question}">
+
+            <!-- Question Section -->
+            <div class="form-section">
+              <h3 class="form-section-title">
+                <i class="fas fa-question"></i>
+                Question Details
+              </h3>
+
+              <div class="mb-4">
+                <label class="form-label">
+                  Question Text <span class="required">*</span>
+                </label>
+                <textarea
+                        class="form-control"
+                        th:field="*{questionText}"
+                        placeholder="Enter your question here..."
+                        required></textarea>
+                <div class="helper-text">
+                  <i class="fas fa-info-circle"></i>
+                  Write a clear and concise question that users will answer
+                </div>
+              </div>
+
+              <div class="mb-4">
+                <label class="form-label">
+                  Category <span class="required">*</span>
+                </label>
+                <select class="form-select" th:field="*{category}" required>
+                  <option value="">Select a category</option>
+                  <option value="General">General Knowledge</option>
+                  <option value="Science">Science</option>
+                  <option value="History">History</option>
+                  <option value="Geography">Geography</option>
+                  <option value="Sports">Sports</option>
+                  <option value="Entertainment">Entertainment</option>
+                  <option value="Technology">Technology</option>
+                  <option value="Arts">Arts & Literature</option>
+                  <option value="Other">Other</option>
+                </select>
+                <div class="helper-text">
+                  <i class="fas fa-tag"></i>
+                  Categorize your question for better organization
+                </div>
+              </div>
+            </div>
+
+            <!-- Options Section -->
+            <div class="form-section">
+              <h3 class="form-section-title">
+                <i class="fas fa-list-ul"></i>
+                Answer Options
+              </h3>
+
+              <div class="option-input-group">
+                <div class="option-label-badge">A</div>
+                <div style="flex: 1;">
+                  <label class="form-label">
+                    Option A <span class="required">*</span>
+                  </label>
+                  <input
+                          type="text"
+                          class="form-control"
+                          th:field="*{optionA}"
+                          placeholder="Enter first option..."
+                          required>
+                </div>
+              </div>
+
+              <div class="option-input-group">
+                <div class="option-label-badge">B</div>
+                <div style="flex: 1;">
+                  <label class="form-label">
+                    Option B <span class="required">*</span>
+                  </label>
+                  <input
+                          type="text"
+                          class="form-control"
+                          th:field="*{optionB}"
+                          placeholder="Enter second option..."
+                          required>
+                </div>
+              </div>
+
+              <div class="helper-text">
+                <i class="fas fa-lightbulb"></i>
+                Provide two distinct options for users to choose from
+              </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+              <button type="submit" class="btn-submit">
+                <i class="fas fa-check"></i>
+                Save Question
+              </button>
+              <a href="/admin/quiz/management" class="btn-cancel">
+                <i class="fas fa-times"></i>
+                Cancel
+              </a>
+            </div>
+          </form>
+        </div>
+      </main>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

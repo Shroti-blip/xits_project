@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - HON</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: #fafafa;
+        overflow-x: hidden;
+    }
+
+    /* Gradient background with floating orbs */
+    .bg-gradient {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        overflow: hidden;
+        background: #fafafa;
+    }
+
+    .gradient-orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(100px);
+        opacity: 0.1;
+        animation: float 20s ease-in-out infinite;
+    }
+
+    .orb-1 {
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, #F73B20, transparent);
+        top: -10%;
+        right: -10%;
+        animation-duration: 25s;
+    }
+
+    .orb-2 {
+        width: 500px;
+        height: 500px;
+        background: radial-gradient(circle, #ff5238, transparent);
+        bottom: -15%;
+        left: -10%;
+        animation-duration: 20s;
+        animation-delay: 2s;
+    }
+
+    .orb-3 {
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, #F73B20, transparent);
+        top: 40%;
+        left: 50%;
+        animation-duration: 18s;
+        animation-delay: 1s;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translate(0, 0) scale(1); }
+        33% { transform: translate(50px, -80px) scale(1.1); }
+        66% { transform: translate(-50px, 50px) scale(0.9); }
+    }
+
+    /* Header */
+    .header {
+        background: white;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        padding: 1rem 0;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+    }
+
+    .header h1 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin: 0;
+    }
+
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #F73B20, #ff5238);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+    }
+
+    /* Sidebar */
+    .sidebar {
+        background: white;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+        min-height: calc(100vh - 76px);
+        padding: 2rem 1rem;
+    }
+
+    .nav-item {
+        margin-bottom: 0.5rem;
+    }
+
+    .nav-link {
+        color: #4a5568;
+        padding: 0.875rem 1.25rem;
+        border-radius: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+    .nav-link i {
+        font-size: 1.25rem;
+        width: 24px;
+    }
+
+    .nav-link:hover {
+        background: #f7f7f7;
+        color: #F73B20;
+    }
+
+    .nav-link.active {
+        background: linear-gradient(135deg, #F73B20, #ff5238);
+        color: white;
+        box-shadow: 0 4px 15px rgba(247, 59, 32, 0.3);
+    }
+
+    /* Main Content */
+    .main-content {
+        padding: 2rem;
+        min-height: calc(100vh - 76px);
+    }
+
+    /* Stats Cards */
+    .stat-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        border: 1px solid #f0f0f0;
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+
+    .stat-card:hover {
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        transform: translateY(-5px);
+    }
+
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .stat-icon.blue { background: #3b82f6; }
+    .stat-icon.green { background: #10b981; }
+    .stat-icon.purple { background: #8b5cf6; }
+    .stat-icon.orange { background: #f97316; }
+
+    .stat-title {
+        color: #6b7280;
+        font-size: 0.875rem;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-change {
+        color: #10b981;
+        font-size: 0.875rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    /* Chart Card */
+    .chart-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        border: 1px solid #f0f0f0;
+        height: 100%;
+    }
+
+    .chart-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin-bottom: 1.5rem;
+    }
+
+    .chart-container {
+        height: 250px;
+        display: flex;
+        align-items: flex-end;
+        gap: 0.5rem;
+    }
+
+    .chart-bar {
+        flex: 1;
+        background: linear-gradient(to top, #F73B20, #ff5238);
+        border-radius: 0.5rem 0.5rem 0 0;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+    }
+
+    .chart-bar:hover {
+        opacity: 0.8;
+    }
+
+    .chart-label {
+        text-align: center;
+        font-size: 0.75rem;
+        color: #6b7280;
+        margin-top: 0.5rem;
+    }
+
+    /* Activity Card */
+    .activity-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        border: 1px solid #f0f0f0;
+        height: 100%;
+    }
+
+    .activity-item {
+        display: flex;
+        align-items: start;
+        gap: 1rem;
+        padding-bottom: 1rem;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .activity-item:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+    }
+
+    .activity-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #F73B20, #ff5238);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        flex-shrink: 0;
+    }
+
+    .activity-details h6 {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #1a1a1a;
+        margin-bottom: 0.25rem;
+    }
+
+    .activity-details p {
+        font-size: 0.75rem;
+        color: #6b7280;
+        margin-bottom: 0.25rem;
+    }
+
+    .activity-time {
+        font-size: 0.75rem;
+        color: #9ca3af;
+    }
+
+    /* Quick Actions */
+    .quick-actions {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        border: 1px solid #f0f0f0;
+    }
+
+    .action-btn {
+        border: 2px solid #e5e7eb;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        text-align: center;
+        background: white;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        height: 100%;
+    }
+
+    .action-btn:hover {
+        border-color: #F73B20;
+        background: #fff5f5;
+        transform: translateY(-3px);
+    }
+
+    .action-btn i {
+        font-size: 2rem;
+        color: #F73B20;
+        margin-bottom: 0.5rem;
+    }
+
+    .action-btn span {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #4a5568;
+    }
+
+    /* Responsive */
+    @media (max-width: 991.98px) {
+        .sidebar {
+            min-height: auto;
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .stat-value {
+            font-size: 1.5rem;
+        }
+
+        .chart-container {
+            height: 200px;
+        }
+    }
+  </style>
+</head>
+<body>
+<!-- Animated Background -->
+<div class="bg-gradient">
+  <div class="gradient-orb orb-1"></div>
+  <div class="gradient-orb orb-2"></div>
+  <div class="gradient-orb orb-3"></div>
+</div>
+
+<!-- Header -->
+<header class="header">
+  <div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center">
+      <div class="d-flex align-items-center gap-3">
+        <button class="btn d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar">
+          <i class="fas fa-bars"></i>
+        </button>
+        <h1>HON Dashboard</h1>
+      </div>
+      <div class="user-avatar">A</div>
+    </div>
+  </div>
+</header>
+
+<div class="container-fluid">
+  <div class="row">
+
+    <!-- Sidebar for Desktop -->
+    <div class="col-lg-3 col-xl-2 d-none d-lg-block p-0">
+      <nav class="sidebar" style="position:sticky;top:70px;">
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link active" href="/admin/dashboard">
+              <i class="fas fa-chart-line"></i>
+              <span>Dashboard</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/hon/users">
+              <i class="fas fa-users"></i>
+              <span>HON Users</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/badge/management">
+              <i class="fas fa-award"></i>
+              <span>Badges</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link " href="/admin/get-all-post-report">
+              <i class="fas fa-flag"></i>
+              <span>Reported Posts</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/reports">
+              <i class="fas fa-file-alt"></i>
+              <span>Report Section</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/virtual/gift">
+              <i class="fas fa-gift"></i>
+              <span>Virtual Gift</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/quiz/management">
+              <i class="fas fa-question-circle"></i>
+              <span>Quiz Management</span>
+            </a>
+          </li>
+          <!-- NEW: Contact Admin Section -->
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/contact/requests">
+              <i class="fas fa-envelope"></i>
+              <span>Contact Admin</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/settings">
+              <i class="fas fa-cog"></i>
+              <span>Settings</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+
+    <!-- Offcanvas Sidebar for Mobile -->
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebar">
+      <div class="offcanvas-header">
+        <h5 class="offcanvas-title">Menu</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+      </div>
+      <div class="offcanvas-body p-0">
+        <nav class="sidebar">
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <a class="nav-link active" href="/admin/dashboard">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/admin/hon/users">
+                <i class="fas fa-users"></i>
+                <span>HON Users</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/admin/badge/management">
+                <i class="fas fa-award"></i>
+                <span>Badges</span>
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a class="nav-link " href="/admin/reports">
+                <i class="fas fa-flag"></i>
+                <span>Reported Posts</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/admin/reports">
+                <i class="fas fa-file-alt"></i>
+                <span>Report Section</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/admin/virtual/gift">
+                <i class="fas fa-gift"></i>
+                <span>Virtual Gift</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/admin/quiz/management">
+                <i class="fas fa-question-circle"></i>
+                <span>Quiz Management</span>
+              </a>
+            </li>
+            <!-- NEW: Contact Admin Section -->
+            <li class="nav-item">
+              <a class="nav-link" href="/admin/contact/requests">
+                <i class="fas fa-envelope"></i>
+                <span>Contact Admin</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/admin/settings">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+
+
+    <!-- Main Content -->
+    <div class="col-lg-9 col-xl-10">
+      <main class="main-content">
+        <!-- Stats Cards -->
+        <div class="row g-4 mb-4">
+          <div class="col-sm-6 col-xl-3">
+            <div class="stat-card">
+              <div class="d-flex justify-content-between align-items-start">
+                <div class="stat-icon blue">
+                  <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-change">
+                  <i class="fas fa-arrow-up"></i>
+                  +12.5%
+                </div>
+              </div>
+              <div class="stat-title">Total Users</div>
+              <div class="stat-value" th:text="${totalUsers}">12,5430</div>
+            </div>
+          </div>
+          <div class="col-sm-6 col-xl-3">
+            <div class="stat-card">
+              <div class="d-flex justify-content-between align-items-start">
+                <div class="stat-icon green">
+                  <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="stat-change">
+                  <i class="fas fa-arrow-up"></i>
+                  +8.2%
+                </div>
+              </div>
+              <div class="stat-title">Active Users</div>
+              <div class="stat-value" th:text="${activeUser}">3,421</div>
+            </div>
+          </div>
+          <div class="col-sm-6 col-xl-3">
+            <a href="/admin/get-all-blocked-user-admin" class="text-decoration-none">
+            <div class="stat-card">
+              <div class="d-flex justify-content-between align-items-start">
+                <div class="stat-icon purple">
+                  <i class="fas fa-user-slash"></i>
+                </div>
+                <div class="stat-change">
+                  <i class="fas fa-arrow-up"></i>
+                  +23.1%
+                </div>
+              </div>
+              <div class="stat-title">Blocked Users</div>
+              <div class="stat-value" th:text="${inActiveUser}">421</div>
+            </div>
+            </a>
+          </div>
+          <div class="col-sm-6 col-xl-3">
+            <div class="stat-card">
+              <div class="d-flex justify-content-between align-items-start">
+                <div class="stat-icon orange">
+                  <i class="fas fa-user-plus"></i>
+                </div>
+                <div class="stat-change">
+                  <i class="fas fa-arrow-up"></i>
+                  +5.4%
+                </div>
+              </div>
+              <div class="stat-title">Today's Registration</div>
+              <div class="stat-value" th:text="${todayAllRegistration}">1,234</div>
+            </div>
+          </div>
+
+
+
+          <div class="col-sm-6 col-xl-3">
+            <div class="stat-card">
+              <div class="d-flex justify-content-between align-items-start">
+                <div class="stat-icon blue">
+                  <i class="fas fa-paper-plane"></i>
+                </div>
+                <div class="stat-change">
+                  <i class="fas fa-paper-plane"></i>
+                  +12.5%
+                </div>
+              </div>
+              <div class="stat-title">Total Posts</div>
+              <div class="stat-value" th:text="${totalPost}">12,5430</div>
+            </div>
+          </div>
+          <div class="col-sm-6 col-xl-3">
+            <div class="stat-card">
+              <div class="d-flex justify-content-between align-items-start">
+                <div class="stat-icon green">
+                  <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="stat-change">
+                  <i class="fas fa-arrow-up"></i>
+                  +8.2%
+                </div>
+              </div>
+              <div class="stat-title">Active Sessions</div>
+              <div class="stat-value">3,421</div>
+            </div>
+          </div>
+          <div class="col-sm-6 col-xl-3">
+            <div class="stat-card">
+              <div class="d-flex justify-content-between align-items-start">
+                <div class="stat-icon purple">
+                  <i class="fas fa-user-slash"></i>
+                </div>
+                <div class="stat-change">
+                  <i class="fas fa-arrow-up"></i>
+                  +23.1%
+                </div>
+              </div>
+              <div class="stat-title">Blocked Users</div>
+              <div class="stat-value" th:text="${inActiveUser}">421</div>
+            </div>
+          </div>
+          <div class="col-sm-6 col-xl-3">
+            <div class="stat-card">
+              <div class="d-flex justify-content-between align-items-start">
+                <div class="stat-icon orange">
+                  <i class="fas fa-user-plus"></i>
+                </div>
+                <div class="stat-change">
+                  <i class="fas fa-arrow-up"></i>
+                  +5.4%
+                </div>
+              </div>
+              <div class="stat-title">New Users</div>
+              <div class="stat-value" th:text="${todayAllRegistration}">1,234</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+          <h3 class="chart-title">Quick Actions</h3>
+          <div class="row g-4">
+            <div class="col-6 col-md-3">
+              <div class="action-btn">
+                <i class="fas fa-users"></i>
+                <span>Add User</span>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="action-btn">
+                <i class="fas fa-file-alt"></i>
+                <span>Generate Report</span>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="action-btn">
+                <i class="fas fa-gift"></i>
+                <span>Send Gift</span>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="action-btn">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>HON • Unblock User</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        :root{
+     --bg:#f6f7fb;
+     --panel:#ffffff;
+     --panel-2:#f1f2f7;
+     --text:#1c1c24;
+     --muted:#6b6f85;
+
+     --theme-orange:#F73B20;
+     --theme-orange-10: rgba(247, 59, 32, 0.10);
+     --theme-orange-20: rgba(247, 59, 32, 0.20);
+
+     --radius:16px;
+   }
+
+   *{
+     box-sizing:border-box;
+     margin:0;
+     padding:0;
+   }
+
+   html,body{
+     width:100%;
+     overflow-x:hidden;
+   }
+
+   body{
+     background:var(--bg);
+     font-family:Inter,system-ui,sans-serif;
+     color:var(--text);
+     padding:0;
+   }
+
+   /* ===== HEADER ===== */
+   .inbox-header {
+        background: linear-gradient(135deg, #F73B20 0%, #ff5238 100%);
+        padding: 20px 32px;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        box-shadow: 0 4px 20px rgba(247, 59, 32, 0.25);
+      }
+
+      .inbox-title {
+        font-size: 26px;
+        font-weight: 700;
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .back-btn {
+        background: rgba(255,255,255,0.95);
+        border: none;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        transition: all 0.3s ease;
+        cursor: pointer;
+      }
+
+      .back-btn:hover {
+        transform: scale(1.08);
+        background: white;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+      }
+
+      .back-btn i {
+        font-size: 20px;
+        color: var(--theme-orange);
+      }
+
+   /* ===== CONTAINER ===== */
+   .container{
+     max-width:1200px;
+     margin:auto;
+     padding: 32px 24px;
+   }
+
+   /* ===== PAGE HEADER ===== */
+   .page-header{
+     display:flex;
+     justify-content:space-between;
+     align-items:center;
+     gap:16px;
+     flex-wrap:wrap;
+     margin-bottom:32px;
+   }
+
+   .page-header h1{
+     font-size:1.75rem;
+     font-weight: 700;
+     color: var(--text);
+   }
+
+   .status-badge{
+     padding:10px 20px;
+     border-radius:24px;
+     font-size:.8rem;
+     font-weight:700;
+     background:rgba(220, 38, 38, 0.1);
+     color:#dc2626;
+     border: 2px solid rgba(220, 38, 38, 0.2);
+     text-transform: uppercase;
+     letter-spacing: 0.5px;
+   }
+
+   /* ===== GRID ===== */
+   .grid{
+     display:grid;
+     grid-template-columns:1fr 1fr;
+     gap:24px;
+   }
+
+   /* ===== PANEL ===== */
+   .panel{
+     background:var(--panel);
+     border-radius:var(--radius);
+     padding:28px;
+     border:1px solid #e6e8f0;
+     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+     transition: all 0.3s ease;
+   }
+
+   .panel:hover {
+     box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+   }
+
+   .panel h2{
+     font-size:1.15rem;
+     margin-bottom:20px;
+     color:var(--theme-orange);
+     font-weight: 700;
+     display: flex;
+     align-items: center;
+     gap: 8px;
+     padding-bottom: 16px;
+     border-bottom: 2px solid var(--theme-orange-10);
+   }
+
+   /* ===== INFO ROW ===== */
+   .info-row{
+     display:flex;
+     justify-content:space-between;
+     align-items: flex-start;
+     gap:16px;
+     margin-bottom:14px;
+     font-size:.88rem;
+     padding: 12px;
+     border-radius: 10px;
+     transition: background 0.2s ease;
+   }
+
+   .info-row:hover {
+     background: var(--panel-2);
+   }
+
+   .info-row span{
+     color:var(--muted);
+     white-space:nowrap;
+     font-weight: 500;
+   }
+
+   .info-row strong {
+     color: var(--text);
+     font-weight: 600;
+     text-align: right;
+   }
+
+   .info-row.highlight strong {
+     color: var(--theme-orange);
+     font-weight: 700;
+   }
+
+   .info-row.warning strong {
+     color: #dc2626;
+     font-weight: 700;
+   }
+
+   /* ===== ACTION BUTTONS ===== */
+   .actions{
+     display:flex;
+     gap:12px;
+     flex-wrap:wrap;
+     margin-top: 24px;
+   }
+
+   .btn{
+     padding:12px 20px;
+     border-radius:12px;
+     border:none;
+     cursor:pointer;
+     font-weight:600;
+     font-size:.85rem;
+     transition:all 0.3s ease;
+     display: inline-flex;
+     align-items: center;
+     gap: 8px;
+     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+   }
+
+   .btn.unblock{
+     background: var(--theme-orange-20);
+     color: var(--theme-orange);
+     border: 2px solid var(--theme-orange);
+     flex: 1;
+   }
+
+   .btn.unblock:hover {
+     background: var(--theme-orange);
+     color: white;
+     transform:translateY(-2px);
+     box-shadow: 0 4px 12px rgba(247, 59, 32, 0.4);
+   }
+
+   .btn.cancel-action{
+     background:#f1f2f7;
+     color:#555;
+     border: 2px solid #ddd;
+   }
+
+   .btn.cancel-action:hover {
+     background:#e4e6ee;
+     transform:translateY(-2px);
+     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+   }
+
+   /* ===== CONFIRM OVERLAY ===== */
+   .confirm-overlay {
+       position: fixed;
+       inset: 0;
+       background: rgba(15, 23, 42, 0.6);
+       display: none;
+       align-items: center;
+       justify-content: center;
+       z-index: 9999;
+       backdrop-filter: blur(8px);
+   }
+
+   /* ===== MODAL BOX ===== */
+   .confirm-box {
+       width: min(460px, 92%);
+       background: #ffffff;
+       border-radius: 20px;
+       padding: 32px;
+       box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+       animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+       border: 1px solid rgba(247, 59, 32, 0.15);
+   }
+
+   .confirm-box h3 {
+       margin: 0 0 16px;
+       font-size: 1.5rem;
+       font-weight: 700;
+       color: #1c1c24;
+       display: flex;
+       align-items: center;
+       gap: 10px;
+   }
+
+   .confirm-box p {
+       margin: 10px 0;
+       font-size: 0.95rem;
+       line-height: 1.6;
+       color: #555;
+   }
+
+   .confirm-box p strong {
+       color: var(--theme-orange);
+       font-weight: 600;
+   }
+
+   .confirm-actions {
+       display: flex;
+       justify-content: flex-end;
+       gap: 12px;
+       margin-top: 28px;
+       flex-wrap: wrap;
+   }
+
+   .confirm-actions .btn {
+       padding: 12px 24px;
+       border-radius: 12px;
+       font-size: 0.9rem;
+       font-weight: 600;
+       cursor: pointer;
+       border: none;
+       transition: all 0.3s ease;
+       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+   }
+
+   .confirm-actions .btn.cancel {
+       background: #f1f2f7;
+       color: #444;
+   }
+
+   .confirm-actions .btn.cancel:hover {
+       background: #e4e6ee;
+       transform: translateY(-2px);
+   }
+
+   .confirm-actions .btn.success {
+       background: linear-gradient(135deg, #F73B20, #ff5238);
+       color: #ffffff;
+       box-shadow: 0 8px 20px rgba(247, 59, 32, 0.35);
+   }
+
+   .confirm-actions .btn.success:hover {
+       transform: translateY(-3px);
+       box-shadow: 0 12px 28px rgba(247, 59, 32, 0.45);
+   }
+
+   @keyframes scaleIn {
+       from {
+           opacity: 0;
+           transform: scale(0.9);
+       }
+       to {
+           opacity: 1;
+           transform: scale(1);
+       }
+   }
+
+   /* ===== ALERT BOX ===== */
+   .alert-box {
+     background: rgba(220, 38, 38, 0.1);
+     border: 2px solid rgba(220, 38, 38, 0.2);
+     border-radius: 12px;
+     padding: 16px 20px;
+     margin-bottom: 24px;
+     display: flex;
+     align-items: center;
+     gap: 12px;
+     color: #991b1b;
+   }
+
+   .alert-box i {
+     font-size: 1.3rem;
+   }
+
+   .alert-box p {
+     margin: 0;
+     font-size: 0.9rem;
+     line-height: 1.5;
+   }
+
+   /* ===== RESPONSIVE ===== */
+   @media(max-width:900px){
+     .grid{
+       grid-template-columns:1fr;
+     }
+   }
+
+   @media(max-width:600px){
+     .container {
+       padding: 24px 16px;
+     }
+
+     .inbox-header {
+       padding: 18px 16px;
+     }
+
+     .inbox-title {
+       font-size: 20px;
+     }
+
+     .page-header h1{
+       font-size:1.4rem;
+     }
+
+     .panel {
+       padding: 20px;
+     }
+
+     .actions {
+       flex-direction: column;
+     }
+
+     .actions .btn{
+       width:100%;
+       justify-content: center;
+     }
+
+     .confirm-box {
+       padding: 24px;
+     }
+
+     .confirm-actions {
+       flex-direction: column;
+     }
+
+     .confirm-actions .btn {
+       width: 100%;
+       text-align: center;
+       justify-content: center;
+     }
+   }
+
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="inbox-header">
+    <button class="back-btn" onclick="window.history.back();">
+        <i class="bi bi-arrow-left"></i>
+    </button>
+    <h1 class="inbox-title">
+        <i class="bi bi-shield-lock"></i><span>Blocked Users</span>
+    </h1>
+</div>
+
+<div class="container">
+
+    <div class="page-header">
+        <h1>Unblock User</h1>
+        <div class="status-badge">BLOCKED</div>
+    </div>
+
+    <div class="alert-box">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <p>
+            <strong>Warning:</strong> This user was blocked due to multiple violations.
+            Review all information carefully before proceeding with unblock action.
+        </p>
+    </div>
+
+    <div class="grid">
+
+        <!-- User Information -->
+        <div class="panel" th:each="list:${blockedUser}">
+            <h2><i class="bi bi-person-circle"></i> User Information</h2>
+
+            <div class="info-row">
+                <span>Username</span>
+                <strong th:text="${list.username}">@unknown_soul</strong>
+            </div>
+            <div class="info-row">
+                <span>Email</span>
+                <strong th:text="${list.email}">user@example.com</strong>
+            </div>
+            <div class="info-row">
+                <span>Account Created</span>
+                <strong th:text="${list.joinDate}">15 Jan 2024</strong>
+            </div>
+<!--            <div class="info-row">-->
+<!--                <span>Blocked On</span>-->
+<!--                <strong th:text="${list.blockedDate}">12 Aug 2025 • 11:45 PM</strong>-->
+<!--            </div>-->
+            <div class="info-row warning">
+                <span>Total Warnings</span>
+                <strong th:text="${list.warningCount}">4</strong>
+            </div>
+            <div class="info-row warning">
+                <span>Total Reports</span>
+                <strong th:text="${totalCount}">7</strong>
+            </div>
+        </div>
+
+
+
+<!--        last report panel -->
+
+        <div class="panel"
+             th:if="${blockedUser != null and !#lists.isEmpty(blockedUser.userReports)}"
+             th:with="report=${blockedUser.userReports[blockedUser.userReports.size() - 1]}">
+
+            <h2><i class="bi bi-file-text"></i> Last Report Details</h2>
+
+            <div class="info-row">
+                <span>Reported User</span>
+                <strong th:text="${blockedUser.username}">username</strong>
+            </div>
+
+            <div class="info-row">
+                <span>Reported By</span>
+                <strong th:text="${report.reporterUser.username}">reporter</strong>
+            </div>
+
+            <div class="info-row">
+                <span>Report Reason</span>
+                <strong th:text="${report.reason}">Harassment</strong>
+            </div>
+
+<!--            <div class="info-row">-->
+<!--                <span>Admin Comment</span>-->
+<!--                <strong th:text="${report.comment != null ? report.comment : '—'}"></strong>-->
+<!--            </div>-->
+
+            <div class="info-row">
+                <span>Report Date</span>
+                <strong th:text="${#temporals.format(report.dateTime, 'dd MMM yyyy • hh:mm a')}">
+                    12 Aug 2025 • 10:32 PM
+                </strong>
+            </div>
+
+            <div class="info-row">
+                <span>Report Status</span>
+                <strong th:text="${report.status}">ACTION_TAKEN</strong>
+            </div>
+
+            <div class="info-row highlight">
+                <span>Account Status</span>
+                <strong th:text="${blockedUser.accountStatus}">BLOCKED</strong>
+            </div>
+
+            <div class="actions">
+                <form id="unblockUserId" method="post" th:action="@{/admin/unblockUserAdmin}" style="flex: 1;"
+                      onclick="openUnblockConfirmModal()">
+                    <input type="hidden" name="userId" th:value="${blockedUser.userId}" />
+                    <button type="button" class="btn unblock" style="width: 100%;">
+                        <i class="bi bi-unlock"></i> Unblock User
+                    </button>
+                </form>
+
+                <button class="btn cancel-action"
+                        onclick="window.history.back();">
+                    <i class="bi bi-x-circle"></i> Cancel
+                </button>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+
+
+<!-- Unblock User Confirmation Modal -->
+<div class="confirm-overlay" id="unblockConfirmModal">
+    <div class="confirm-box">
+        <h3><i class="bi bi-unlock" style="color:#F73B20;"></i> Unblock This User?</h3>
+
+        <p>
+            This action will <strong>restore full account access</strong>
+<!--            to <strong th:text="${owner.username}">@unknown_soul</strong>.-->
+        </p>
+
+        <p style="color:#F73B20; font-weight:500;">
+            The user will be able to:
+        </p>
+
+        <ul style="margin: 10px 0 10px 20px; color: #555; line-height: 1.8;">
+            <li>Log in to their account</li>
+            <li>Post content and interact with others</li>
+            <li>Access all platform features</li>
+        </ul>
+
+        <p style="color:#6b6f85;">
+            Warning history will remain on file for reference.
+        </p>
+
+        <div class="confirm-actions">
+            <button class="btn cancel" onclick="closeUnblockConfirmModal()">
+                Cancel
+            </button>
+
+            <button class="btn success" onclick="confirmUnblockUser()">
+                <i class="bi bi-unlock"></i> Confirm Unblock
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Unblock Confirmation Script -->
+<script>
+    function openUnblockConfirmModal(){
+        document.getElementById("unblockConfirmModal").style.display="flex";
+    }
+
+    function closeUnblockConfirmModal(){
+        document.getElementById("unblockConfirmModal").style.display="none";
+    }
+
+    function confirmUnblockUser(){
+        document.getElementById("unblockUserId").submit();
+    }
+</script>
+
+</body>
+</html>

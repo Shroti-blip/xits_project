@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Reported Posts - HON</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --theme-orange: #F73B20;
+            --theme-orange-light: #ff5238;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #fafafa;
+            min-height: 100vh;
+        }
+
+        .bg-gradient {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+            background: #fafafa;
+        }
+
+        .gradient-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.08;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .orb-1 {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, #F73B20, transparent);
+            top: -10%;
+            right: -10%;
+            animation-duration: 25s;
+        }
+
+        .orb-2 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, #ff5238, transparent);
+            bottom: -15%;
+            left: -10%;
+            animation-duration: 20s;
+            animation-delay: 2s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-30px, 30px) scale(0.9); }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1.25rem;
+        }
+
+        /* Header */
+        .inbox-header {
+            background: linear-gradient(135deg, var(--theme-orange) 0%, var(--theme-orange-light) 100%);
+            padding: 1.25rem 1.5rem;
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 20px rgba(247, 59, 32, 0.25);
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.95);
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .back-btn:hover {
+            background: white;
+            transform: scale(1.08);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .back-btn i {
+            font-size: 1.25rem;
+            color: var(--theme-orange);
+        }
+
+        .inbox-title {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .inbox-title i {
+            font-size: 1.75rem;
+        }
+
+        .pending-badge {
+            background: white;
+            color: var(--theme-orange);
+            padding: 0.625rem 1.25rem;
+            border-radius: 1.5rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .pending-badge span {
+            font-size: 1.125rem;
+            font-weight: 700;
+        }
+
+        /* Filters */
+        .filters {
+            background: white;
+            padding: 1.25rem;
+            border-radius: 1rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border: 1px solid #f0f0f0;
+        }
+
+        .filter-btn {
+            padding: 0.625rem 1.25rem;
+            border: 2px solid #e5e7eb;
+            background: white;
+            border-radius: 1.5rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            font-size: 0.875rem;
+            color: #4a5568;
+        }
+
+        .filter-btn:hover {
+            border-color: var(--theme-orange);
+            color: var(--theme-orange);
+            background: #fff5f5;
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(135deg, var(--theme-orange), var(--theme-orange-light));
+            color: white;
+            border-color: var(--theme-orange);
+        }
+
+        /* Report Cards */
+        .reports-grid {
+            display: grid;
+            gap: 1.25rem;
+        }
+
+        .report-card {
+            background: white;
+            border-radius: 1rem;
+            overflow: hidden;
+            border: 1px solid #f0f0f0;
+            transition: all 0.3s;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .report-card:hover {
+            box-shadow: 0 8px 25px rgba(247, 59, 32, 0.15);
+            transform: translateY(-3px);
+        }
+
+        .report-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 2px solid #f8f9fa;
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .report-info {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .report-date {
+            color: #6b7280;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .report-reason {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.625rem;
+        }
+
+        .reason-badge {
+            background: #fff5f5;
+            color: var(--theme-orange);
+            padding: 0.375rem 0.75rem;
+            border-radius: 1.25rem;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            border: 1px solid #ffe5e5;
+        }
+
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 1.25rem;
+            font-weight: 700;
+            font-size: 0.8125rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .status-rejected {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .status-warned {
+            background: #ffe5d9;
+            color: #d63384;
+            border: 1px solid #ffd4c4;
+        }
+
+        .status-post_deleted {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .report-body {
+            display: flex;
+            padding: 1.5rem;
+            gap: 1.25rem;
+        }
+
+        .post-image-container {
+            flex-shrink: 0;
+        }
+
+        .image-label {
+            color: #6b7280;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .post-image-wrapper {
+            width: 180px;
+            height: 180px;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            border: 2px solid #f0f0f0;
+            background: #f9f9f9;
+        }
+
+        .post-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .post-details {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .offender-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .offender-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--theme-orange), var(--theme-orange-light));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 0.875rem;
+            flex-shrink: 0;
+        }
+
+        .offender-name {
+            font-weight: 600;
+            color: #1a1a1a;
+            font-size: 0.9375rem;
+        }
+
+        .post-caption {
+            color: #4a5568;
+            line-height: 1.6;
+            margin-bottom: 0.75rem;
+            font-size: 0.9375rem;
+        }
+
+        .post-meta {
+            display: flex;
+            gap: 1rem;
+            color: #6b7280;
+            font-size: 0.875rem;
+            flex-wrap: wrap;
+        }
+
+        .post-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+
+        .post-meta i {
+            color: var(--theme-orange);
+        }
+
+        .empty-state {
+            background: white;
+            padding: 4rem 2rem;
+            border-radius: 1rem;
+            text-align: center;
+            border: 1px solid #f0f0f0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            color: #d1d5db;
+            margin-bottom: 1.25rem;
+        }
+
+        .empty-state h3 {
+            color: #1a1a1a;
+            margin-bottom: 0.625rem;
+            font-size: 1.25rem;
+        }
+
+        .empty-state p {
+            color: #6b7280;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .inbox-header {
+                padding: 1rem;
+                flex-wrap: wrap;
+            }
+
+            .inbox-title {
+                font-size: 1.25rem;
+            }
+
+            .inbox-title i {
+                font-size: 1.5rem;
+            }
+
+            .pending-badge {
+                width: 100%;
+                text-align: center;
+            }
+
+            .filters {
+                padding: 1rem;
+                gap: 0.5rem;
+            }
+
+            .filter-btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.8125rem;
+            }
+
+            .report-header {
+                padding: 1rem;
+                flex-direction: column;
+            }
+
+            .report-body {
+                flex-direction: column;
+                padding: 1rem;
+                gap: 1rem;
+            }
+
+            .post-image-wrapper {
+                width: 100%;
+                height: 240px;
+            }
+
+            .post-details {
+                width: 100%;
+            }
+
+            .post-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .empty-state {
+                padding: 3rem 1.5rem;
+            }
+
+            .empty-state i {
+                font-size: 3rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .inbox-header {
+                padding: 0.875rem;
+            }
+
+            .back-btn {
+                width: 38px;
+                height: 38px;
+            }
+
+            .back-btn i {
+                font-size: 1.125rem;
+            }
+
+            .inbox-title {
+                font-size: 1.125rem;
+            }
+
+            .report-header {
+                padding: 0.875rem;
+            }
+
+            .report-body {
+                padding: 0.875rem;
+            }
+
+            .offender-avatar {
+                width: 36px;
+                height: 36px;
+                font-size: 0.8125rem;
+            }
+
+            .post-caption {
+                font-size: 0.875rem;
+            }
+
+            .status-badge {
+                font-size: 0.75rem;
+                padding: 0.375rem 0.75rem;
+            }
+        }
+
+        /* Animation for cards appearing */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .report-card {
+            animation: fadeInUp 0.5s ease forwards;
+        }
+
+        .report-card:nth-child(1) { animation-delay: 0.1s; }
+        .report-card:nth-child(2) { animation-delay: 0.2s; }
+        .report-card:nth-child(3) { animation-delay: 0.3s; }
+        .report-card:nth-child(4) { animation-delay: 0.4s; }
+        .report-card:nth-child(5) { animation-delay: 0.5s; }
+    </style>
+</head>
+<body>
+<div class="bg-gradient">
+    <div class="gradient-orb orb-1"></div>
+    <div class="gradient-orb orb-2"></div>
+</div>
+
+<div class="container">
+    <!-- Header -->
+    <div class="inbox-header">
+        <button class="back-btn" onclick="window.history.back()">
+            <i class="bi bi-arrow-left"></i>
+        </button>
+        <h1 class="inbox-title">
+            <i class="bi bi-flag-fill"></i>
+            <span>My Reported Posts</span>
+        </h1>
+        <div class="pending-badge" th:if="${pendingCount > 0}">
+            <span th:text="${pendingCount}">1</span> Pending
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters">
+        <button class="filter-btn active" data-filter="all">
+            All Reports
+        </button>
+        <button class="filter-btn" data-filter="PENDING">
+            Pending
+        </button>
+        <button class="filter-btn" data-filter="REJECTED">
+            Rejected
+        </button>
+        <button class="filter-btn" data-filter="WARNED">
+            Warned
+        </button>
+        <button class="filter-btn" data-filter="POST_DELETED">
+            Post Deleted
+        </button>
+    </div>
+
+    <!-- Reports Grid -->
+    <div class="reports-grid">
+        <!-- Single Report Card with Thymeleaf -->
+        <div class="report-card" th:each="report : ${reports}" th:data-status="${report.status}">
+            <div class="report-header">
+                <div class="report-info">
+                    <div class="report-date">
+                        <i class="bi bi-calendar3"></i>
+                        Reported on <span th:text="${#temporals.format(report.timestamp, 'MMM dd, yyyy')}">Dec 20, 2024</span>
+                    </div>
+                    <div class="report-reason">
+                        <i class="bi bi-exclamation-circle"></i>
+                        <span class="reason-badge" th:text="${report.reason}">Inappropriate Content</span>
+                    </div>
+                </div>
+                <div class="status-badge"
+                     th:classappend="${'status-' + #strings.toLowerCase(#strings.replace(report.status, '_', '-'))}"
+                     th:text="${report.status}">
+                    PENDING
+                </div>
+            </div>
+
+            <div class="report-body">
+                <!-- Post Image -->
+                <div class="post-image-container">
+          <span class="image-label" th:if="${report.postreport.photo != null}">
+            Reported Image
+          </span>
+                    <span class="image-label" th:unless="${report.postreport.photo != null}">
+            No Image Available
+          </span>
+
+                    <div class="post-image-wrapper">
+                        <img th:if="${report.postreport.photo != null}"
+                             th:src="@{'/post/image/' + ${report.postreport.postId}}"
+                             alt="Reported Post Image"
+                             class="post-image" />
+                        <img th:unless="${report.postreport.photo != null}"
+                             src="https://via.placeholder.com/180x180/f0f0f0/999999?text=No+Image"
+                             alt="No image"
+                             class="post-image" />
+                    </div>
+                </div>
+
+                <div class="post-details">
+                    <div class="offender-info">
+                        <div class="offender-avatar"
+                             th:text="${#strings.substring(report.offender.username, 0, 2).toUpperCase()}">
+                            JD
+                        </div>
+                        <div>
+                            <div class="offender-name">
+                                @<span th:text="${report.offender.username}">john_doe</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="post-caption" th:text="${report.postreport.caption}">
+                        Amazing sunset at the beach! #nature #photography
+                    </div>
+
+                    <div class="post-meta">
+            <span th:if="${report.postreport.hashtag != null}">
+              <i class="bi bi-hash"></i>
+              <span th:text="${report.postreport.hashtag}">#nature</span>
+            </span>
+                        <span>
+              <i class="bi bi-clock"></i>
+              <span th:text="${#temporals.format(report.postreport.dateTime, 'MMM dd, yyyy')}">Dec 19, 2024</span>
+            </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state" th:if="${#lists.isEmpty(reports)}">
+            <i class="bi bi-inbox"></i>
+            <h3>No reports found</h3>
+            <p>You haven't reported any posts yet.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Filter functionality
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            const filter = btn.dataset.filter;
+            const cards = document.querySelectorAll('.report-card');
+            const emptyState = document.querySelector('.empty-state');
+            let visibleCount = 0;
+
+            cards.forEach(card => {
+                if (filter === 'all' || card.dataset.status === filter) {
+                    card.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            // Show empty state if no cards visible
+            if (emptyState) {
+                if (visibleCount === 0 && filter !== 'all') {
+                    emptyState.style.display = 'block';
+                    emptyState.querySelector('p').textContent = `No ${filter.toLowerCase()} reports found.`;
+                } else if (cards.length === 0) {
+                    emptyState.style.display = 'block';
+                } else {
+                    emptyState.style.display = 'none';
+                }
+            }
+        });
+    });
+</script>
+</body>
+</html>
+
+
+
+
+
+
+<!--<!DOCTYPE html>-->
+<!--<html lang="en" xmlns:th="http://www.thymeleaf.org">-->
+<!--<head>-->
+<!--  <meta charset="UTF-8">-->
+<!--  <meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+<!--  <title>My Reported Posts</title>-->
+<!--  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">-->
+<!--  <style>-->
+<!--    * {-->
+<!--        margin: 0;-->
+<!--        padding: 0;-->
+<!--        box-sizing: border-box;-->
+<!--    }-->
+
+<!--    :root {-->
+<!--        &#45;&#45;theme-orange: #F73B20;-->
+<!--    }-->
+
+<!--    body {-->
+<!--        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;-->
+<!--        background: white;-->
+<!--        min-height: 100vh;-->
+<!--    }-->
+
+<!--    .container {-->
+<!--        max-width: 1200px;-->
+<!--        margin: 0 auto;-->
+<!--        padding: 20px;-->
+<!--    }-->
+
+<!--    /* Header */-->
+<!--    .inbox-header {-->
+<!--        background: var(&#45;&#45;theme-orange);-->
+<!--        padding: 20px;-->
+<!--        border-radius: 15px;-->
+<!--        display: flex;-->
+<!--        align-items: center;-->
+<!--        gap: 15px;-->
+<!--        margin-bottom: 25px;-->
+<!--        box-shadow: 0 4px 6px rgba(247, 59, 32, 0.2);-->
+<!--    }-->
+
+<!--    .back-btn {-->
+<!--        background: rgba(255, 255, 255, 0.2);-->
+<!--        border: none;-->
+<!--        width: 45px;-->
+<!--        height: 45px;-->
+<!--        border-radius: 12px;-->
+<!--        display: flex;-->
+<!--        align-items: center;-->
+<!--        justify-content: center;-->
+<!--        cursor: pointer;-->
+<!--        transition: all 0.3s;-->
+<!--        color: white;-->
+<!--    }-->
+
+<!--    .back-btn:hover {-->
+<!--        background: rgba(255, 255, 255, 0.3);-->
+<!--        transform: translateX(-3px);-->
+<!--    }-->
+
+<!--    .back-btn i {-->
+<!--        font-size: 20px;-->
+<!--    }-->
+
+<!--    .inbox-title {-->
+<!--        flex: 1;-->
+<!--        display: flex;-->
+<!--        align-items: center;-->
+<!--        gap: 12px;-->
+<!--        font-size: 24px;-->
+<!--        font-weight: 700;-->
+<!--        color: white;-->
+<!--    }-->
+
+<!--    .inbox-title i {-->
+<!--        font-size: 28px;-->
+<!--    }-->
+
+<!--    .pending-badge {-->
+<!--        background: white;-->
+<!--        color: var(&#45;&#45;theme-orange);-->
+<!--        padding: 10px 20px;-->
+<!--        border-radius: 25px;-->
+<!--        font-weight: 600;-->
+<!--        font-size: 14px;-->
+<!--    }-->
+
+<!--    .pending-badge span {-->
+<!--        font-size: 18px;-->
+<!--        font-weight: 700;-->
+<!--    }-->
+
+<!--    /* Filters */-->
+<!--    .filters {-->
+<!--        background: #f8f9fa;-->
+<!--        padding: 20px;-->
+<!--        border-radius: 15px;-->
+<!--        margin-bottom: 25px;-->
+<!--        display: flex;-->
+<!--        gap: 15px;-->
+<!--        flex-wrap: wrap;-->
+<!--        border: 1px solid #e9ecef;-->
+<!--    }-->
+
+<!--    .filter-btn {-->
+<!--        padding: 10px 20px;-->
+<!--        border: 2px solid #e2e8f0;-->
+<!--        background: white;-->
+<!--        border-radius: 25px;-->
+<!--        cursor: pointer;-->
+<!--        font-weight: 600;-->
+<!--        transition: all 0.3s;-->
+<!--        font-size: 14px;-->
+<!--        color: #495057;-->
+<!--    }-->
+
+<!--    .filter-btn:hover {-->
+<!--        border-color: var(&#45;&#45;theme-orange);-->
+<!--        color: var(&#45;&#45;theme-orange);-->
+<!--    }-->
+
+<!--    .filter-btn.active {-->
+<!--        background: var(&#45;&#45;theme-orange);-->
+<!--        color: white;-->
+<!--        border-color: var(&#45;&#45;theme-orange);-->
+<!--    }-->
+
+<!--    /* Report Cards */-->
+<!--    .reports-grid {-->
+<!--        display: grid;-->
+<!--        gap: 20px;-->
+<!--    }-->
+
+<!--    .report-card {-->
+<!--        background: white;-->
+<!--        border-radius: 15px;-->
+<!--        overflow: hidden;-->
+<!--        border: 1px solid #e9ecef;-->
+<!--        transition: all 0.3s;-->
+<!--    }-->
+
+<!--    .report-card:hover {-->
+<!--        box-shadow: 0 8px 20px rgba(247, 59, 32, 0.15);-->
+<!--        transform: translateY(-2px);-->
+<!--    }-->
+
+<!--    .report-header {-->
+<!--        padding: 20px;-->
+<!--        border-bottom: 2px solid #f8f9fa;-->
+<!--        display: flex;-->
+<!--        justify-content: space-between;-->
+<!--        align-items: start;-->
+<!--    }-->
+
+<!--    .report-info {-->
+<!--        flex: 1;-->
+<!--    }-->
+
+<!--    .report-date {-->
+<!--        color: #6c757d;-->
+<!--        font-size: 14px;-->
+<!--        margin-bottom: 8px;-->
+<!--    }-->
+
+<!--    .report-reason {-->
+<!--        display: flex;-->
+<!--        align-items: center;-->
+<!--        gap: 8px;-->
+<!--        margin-top: 10px;-->
+<!--    }-->
+
+<!--    .reason-badge {-->
+<!--        background: #fff5f5;-->
+<!--        color: var(&#45;&#45;theme-orange);-->
+<!--        padding: 6px 12px;-->
+<!--        border-radius: 20px;-->
+<!--        font-size: 13px;-->
+<!--        font-weight: 600;-->
+<!--        border: 1px solid #ffe5e5;-->
+<!--    }-->
+
+<!--    .status-badge {-->
+<!--        padding: 8px 16px;-->
+<!--        border-radius: 20px;-->
+<!--        font-weight: 700;-->
+<!--        font-size: 13px;-->
+<!--        text-transform: uppercase;-->
+<!--        letter-spacing: 0.5px;-->
+<!--    }-->
+
+<!--    .status-pending {-->
+<!--        background: #fff3cd;-->
+<!--        color: #856404;-->
+<!--        border: 1px solid #ffeaa7;-->
+<!--    }-->
+
+<!--    .status-rejected {-->
+<!--        background: #d1ecf1;-->
+<!--        color: #0c5460;-->
+<!--        border: 1px solid #bee5eb;-->
+<!--    }-->
+
+<!--    .status-warned {-->
+<!--        background: #ffe5d9;-->
+<!--        color: #d63384;-->
+<!--        border: 1px solid #ffd4c4;-->
+<!--    }-->
+
+<!--    .status-post_deleted {-->
+<!--        background: #f8d7da;-->
+<!--        color: #721c24;-->
+<!--        border: 1px solid #f5c6cb;-->
+<!--    }-->
+
+<!--    .report-body {-->
+<!--        display: flex;-->
+<!--        padding: 20px;-->
+<!--        gap: 20px;-->
+<!--    }-->
+
+<!--    .post-image {-->
+<!--        width: 150px;-->
+<!--        height: 150px;-->
+<!--        border-radius: 12px;-->
+<!--        object-fit: cover;-->
+<!--        flex-shrink: 0;-->
+<!--        border: 2px solid #f8f9fa;-->
+<!--    }-->
+
+<!--    .post-details {-->
+<!--        flex: 1;-->
+<!--    }-->
+
+<!--    .offender-info {-->
+<!--        display: flex;-->
+<!--        align-items: center;-->
+<!--        gap: 12px;-->
+<!--        margin-bottom: 15px;-->
+<!--    }-->
+
+<!--    .offender-avatar {-->
+<!--        width: 40px;-->
+<!--        height: 40px;-->
+<!--        border-radius: 50%;-->
+<!--        background: var(&#45;&#45;theme-orange);-->
+<!--        display: flex;-->
+<!--        align-items: center;-->
+<!--        justify-content: center;-->
+<!--        color: white;-->
+<!--        font-weight: 700;-->
+<!--    }-->
+
+<!--    .offender-name {-->
+<!--        font-weight: 600;-->
+<!--        color: #212529;-->
+<!--    }-->
+
+<!--    .post-caption {-->
+<!--        color: #495057;-->
+<!--        line-height: 1.6;-->
+<!--        margin-bottom: 12px;-->
+<!--    }-->
+
+<!--    .post-meta {-->
+<!--        display: flex;-->
+<!--        gap: 15px;-->
+<!--        color: #6c757d;-->
+<!--        font-size: 14px;-->
+<!--    }-->
+
+<!--    .post-meta i {-->
+<!--        color: var(&#45;&#45;theme-orange);-->
+<!--    }-->
+
+<!--    .report-comment {-->
+<!--        background: #f8f9fa;-->
+<!--        padding: 15px;-->
+<!--        border-radius: 10px;-->
+<!--        margin-top: 15px;-->
+<!--        border: 1px solid #e9ecef;-->
+<!--    }-->
+
+<!--    .comment-label {-->
+<!--        font-weight: 600;-->
+<!--        color: #212529;-->
+<!--        margin-bottom: 8px;-->
+<!--        font-size: 14px;-->
+<!--    }-->
+
+<!--    .comment-text {-->
+<!--        color: #495057;-->
+<!--        line-height: 1.5;-->
+<!--        font-size: 14px;-->
+<!--    }-->
+
+<!--    .admin-response {-->
+<!--        background: #d4edda;-->
+<!--        border-left: 4px solid #28a745;-->
+<!--        padding: 15px;-->
+<!--        margin: 20px;-->
+<!--        border-radius: 8px;-->
+<!--    }-->
+
+<!--    .admin-response-header {-->
+<!--        display: flex;-->
+<!--        justify-content: space-between;-->
+<!--        align-items: center;-->
+<!--        margin-bottom: 10px;-->
+<!--    }-->
+
+<!--    .admin-label {-->
+<!--        font-weight: 700;-->
+<!--        color: #155724;-->
+<!--        display: flex;-->
+<!--        align-items: center;-->
+<!--        gap: 8px;-->
+<!--    }-->
+
+<!--    .handled-date {-->
+<!--        color: #155724;-->
+<!--        font-size: 13px;-->
+<!--    }-->
+
+<!--    .empty-state {-->
+<!--        background: #f8f9fa;-->
+<!--        padding: 60px 20px;-->
+<!--        border-radius: 15px;-->
+<!--        text-align: center;-->
+<!--        border: 1px solid #e9ecef;-->
+<!--    }-->
+
+<!--    .empty-state i {-->
+<!--        font-size: 64px;-->
+<!--        color: #dee2e6;-->
+<!--        margin-bottom: 20px;-->
+<!--    }-->
+
+<!--    .empty-state h3 {-->
+<!--        color: #212529;-->
+<!--        margin-bottom: 10px;-->
+<!--    }-->
+
+<!--    .empty-state p {-->
+<!--        color: #6c757d;-->
+<!--    }-->
+
+<!--    @media (max-width: 768px) {-->
+<!--        .inbox-header {-->
+<!--            flex-wrap: wrap;-->
+<!--        }-->
+
+<!--        .report-body {-->
+<!--            flex-direction: column;-->
+<!--        }-->
+
+<!--        .post-image {-->
+<!--            width: 100%;-->
+<!--            height: 200px;-->
+<!--        }-->
+<!--    }-->
+<!--  </style>-->
+<!--</head>-->
+<!--<body>-->
+<!--<div class="container">-->
+<!--  &lt;!&ndash; Header &ndash;&gt;-->
+<!--  <div class="inbox-header">-->
+<!--    <button class="back-btn" onclick="window.history.back()">-->
+<!--      <i class="bi bi-arrow-left"></i>-->
+<!--    </button>-->
+<!--    <h1 class="inbox-title">-->
+<!--      <i class="bi bi-flag-fill"></i>-->
+<!--      <span>My Reported Posts</span>-->
+<!--    </h1>-->
+<!--&lt;!&ndash;    <div class="pending-badge">&ndash;&gt;-->
+<!--&lt;!&ndash;      <span th:text="${pendingCount}">1</span> Pending&ndash;&gt;-->
+<!--&lt;!&ndash;    </div>&ndash;&gt;-->
+<!--  </div>-->
+
+<!--&lt;!&ndash;  &lt;!&ndash; Filters &ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;  <div class="filters">&ndash;&gt;-->
+<!--&lt;!&ndash;    <button class="filter-btn active" data-filter="all">All Reports</button>&ndash;&gt;-->
+<!--&lt;!&ndash;    <button class="filter-btn" data-filter="PENDING">Pending</button>&ndash;&gt;-->
+<!--&lt;!&ndash;    <button class="filter-btn" data-filter="REJECTED">Rejected</button>&ndash;&gt;-->
+<!--&lt;!&ndash;    <button class="filter-btn" data-filter="WARNED">Warned</button>&ndash;&gt;-->
+<!--&lt;!&ndash;    <button class="filter-btn" data-filter="POST_DELETED">Post Deleted</button>&ndash;&gt;-->
+<!--&lt;!&ndash;  </div>&ndash;&gt;-->
+
+<!--  &lt;!&ndash; Reports Grid &ndash;&gt;-->
+<!--  <div class="reports-grid">-->
+<!--    &lt;!&ndash; Single Report Card with Thymeleaf &ndash;&gt;-->
+<!--    <div class="report-card" th:each="report : ${reports}" th:data-status="${report.status}">-->
+<!--      <div class="report-header">-->
+<!--        <div class="report-info">-->
+<!--          <div class="report-date">-->
+<!--            <i class="bi bi-calendar3"></i>-->
+<!--            Reported on <span th:text="${#temporals.format(report.timestamp, 'MMM dd, yyyy')}">Dec 20, 2024</span>-->
+<!--          </div>-->
+<!--          <div class="report-reason">-->
+<!--            <i class="bi bi-exclamation-circle"></i>-->
+<!--            <span class="reason-badge" th:text="${report.reason}">Inappropriate Content</span>-->
+<!--          </div>-->
+<!--        </div>-->
+<!--        <div class="status-badge"-->
+<!--             th:classappend="${'status-' + #strings.toLowerCase(report.status)}"-->
+<!--             th:text="${report.status}">-->
+<!--          PENDING-->
+<!--        </div>-->
+<!--      </div>-->
+
+<!--      <div class="report-body">-->
+<!--        &lt;!&ndash; Post Image &ndash;&gt;-->
+<!--        <div th:if="${report.postreport.photo != null}">-->
+<!--    <span style="color: var(&#45;&#45;muted); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; display: block; margin-top: 20px;">-->
+<!--        Reported Image-->
+<!--    </span>-->
+<!--          <div class="post-image-wrapper">-->
+<!--            <img th:src="@{'/post/image/' + ${report.postreport.postId}}"-->
+<!--                 alt="Reported Post Image"-->
+<!--                 class="post-image" />-->
+<!--          </div>-->
+<!--        </div>-->
+
+<!--        &lt;!&ndash; Placeholder if no image &ndash;&gt;-->
+<!--        <div th:unless="${report.postreport.photo != null}">-->
+<!--    <span style="color: var(&#45;&#45;muted); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; display: block; margin-top: 20px;">-->
+<!--        No Image Available-->
+<!--    </span>-->
+<!--          <div class="post-image-wrapper">-->
+<!--            <img src="https://via.placeholder.com/150"-->
+<!--                 alt="No image"-->
+<!--                 class="post-image" />-->
+<!--          </div>-->
+<!--        </div>-->
+
+<!--        <div class="post-details">-->
+<!--          <div class="offender-info">-->
+<!--            <div class="offender-avatar"-->
+<!--                 th:text="${#strings.substring(report.offender.username, 0, 2).toUpperCase()}">-->
+<!--              JD-->
+<!--            </div>-->
+<!--            <div>-->
+<!--              <div class="offender-name">-->
+<!--                @<span th:text="${report.offender.username}">john_doe</span>-->
+<!--              </div>-->
+<!--            </div>-->
+<!--          </div>-->
+<!--          <div class="post-caption" th:text="${report.postreport.caption}">-->
+<!--            Amazing sunset at the beach! #nature #photography-->
+<!--          </div>-->
+<!--          <div class="post-meta">-->
+<!--                            <span>-->
+<!--                                <i class="bi bi-hash"></i>-->
+<!--                                <span th:text="${report.postreport.hashtag}">#nature</span>-->
+<!--                            </span>-->
+<!--            <span>-->
+<!--                                <i class="bi bi-clock"></i>-->
+<!--                                <span th:text="${#temporals.format(report.postreport.dateTime, 'MMM dd, yyyy')}">Dec 19, 2024</span>-->
+<!--                            </span>-->
+<!--          </div>-->
+<!--&lt;!&ndash;          <div class="report-comment">&ndash;&gt;-->
+<!--&lt;!&ndash;            <div class="comment-label">Your Report:</div>&ndash;&gt;-->
+<!--&lt;!&ndash;            <div class="comment-text" th:text="${report.comment}">&ndash;&gt;-->
+<!--&lt;!&ndash;              This post contains offensive language and inappropriate imagery.&ndash;&gt;-->
+<!--&lt;!&ndash;            </div>&ndash;&gt;-->
+<!--&lt;!&ndash;          </div>&ndash;&gt;-->
+<!--        </div>-->
+<!--      </div>-->
+
+
+
+<!--      &lt;!&ndash; Admin Response (only if handled) &ndash;&gt;-->
+<!--&lt;!&ndash;      <div class="admin-response" th:if="${report.status != T(com.example.ProjectHON.Post_Report.PostReport.ReportStatus)&ndash;&gt;-->
+<!--&lt;!&ndash;}">&ndash;&gt;-->
+<!--&lt;!&ndash;        <div class="admin-response-header">&ndash;&gt;-->
+<!--&lt;!&ndash;          <div class="admin-label">&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;            <i class="bi"&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;               th:classappend="${report.status == T(com.yourpackage.model.PostReport.ReportStatus).REJECTED ? 'bi-x-circle' :&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;                                               report.status == T(com.yourpackage.model.PostReport.ReportStatus).WARNED ? 'bi-exclamation-triangle' :&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;                                               'bi-trash'}"></i>&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;            Admin Decision: <span th:text="${report.status}">WARNED</span>&ndash;&gt;-->
+<!--&lt;!&ndash;          </div>&ndash;&gt;-->
+<!--&lt;!&ndash;        </div>&ndash;&gt;-->
+<!--&lt;!&ndash;        <div class="handled-date">&ndash;&gt;-->
+<!--&lt;!&ndash;          <i class="bi bi-calendar-check"></i>&ndash;&gt;-->
+<!--&lt;!&ndash;          Handled on <span th:text="${#temporals.format(report.handledAt, 'MMM dd, yyyy hh:mm a')}">Dec 19, 2024 10:15 AM</span>&ndash;&gt;-->
+<!--&lt;!&ndash;        </div>&ndash;&gt;-->
+<!--&lt;!&ndash;      </div>&ndash;&gt;-->
+<!--&lt;!&ndash;      &ndash;&gt;-->
+
+<!--    </div>-->
+
+<!--    &lt;!&ndash; Empty State &ndash;&gt;-->
+<!--    <div class="empty-state" th:if="${#lists.isEmpty(reports)}">-->
+<!--      <i class="bi bi-inbox"></i>-->
+<!--      <h3>No reports found</h3>-->
+<!--      <p>You haven't reported any posts yet.</p>-->
+<!--    </div>-->
+<!--  </div>-->
+<!--</div>-->
+
+<!--<script th:inline="javascript">-->
+<!--  /*<![CDATA[*/-->
+<!--  // Get reports data from Thymeleaf-->
+<!--  const reportsData = /*[[${reports}]]*/ [];-->
+
+<!--  // Filter functionality-->
+<!--  document.querySelectorAll('.filter-btn').forEach(btn => {-->
+<!--      btn.addEventListener('click', () => {-->
+<!--          document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));-->
+<!--          btn.classList.add('active');-->
+
+<!--          const filter = btn.dataset.filter;-->
+<!--          const cards = document.querySelectorAll('.report-card');-->
+
+<!--          cards.forEach(card => {-->
+<!--              if (filter === 'all' || card.dataset.status === filter) {-->
+<!--                  card.style.display = 'block';-->
+<!--              } else {-->
+<!--                  card.style.display = 'none';-->
+<!--              }-->
+<!--          });-->
+<!--      });-->
+<!--  });-->
+<!--  /*]]>*/-->
+<!--</script>-->
+<!--</body>-->
+<!--</html>-->

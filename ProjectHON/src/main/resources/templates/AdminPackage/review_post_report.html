@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Report Details - HON</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    :root {
+        --theme-orange: #F73B20;
+        --theme-orange-light: #ff5238;
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: #fafafa;
+        overflow-x: hidden;
+    }
+
+    .bg-gradient {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        overflow: hidden;
+        background: #fafafa;
+    }
+
+    .gradient-orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(100px);
+        opacity: 0.1;
+        animation: float 20s ease-in-out infinite;
+    }
+
+    .orb-1 {
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, #F73B20, transparent);
+        top: -10%;
+        right: -10%;
+        animation-duration: 25s;
+    }
+
+    .orb-2 {
+        width: 500px;
+        height: 500px;
+        background: radial-gradient(circle, #ff5238, transparent);
+        bottom: -15%;
+        left: -10%;
+        animation-duration: 20s;
+        animation-delay: 2s;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translate(0, 0) scale(1); }
+        33% { transform: translate(50px, -80px) scale(1.1); }
+        66% { transform: translate(-50px, 50px) scale(0.9); }
+    }
+
+    .header {
+        background: linear-gradient(135deg, #F73B20 0%, #ff5238 100%);
+        padding: 1.25rem 2rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        box-shadow: 0 4px 20px rgba(247, 59, 32, 0.25);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+    }
+
+    .back-btn {
+        background: rgba(255, 255, 255, 0.95);
+        border: none;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .back-btn:hover {
+        transform: scale(1.08);
+        background: white;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    .back-btn i {
+        font-size: 20px;
+        color: var(--theme-orange);
+    }
+
+    .header-title {
+        color: white;
+        font-size: 1.625rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .main-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .alert-box {
+        background: #fff3cd;
+        border-left: 4px solid #ffc107;
+        border-radius: 1rem;
+        padding: 1rem 1.25rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .alert-box i {
+        font-size: 1.3rem;
+        color: #ffc107;
+    }
+
+    .alert-box p {
+        margin: 0;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        color: #856404;
+    }
+
+    /* Post Image Section - TOP */
+    .post-image-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        border: 1px solid #f0f0f0;
+        margin-bottom: 1.5rem;
+    }
+
+    .post-image-card h2 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--theme-orange);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid rgba(247, 59, 32, 0.1);
+    }
+
+    .post-image-wrapper {
+        display: flex;
+        justify-content: center;
+        background: #f9f9f9;
+        padding: 1.5rem;
+        border-radius: 0.75rem;
+        border: 2px solid #f0f0f0;
+    }
+
+    .post-image {
+        max-width: 100%;
+        max-height: 500px;
+        border-radius: 0.75rem;
+        border: 1px solid #e6e8f0;
+        object-fit: contain;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .no-image {
+        text-align: center;
+        padding: 3rem;
+        color: #9ca3af;
+    }
+
+    .no-image i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .panel {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.75rem;
+        border: 1px solid #f0f0f0;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        transition: all 0.3s ease;
+    }
+
+    .panel:hover {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    .panel h2 {
+        font-size: 1.15rem;
+        margin-bottom: 1.25rem;
+        color: var(--theme-orange);
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid rgba(247, 59, 32, 0.1);
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+        margin-bottom: 0.875rem;
+        font-size: 0.875rem;
+        padding: 0.75rem;
+        border-radius: 0.625rem;
+        transition: background 0.2s ease;
+    }
+
+    .info-row:hover {
+        background: #f9f9f9;
+    }
+
+    .info-row span {
+        color: #6b7280;
+        white-space: nowrap;
+        font-weight: 500;
+    }
+
+    .info-row strong {
+        color: #1a1a1a;
+        font-weight: 600;
+        text-align: right;
+    }
+
+    .info-row.highlight strong {
+        color: var(--theme-orange);
+        font-weight: 700;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 0.375rem 0.875rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .badge-danger {
+        background: rgba(220, 38, 38, 0.1);
+        color: #dc2626;
+        border: 2px solid rgba(220, 38, 38, 0.2);
+    }
+
+    .user-section {
+        margin-bottom: 1.25rem;
+    }
+
+    .user-section:last-child {
+        margin-bottom: 0;
+    }
+
+    .user-label {
+        color: #6b7280;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .panel-full {
+        grid-column: 1 / -1;
+    }
+
+    .post-content {
+        background: #f9f9f9;
+        padding: 1rem;
+        border-radius: 0.625rem;
+        border-left: 4px solid var(--theme-orange);
+        margin-top: 0.75rem;
+        line-height: 1.6;
+        color: #333;
+        font-size: 0.9rem;
+    }
+
+    .section-label {
+        color: #6b7280;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .actions {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        padding: 1.5rem;
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        border: 1px solid #f0f0f0;
+    }
+
+    .btn {
+        padding: 0.875rem 1.5rem;
+        border-radius: 0.75rem;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        flex: 1;
+        justify-content: center;
+        min-width: 150px;
+    }
+
+    .btn i {
+        font-size: 1.1rem;
+    }
+
+    .btn.reject {
+        background: white;
+        color: #555;
+        border: 2px solid #ddd;
+    }
+
+    .btn.reject:hover {
+        background: #f5f5f5;
+        border-color: #999;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn.warn {
+        background: #ffeaa7;
+        color: #d63031;
+        border: 2px solid #ffd97d;
+    }
+
+    .btn.warn:hover {
+        background: #ffd97d;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255, 234, 167, 0.5);
+    }
+
+    .btn.delete {
+        background: var(--theme-orange);
+        color: white;
+        border: 2px solid var(--theme-orange);
+    }
+
+    .btn.delete:hover {
+        background: #e02e15;
+        border-color: #e02e15;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(247, 59, 32, 0.4);
+    }
+
+    .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .btn:disabled:hover {
+        transform: none;
+    }
+
+    .popup-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        display: none;
+        z-index: 1000;
+    }
+
+    .popup-box {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0.9);
+        background: #fff;
+        width: 420px;
+        max-width: 90%;
+        padding: 1.5rem;
+        border-radius: 1rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        display: none;
+        z-index: 1001;
+        transition: 0.2s ease;
+    }
+
+    .popup-box h3 {
+        margin-bottom: 0.75rem;
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        font-size: 1.25rem;
+    }
+
+    .popup-box p {
+        font-size: 0.9rem;
+        color: #444;
+        line-height: 1.5;
+    }
+
+    .popup-box.danger h3 {
+        color: #c00;
+    }
+
+    .popup-actions {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 1.25rem;
+    }
+
+    .popup-actions .btn {
+        flex: 1;
+    }
+
+    .btn.cancel {
+        background: #f3f4f6;
+        color: #4a5568;
+        border: 2px solid #e5e7eb;
+    }
+
+    .btn.cancel:hover {
+        background: #e5e7eb;
+    }
+
+    @media (max-width: 900px) {
+        .grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .main-content {
+            padding: 1.5rem 1rem;
+        }
+
+        .header {
+            padding: 1.125rem 1rem;
+        }
+
+        .header-title {
+            font-size: 1.25rem;
+        }
+
+        .panel {
+            padding: 1.25rem;
+        }
+
+        .actions {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+        }
+    }
+  </style>
+</head>
+<body>
+<div class="bg-gradient">
+  <div class="gradient-orb orb-1"></div>
+  <div class="gradient-orb orb-2"></div>
+</div>
+
+<div class="header">
+  <button class="back-btn" onclick="window.history.back()">
+    <i class="bi bi-arrow-left"></i>
+  </button>
+  <h1 class="header-title">
+    <i class="bi bi-flag-fill"></i>
+    <span>Report Details</span>
+  </h1>
+</div>
+
+<div class="main-content">
+  <div class="alert-box">
+    <i class="bi bi-exclamation-triangle-fill"></i>
+    <p>
+      <strong>Action Required:</strong> This report requires your review. Please examine the details carefully before taking action.
+    </p>
+  </div>
+
+  <!-- POST IMAGE SECTION - TOP -->
+  <div class="post-image-card">
+    <h2><i class="bi bi-image"></i> Reported Post Image</h2>
+    <div th:if="${report.postreport.photo != null}">
+      <div class="post-image-wrapper">
+        <img th:src="@{/post/image/{id}(id=${report.postreport.postId})}"
+             alt="Reported Post Image"
+             class="post-image" />
+      </div>
+    </div>
+    <div th:unless="${report.postreport.photo != null}" class="no-image">
+      <i class="bi bi-image"></i>
+      <p>No image attached to this post</p>
+    </div>
+  </div>
+
+  <div class="grid">
+    <!-- Report Information -->
+    <div class="panel">
+      <h2><i class="bi bi-clipboard-data"></i> Report Information</h2>
+
+      <div class="info-row">
+        <span>Content Type</span>
+        <strong th:text="${report.contentType}">Post</strong>
+      </div>
+      <div class="info-row highlight">
+        <span>Reason</span>
+        <strong>
+          <span class="badge badge-danger" th:text="${report.reason}">Inappropriate Content</span>
+        </strong>
+      </div>
+      <div class="info-row">
+        <span>Date Reported</span>
+        <strong th:text="${#temporals.format(report.timestamp, 'dd MMM yyyy')}">20 Dec 2024</strong>
+      </div>
+      <div class="info-row">
+        <span>Total Warnings</span>
+        <strong th:text="${report.offender.warningCount}">0</strong>
+      </div>
+    </div>
+
+    <!-- Users Involved -->
+    <div class="panel">
+      <h2><i class="bi bi-people"></i> Users Involved</h2>
+
+      <div class="user-section">
+        <div class="user-label">
+          <i class="bi bi-person-badge"></i> Reporter
+        </div>
+        <div class="info-row">
+          <span>Username</span>
+          <strong th:text="${report.reporter.username}">@john_doe</strong>
+        </div>
+        <div class="info-row">
+          <span>Email</span>
+          <strong th:text="${report.reporter.email}">john@example.com</strong>
+        </div>
+      </div>
+
+      <div class="user-section">
+        <div class="user-label">
+          <i class="bi bi-exclamation-circle"></i> Offender
+        </div>
+        <div class="info-row">
+          <span>Username</span>
+          <strong th:text="${report.offender.username}">@bad_actor</strong>
+        </div>
+        <div class="info-row">
+          <span>Email</span>
+          <strong th:text="${report.offender.email}">bad@example.com</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Post Details -->
+    <div class="panel panel-full">
+      <h2><i class="bi bi-file-text"></i> Reported Post Details</h2>
+
+      <div class="info-row">
+        <span>Total Reports</span>
+        <strong th:text="${totalReports}">0</strong>
+      </div>
+
+      <div class="info-row">
+        <span>Reported by</span>
+        <strong th:text="${reportPercentageText + '%'}">0%</strong>
+      </div>
+
+      <div class="info-row">
+        <span>Posted On</span>
+        <strong th:text="${#temporals.format(report.postreport.dateTime, 'dd MMM yyyy • hh:mm a')}">19 Dec 2024 • 03:45 PM</strong>
+      </div>
+
+      <div class="info-row">
+        <span>Hashtags</span>
+        <strong th:text="${report.postreport.hashtag}">-</strong>
+      </div>
+
+      <div style="margin-top: 1.25rem;">
+        <span class="section-label">Caption</span>
+        <div class="post-content" th:text="${report.postreport.caption}">
+          This is the caption of the reported post.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="actions">
+    <form id="rejectForm" method="post"
+          th:action="@{/user/reports/reject/{id}(id=${report.id})}">
+      <button type="button" class="btn reject"
+              onclick="openPopup('rejectPopup')">
+        <i class="bi bi-x-circle"></i> Reject Report
+      </button>
+    </form>
+
+    <form id="warnForm" method="post"
+          th:action="@{/user/reports/warn/{id}(id=${report.id})}">
+      <button type="button" class="btn warn"
+              onclick="openPopup('warnPopup')">
+        <i class="bi bi-exclamation-triangle"></i> Warn User
+      </button>
+    </form>
+
+    <form id="deleteForm" method="post"
+          th:action="@{/admin/reports/delete/{id}(id=${report.id})}">
+      <button type="button"
+              class="btn delete"
+              th:disabled="${!canDeletePost}"
+              th:title="${!canDeletePost} ? 'At least 5% users must report this post' : 'Delete Post'"
+              onclick="if(this.disabled !== true) openPopup('deletePopup')">
+        <i class="bi bi-trash"></i> Delete Post
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- COMMON OVERLAY -->
+<div class="popup-overlay" id="popupOverlay"></div>
+
+<!-- REJECT POPUP -->
+<div class="popup-box" id="rejectPopup">
+  <h3><i class="bi bi-x-circle"></i> Reject Report</h3>
+  <p>This report will be marked as <strong>rejected</strong>. No action will be taken.</p>
+
+  <div class="popup-actions">
+    <button class="btn cancel" onclick="closePopup()">Cancel</button>
+    <button class="btn reject" onclick="submitAction('rejectForm', this)">Confirm</button>
+  </div>
+</div>
+
+<!-- WARN POPUP -->
+<div class="popup-box" id="warnPopup">
+  <h3><i class="bi bi-exclamation-triangle"></i> Warn User</h3>
+  <p>The offender will receive a <strong>warning</strong>. Post will remain visible.</p>
+
+  <div class="popup-actions">
+    <button class="btn cancel" onclick="closePopup()">Cancel</button>
+    <button class="btn warn" onclick="submitAction('warnForm', this)">Send Warning</button>
+  </div>
+</div>
+
+<!-- DELETE POPUP -->
+<div class="popup-box danger" id="deletePopup">
+  <h3><i class="bi bi-trash"></i> Delete Post</h3>
+  <p>
+    This will <strong>permanently delete</strong> the post.
+    <br><strong>This action cannot be undone.</strong>
+  </p>
+
+  <div class="popup-actions">
+    <button class="btn cancel" onclick="closePopup()">Cancel</button>
+    <button class="btn delete" onclick="submitAction('deleteForm', this)">Delete Post</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  function openPopup(id) {
+      document.getElementById("popupOverlay").style.display = "block";
+      const popup = document.getElementById(id);
+      popup.style.display = "block";
+      popup.style.transform = "translate(-50%, -50%) scale(1)";
+  }
+
+  function closePopup() {
+      document.getElementById("popupOverlay").style.display = "none";
+      document.querySelectorAll(".popup-box").forEach(p => {
+          p.style.display = "none";
+      });
+  }
+
+  function submitAction(formId, btn) {
+      btn.disabled = true;
+      btn.innerHTML = "<i class='bi bi-hourglass-split'></i> Submitting...";
+      document.getElementById(formId).submit();
+  }
+
+  document.getElementById("popupOverlay").addEventListener("click", closePopup);
+</script>
+</body>
+</html>
+
+
+<!--<!DOCTYPE html>-->
+<!--<html lang="en" xmlns:th="http://www.thymeleaf.org">-->
+<!--<head>-->
+<!--  <meta charset="UTF-8">-->
+<!--  <meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+<!--  <title>HON • Report Details</title>-->
+<!--  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">-->
+<!--  <style>-->
+<!--    :root {-->
+<!--        &#45;&#45;bg: #f6f7fb;-->
+<!--        &#45;&#45;panel: #ffffff;-->
+<!--        &#45;&#45;panel-2: #f1f2f7;-->
+<!--        &#45;&#45;text: #1c1c24;-->
+<!--        &#45;&#45;muted: #6b6f85;-->
+<!--        &#45;&#45;theme-orange: #F73B20;-->
+<!--        &#45;&#45;theme-orange-10: rgba(247, 59, 32, 0.10);-->
+<!--        &#45;&#45;theme-orange-20: rgba(247, 59, 32, 0.20);-->
+<!--        &#45;&#45;radius: 16px;-->
+<!--    }-->
+
+<!--    * {-->
+<!--        box-sizing: border-box;-->
+<!--        margin: 0;-->
+<!--        padding: 0;-->
+<!--    }-->
+
+<!--    html, body {-->
+<!--        width: 100%;-->
+<!--        overflow-x: hidden;-->
+<!--    }-->
+
+<!--    body {-->
+<!--        background: var(&#45;&#45;bg);-->
+<!--        font-family: Inter, system-ui, sans-serif;-->
+<!--        color: var(&#45;&#45;text);-->
+<!--        padding: 0;-->
+<!--    }-->
+
+<!--    /* ===== HEADER ===== */-->
+<!--    .inbox-header {-->
+<!--        background: linear-gradient(135deg, #F73B20 0%, #ff5238 100%);-->
+<!--        padding: 20px 32px;-->
+<!--        display: flex;-->
+<!--        align-items: center;-->
+<!--        gap: 18px;-->
+<!--        position: sticky;-->
+<!--        top: 0;-->
+<!--        z-index: 100;-->
+<!--        box-shadow: 0 4px 20px rgba(247, 59, 32, 0.25);-->
+<!--    }-->
+
+<!--    .inbox-title {-->
+<!--        font-size: 26px;-->
+<!--        font-weight: 700;-->
+<!--        color: white;-->
+<!--        display: flex;-->
+<!--        align-items: center;-->
+<!--        gap: 12px;-->
+<!--    }-->
+
+<!--    .back-btn {-->
+<!--        background: rgba(255, 255, 255, 0.95);-->
+<!--        border: none;-->
+<!--        width: 44px;-->
+<!--        height: 44px;-->
+<!--        border-radius: 50%;-->
+<!--        display: flex;-->
+<!--        align-items: center;-->
+<!--        justify-content: center;-->
+<!--        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);-->
+<!--        transition: all 0.3s ease;-->
+<!--        cursor: pointer;-->
+<!--    }-->
+
+<!--    .back-btn:hover {-->
+<!--        transform: scale(1.08);-->
+<!--        background: white;-->
+<!--        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);-->
+<!--    }-->
+
+<!--    .back-btn i {-->
+<!--        font-size: 20px;-->
+<!--        color: var(&#45;&#45;theme-orange);-->
+<!--    }-->
+
+<!--    /* ===== CONTAINER ===== */-->
+<!--    .container {-->
+<!--        max-width: 1200px;-->
+<!--        margin: auto;-->
+<!--        padding: 32px 24px;-->
+<!--    }-->
+
+<!--    /* ===== ALERT BOX ===== */-->
+<!--    .alert-box {-->
+<!--        background: #fff3cd;-->
+<!--        border-left: 4px solid #ffc107;-->
+<!--        border-radius: 12px;-->
+<!--        padding: 16px 20px;-->
+<!--        margin-bottom: 24px;-->
+<!--        display: flex;-->
+<!--        align-items: center;-->
+<!--        gap: 12px;-->
+<!--    }-->
+
+<!--    .alert-box i {-->
+<!--        font-size: 1.3rem;-->
+<!--        color: #ffc107;-->
+<!--    }-->
+
+<!--    .alert-box p {-->
+<!--        margin: 0;-->
+<!--        font-size: 0.9rem;-->
+<!--        line-height: 1.5;-->
+<!--        color: #856404;-->
+<!--    }-->
+
+<!--    /* ===== GRID ===== */-->
+<!--    .grid {-->
+<!--        display: grid;-->
+<!--        grid-template-columns: 1fr 1fr;-->
+<!--        gap: 24px;-->
+<!--        margin-bottom: 24px;-->
+<!--    }-->
+
+<!--    /* ===== PANEL ===== */-->
+<!--    .panel {-->
+<!--        background: var(&#45;&#45;panel);-->
+<!--        border-radius: var(&#45;&#45;radius);-->
+<!--        padding: 28px;-->
+<!--        border: 1px solid #e6e8f0;-->
+<!--        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);-->
+<!--        transition: all 0.3s ease;-->
+<!--    }-->
+
+<!--    .panel:hover {-->
+<!--        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);-->
+<!--    }-->
+
+<!--    .panel h2 {-->
+<!--        font-size: 1.15rem;-->
+<!--        margin-bottom: 20px;-->
+<!--        color: var(&#45;&#45;theme-orange);-->
+<!--        font-weight: 700;-->
+<!--        display: flex;-->
+<!--        align-items: center;-->
+<!--        gap: 8px;-->
+<!--        padding-bottom: 16px;-->
+<!--        border-bottom: 2px solid var(&#45;&#45;theme-orange-10);-->
+<!--    }-->
+
+<!--    /* ===== INFO ROW ===== */-->
+<!--    .info-row {-->
+<!--        display: flex;-->
+<!--        justify-content: space-between;-->
+<!--        align-items: flex-start;-->
+<!--        gap: 16px;-->
+<!--        margin-bottom: 14px;-->
+<!--        font-size: .88rem;-->
+<!--        padding: 12px;-->
+<!--        border-radius: 10px;-->
+<!--        transition: background 0.2s ease;-->
+<!--    }-->
+
+<!--    .info-row:hover {-->
+<!--        background: var(&#45;&#45;panel-2);-->
+<!--    }-->
+
+<!--    .info-row span {-->
+<!--        color: var(&#45;&#45;muted);-->
+<!--        white-space: nowrap;-->
+<!--        font-weight: 500;-->
+<!--    }-->
+
+<!--    .info-row strong {-->
+<!--        color: var(&#45;&#45;text);-->
+<!--        font-weight: 600;-->
+<!--        text-align: right;-->
+<!--    }-->
+
+<!--    .info-row.highlight strong {-->
+<!--        color: var(&#45;&#45;theme-orange);-->
+<!--        font-weight: 700;-->
+<!--    }-->
+
+<!--    /* ===== BADGE ===== */-->
+<!--    .badge {-->
+<!--        display: inline-block;-->
+<!--        padding: 6px 14px;-->
+<!--        border-radius: 20px;-->
+<!--        font-size: 0.75rem;-->
+<!--        font-weight: 700;-->
+<!--        text-transform: uppercase;-->
+<!--        letter-spacing: 0.5px;-->
+<!--    }-->
+
+<!--    .badge-danger {-->
+<!--        background: rgba(220, 38, 38, 0.1);-->
+<!--        color: #dc2626;-->
+<!--        border: 2px solid rgba(220, 38, 38, 0.2);-->
+<!--    }-->
+
+<!--    /* ===== POST CONTENT ===== */-->
+<!--    .post-content {-->
+<!--        background: var(&#45;&#45;panel-2);-->
+<!--        padding: 16px;-->
+<!--        border-radius: 10px;-->
+<!--        border-left: 4px solid var(&#45;&#45;theme-orange);-->
+<!--        margin-top: 12px;-->
+<!--        line-height: 1.6;-->
+<!--        color: var(&#45;&#45;text);-->
+<!--        font-size: 0.9rem;-->
+<!--    }-->
+
+<!--    .post-image-wrapper {-->
+<!--        margin-top: 16px;-->
+<!--        display: flex;-->
+<!--        justify-content: center;-->
+<!--        background: var(&#45;&#45;panel-2);-->
+<!--        padding: 16px;-->
+<!--        border-radius: 12px;-->
+<!--    }-->
+
+<!--    .post-image {-->
+<!--        max-width: 100%;-->
+<!--        max-height: 400px;-->
+<!--        border-radius: 12px;-->
+<!--        border: 1px solid #e6e8f0;-->
+<!--        object-fit: contain;-->
+<!--        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);-->
+<!--    }-->
+
+<!--    /* ===== FULL WIDTH PANEL ===== */-->
+<!--    .panel-full {-->
+<!--        grid-column: 1 / -1;-->
+<!--    }-->
+
+<!--    /* ===== ACTION BUTTONS ===== */-->
+<!--    .actions {-->
+<!--        display: flex;-->
+<!--        gap: 12px;-->
+<!--        flex-wrap: wrap;-->
+<!--        margin-top: 24px;-->
+<!--        padding: 24px;-->
+<!--        background: var(&#45;&#45;panel-2);-->
+<!--        border-radius: var(&#45;&#45;radius);-->
+<!--    }-->
+
+<!--    .btn {-->
+<!--        padding: 14px 24px;-->
+<!--        border-radius: 12px;-->
+<!--        border: none;-->
+<!--        cursor: pointer;-->
+<!--        font-weight: 600;-->
+<!--        font-size: .9rem;-->
+<!--        transition: all 0.3s ease;-->
+<!--        display: inline-flex;-->
+<!--        align-items: center;-->
+<!--        gap: 8px;-->
+<!--        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);-->
+<!--        flex: 1;-->
+<!--        justify-content: center;-->
+<!--        min-width: 150px;-->
+<!--    }-->
+
+<!--    .btn i {-->
+<!--        font-size: 1.1rem;-->
+<!--    }-->
+
+<!--    .btn.reject {-->
+<!--        background: white;-->
+<!--        color: #555;-->
+<!--        border: 2px solid #ddd;-->
+<!--    }-->
+
+<!--    .btn.reject:hover {-->
+<!--        background: #f5f5f5;-->
+<!--        border-color: #999;-->
+<!--        transform: translateY(-2px);-->
+<!--        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);-->
+<!--    }-->
+
+<!--    .btn.warn {-->
+<!--        background: #ffeaa7;-->
+<!--        color: #d63031;-->
+<!--        border: 2px solid #ffd97d;-->
+<!--    }-->
+
+<!--    .btn.warn:hover {-->
+<!--        background: #ffd97d;-->
+<!--        transform: translateY(-2px);-->
+<!--        box-shadow: 0 4px 12px rgba(255, 234, 167, 0.5);-->
+<!--    }-->
+
+<!--    .btn.delete {-->
+<!--        background: var(&#45;&#45;theme-orange);-->
+<!--        color: white;-->
+<!--        border: 2px solid var(&#45;&#45;theme-orange);-->
+<!--    }-->
+
+<!--    .btn.delete:hover {-->
+<!--        background: #e02e15;-->
+<!--        border-color: #e02e15;-->
+<!--        transform: translateY(-2px);-->
+<!--        box-shadow: 0 4px 12px rgba(247, 59, 32, 0.4);-->
+<!--    }-->
+
+<!--    /* ===== RESPONSIVE ===== */-->
+<!--    @media(max-width: 900px) {-->
+<!--        .grid {-->
+<!--            grid-template-columns: 1fr;-->
+<!--        }-->
+<!--    }-->
+
+<!--    @media(max-width: 600px) {-->
+<!--        .container {-->
+<!--            padding: 24px 16px;-->
+<!--        }-->
+
+<!--        .inbox-header {-->
+<!--            padding: 18px 16px;-->
+<!--        }-->
+
+<!--        .inbox-title {-->
+<!--            font-size: 20px;-->
+<!--        }-->
+
+<!--        .panel {-->
+<!--            padding: 20px;-->
+<!--        }-->
+
+<!--        .actions {-->
+<!--            flex-direction: column;-->
+<!--        }-->
+
+<!--        .btn {-->
+<!--            width: 100%;-->
+<!--        }-->
+<!--    }-->
+
+<!--    /* popup css */-->
+<!--    .popup-overlay {-->
+<!--    position: fixed;-->
+<!--    inset: 0;-->
+<!--    background: rgba(0,0,0,0.5);-->
+<!--    display: none;-->
+<!--    z-index: 1000;-->
+<!--}-->
+
+<!--.popup-box {-->
+<!--    position: fixed;-->
+<!--    top: 50%;-->
+<!--    left: 50%;-->
+<!--    transform: translate(-50%, -50%) scale(0.9);-->
+<!--    background: #fff;-->
+<!--    width: 420px;-->
+<!--    max-width: 90%;-->
+<!--    padding: 24px;-->
+<!--    border-radius: 12px;-->
+<!--    box-shadow: 0 10px 30px rgba(0,0,0,0.2);-->
+<!--    display: none;-->
+<!--    z-index: 1001;-->
+<!--    transition: 0.2s ease;-->
+<!--}-->
+
+<!--.popup-box h3 {-->
+<!--    margin-bottom: 12px;-->
+<!--    display: flex;-->
+<!--    gap: 8px;-->
+<!--    align-items: center;-->
+<!--}-->
+
+<!--.popup-box p {-->
+<!--    font-size: 0.9rem;-->
+<!--    color: #444;-->
+<!--}-->
+
+<!--.popup-box.danger h3 {-->
+<!--    color: #c00;-->
+<!--}-->
+
+<!--.popup-actions {-->
+<!--    display: flex;-->
+<!--    gap: 12px;-->
+<!--    margin-top: 20px;-->
+<!--}-->
+
+<!--.popup-actions .btn {-->
+<!--    flex: 1;-->
+<!--}-->
+
+<!--  </style>-->
+<!--</head>-->
+<!--<body>-->
+
+<!--&lt;!&ndash; Header &ndash;&gt;-->
+<!--<div class="inbox-header">-->
+<!--  <button class="back-btn" onclick="window.history.back()">-->
+<!--    <i class="bi bi-arrow-left"></i>-->
+<!--  </button>-->
+<!--  <h1 class="inbox-title">-->
+<!--    <i class="bi bi-flag-fill"></i>-->
+<!--    <span>Report Details</span>-->
+<!--  </h1>-->
+<!--</div>-->
+
+<!--<div class="container">-->
+
+<!--  &lt;!&ndash; Alert Box &ndash;&gt;-->
+<!--  <div class="alert-box">-->
+<!--    <i class="bi bi-exclamation-triangle-fill"></i>-->
+<!--    <p>-->
+<!--      <strong>Action Required:</strong> This report requires your review. Please examine the details carefully before taking action.-->
+<!--    </p>-->
+<!--  </div>-->
+
+<!--  <div class="grid">-->
+
+<!--    &lt;!&ndash; Report Information &ndash;&gt;-->
+<!--    <div class="panel">-->
+<!--      <h2><i class="bi bi-clipboard-data"></i> Report Information</h2>-->
+
+<!--      <div class="info-row">-->
+<!--        <span>Content Type</span>-->
+<!--        <strong th:text="${report.contentType}">Post</strong>-->
+<!--      </div>-->
+<!--      <div class="info-row highlight">-->
+<!--        <span>Reason</span>-->
+<!--        <strong>-->
+<!--          <span class="badge badge-danger" th:text="${report.reason}">Inappropriate Content</span>-->
+<!--        </strong>-->
+<!--      </div>-->
+<!--      <div class="info-row">-->
+<!--        <span>Date Reported</span>-->
+<!--        <strong th:text="${#temporals.format(report.timestamp, 'dd MMM yyyy')}">20 Dec 2024</strong>-->
+<!--      </div>-->
+
+<!--      <div class="info-row">-->
+<!--        <span>Total Warning From Admin </span>-->
+<!--        <strong th:text="${report.offender.warningCount}">20 Dec 2024</strong>-->
+<!--      </div>-->
+<!--&lt;!&ndash;      <div style="margin-top: 20px;">&ndash;&gt;-->
+<!--&lt;!&ndash;        <span style="color: var(&#45;&#45;muted); font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">Reporter's Comment</span>&ndash;&gt;-->
+<!--&lt;!&ndash;        <div class="post-content" th:text="${report.comment}">&ndash;&gt;-->
+<!--&lt;!&ndash;          This post contains offensive language and violates community guidelines.&ndash;&gt;-->
+<!--&lt;!&ndash;        </div>&ndash;&gt;-->
+<!--&lt;!&ndash;      </div>&ndash;&gt;-->
+<!--    </div>-->
+
+<!--    &lt;!&ndash; Users Involved &ndash;&gt;-->
+<!--    <div class="panel">-->
+<!--      <h2><i class="bi bi-people"></i> Users Involved</h2>-->
+
+<!--      <div style="margin-bottom: 20px;">-->
+<!--        <div style="color: var(&#45;&#45;muted); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; margin-bottom: 8px;">-->
+<!--          <i class="bi bi-person-badge"></i> Reporter-->
+<!--        </div>-->
+<!--        <div class="info-row" style="margin-bottom: 8px;">-->
+<!--          <span>Username</span>-->
+<!--          <strong th:text="${report.reporter.username}">@john_doe</strong>-->
+<!--        </div>-->
+<!--        <div class="info-row">-->
+<!--          <span>Email</span>-->
+<!--          <strong th:text="${report.reporter.email}">john@example.com</strong>-->
+<!--        </div>-->
+<!--      </div>-->
+
+<!--      <div>-->
+<!--        <div style="color: var(&#45;&#45;muted); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; margin-bottom: 8px;">-->
+<!--          <i class="bi bi-exclamation-circle"></i> Offender-->
+<!--        </div>-->
+<!--        <div class="info-row" style="margin-bottom: 8px;">-->
+<!--          <span>Username</span>-->
+<!--          <strong th:text="${report.offender.username}">@bad_actor</strong>-->
+<!--        </div>-->
+<!--        <div class="info-row">-->
+<!--          <span>Email</span>-->
+<!--          <strong th:text="${report.offender.email}">bad@example.com</strong>-->
+<!--        </div>-->
+<!--      </div>-->
+<!--    </div>-->
+
+<!--    &lt;!&ndash; Post Details &ndash;&gt;-->
+<!--    <div class="panel panel-full">-->
+<!--      <h2><i class="bi bi-file-text"></i> Reported Post</h2>-->
+
+<!--      <div class="info-row">-->
+<!--        <span>Total reports</span>-->
+<!--        <strong th:text="${totalReports}">0</strong>-->
+<!--      </div>-->
+
+<!--      <div class="info-row">-->
+<!--        <span>Reported by</span>-->
+<!--        <strong th:text="${reportPercentageText + '%'}">0%</strong>-->
+<!--      </div>-->
+
+
+
+<!--      <div class="info-row">-->
+<!--        <span>Posted On</span>-->
+<!--        <strong th:text="${#temporals.format(report.postreport.dateTime, 'dd MMM yyyy • hh:mm a')}">19 Dec 2024 • 03:45 PM</strong>-->
+<!--      </div>-->
+<!--      <div class="info-row">-->
+<!--        <span>Hashtags</span>-->
+<!--        <strong th:text="${report.postreport.hashtag}">-</strong>-->
+<!--      </div>-->
+
+<!--      <div style="margin-top: 20px;">-->
+<!--        <span style="color: var(&#45;&#45;muted); font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">Caption</span>-->
+<!--        <div class="post-content" th:text="${report.postreport.caption}">-->
+<!--          This is the caption of the reported post.-->
+<!--        </div>-->
+<!--      </div>-->
+
+<!--      &lt;!&ndash; Post Image (if exists) &ndash;&gt;-->
+<!--      <div th:if="${report.postreport.photo != null}">-->
+<!--        <span class="label">Reported Image</span>-->
+
+<!--        <div class="post-image-wrapper">-->
+<!--          <img th:src="@{/post/image/{id}(id=${report.postreport.postId})}"-->
+<!--               alt="Reported Post Image"-->
+<!--               class="post-image" />-->
+<!--        </div>-->
+<!--      </div>-->
+
+
+<!--    </div>-->
+
+<!--  </div>-->
+
+<!--  &lt;!&ndash; Action Buttons &ndash;&gt;-->
+<!--  <div class="actions">-->
+
+<!--    <form id="rejectForm" method="post"-->
+<!--          th:action="@{/user/reports/reject/{id}(id=${report.id})}">-->
+<!--      <button type="button" class="btn reject"-->
+<!--              onclick="openPopup('rejectPopup')">-->
+<!--        <i class="bi bi-x-circle"></i> Reject Report-->
+<!--      </button>-->
+<!--    </form>-->
+
+<!--    <form id="warnForm" method="post"-->
+<!--          th:action="@{/user/reports/warn/{id}(id=${report.id})}">-->
+<!--      <button type="button" class="btn warn"-->
+<!--              onclick="openPopup('warnPopup')">-->
+<!--        <i class="bi bi-exclamation-triangle"></i> Warn User-->
+<!--      </button>-->
+<!--    </form>-->
+
+<!--    &lt;!&ndash; DELETE FORM &ndash;&gt;-->
+<!--    <form id="deleteForm" method="post"-->
+<!--          th:action="@{/admin/reports/delete/{id}(id=${report.id})}">-->
+<!--      <button type="button"-->
+<!--              class="btn delete"-->
+<!--              th:disabled="${!canDeletePost}"-->
+<!--              th:title="${!canDeletePost} ?-->
+<!--            'At least 5% users must report this post' : 'Delete Post'"-->
+<!--              onclick="if(this.disabled !== true) openPopup('deletePopup')">-->
+<!--        <i class="bi bi-trash"></i> Delete Post-->
+<!--      </button>-->
+<!--    </form>-->
+
+
+
+
+<!--  </div>-->
+
+<!--</div>-->
+
+
+
+<!--&lt;!&ndash;===================================&ndash;&gt;-->
+
+<!--&lt;!&ndash; COMMON OVERLAY &ndash;&gt;-->
+<!--<div class="popup-overlay" id="popupOverlay"></div>-->
+
+<!--&lt;!&ndash; REJECT POPUP &ndash;&gt;-->
+<!--<div class="popup-box" id="rejectPopup">-->
+<!--  <h3><i class="bi bi-x-circle"></i> Reject Report</h3>-->
+<!--  <p>This report will be marked as <strong>rejected</strong>. No action will be taken.</p>-->
+
+<!--  <div class="popup-actions">-->
+<!--    <button class="btn cancel" onclick="closePopup()">Cancel</button>-->
+<!--    <button class="btn reject" onclick="submitAction('rejectForm' , this)">Confirm</button>-->
+<!--  </div>-->
+<!--</div>-->
+
+<!--&lt;!&ndash; WARN POPUP &ndash;&gt;-->
+<!--<div class="popup-box" id="warnPopup">-->
+<!--  <h3><i class="bi bi-exclamation-triangle"></i> Warn User</h3>-->
+<!--  <p>The offender will receive a <strong>warning</strong>. Post will remain visible.</p>-->
+
+<!--  <div class="popup-actions">-->
+<!--    <button class="btn cancel" onclick="closePopup()">Cancel</button>-->
+<!--    <button class="btn warn" onclick="submitAction('warnForm' , this)">Send Warning</button>-->
+<!--  </div>-->
+<!--</div>-->
+
+<!--&lt;!&ndash; DELETE POPUP &ndash;&gt;-->
+<!--<div class="popup-box danger" id="deletePopup">-->
+<!--  <h3><i class="bi bi-trash"></i> Delete Post</h3>-->
+<!--  <p>-->
+<!--    This will <strong>permanently delete</strong> the post.-->
+<!--    <br><strong>This action cannot be undone.</strong>-->
+<!--  </p>-->
+
+<!--  <div class="popup-actions">-->
+<!--    <button class="btn cancel" onclick="closePopup()">Cancel</button>-->
+<!--    <button class="btn delete" onclick="submitAction('deleteForm' , this)">Delete Post</button>-->
+<!--  </div>-->
+<!--</div>-->
+
+
+<!--<script>-->
+<!--  function openPopup(id) {-->
+<!--      document.getElementById("popupOverlay").style.display = "block";-->
+<!--      const popup = document.getElementById(id);-->
+<!--      popup.style.display = "block";-->
+<!--      popup.style.transform = "translate(-50%, -50%) scale(1)";-->
+<!--  }-->
+
+<!--  function closePopup() {-->
+<!--      document.getElementById("popupOverlay").style.display = "none";-->
+<!--      document.querySelectorAll(".popup-box").forEach(p => {-->
+<!--          p.style.display = "none";-->
+<!--      });-->
+<!--  }-->
+
+<!--  function submitAction(formId, btn) {-->
+<!--      // Disable the clicked button and change text-->
+<!--      btn.disabled = true;-->
+<!--      btn.innerHTML = "Submitting...";-->
+
+<!--      // Submit the form-->
+<!--      document.getElementById(formId).submit();-->
+<!--  }-->
+
+<!--  // Close popup on overlay click-->
+<!--  document.getElementById("popupOverlay").addEventListener("click", closePopup);-->
+<!--</script>-->
+
+<!--</body>-->
+<!--</html>-->

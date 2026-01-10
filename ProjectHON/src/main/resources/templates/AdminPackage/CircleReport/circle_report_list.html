@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>HON • Group Reports</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #f6f7fb;
+            --panel: #ffffff;
+            --panel-2: #f1f2f7;
+            --text: #1c1c24;
+            --muted: #6b6f85;
+            --theme-orange: #F73B20;
+            --theme-orange-10: rgba(247, 59, 32, 0.10);
+            --theme-orange-20: rgba(247, 59, 32, 0.20);
+            --radius: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            width: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            background: var(--bg);
+            font-family: Inter, system-ui, sans-serif;
+            color: var(--text);
+            padding: 0;
+        }
+
+        /* ===== HEADER ===== */
+        .inbox-header {
+            background: linear-gradient(135deg, #F73B20 0%, #ff5238 100%);
+            padding: 20px 32px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(247, 59, 32, 0.25);
+        }
+
+        .inbox-title {
+            font-size: 26px;
+            font-weight: 700;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.95);
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .back-btn:hover {
+            transform: scale(1.08);
+            background: white;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+        }
+
+        .back-btn i {
+            font-size: 20px;
+            color: var(--theme-orange);
+        }
+
+        /* ===== CONTAINER ===== */
+        .container {
+            max-width: 1400px;
+            margin: auto;
+            padding: 32px 24px;
+        }
+
+        /* ===== TABLE CONTAINER ===== */
+        .table-container {
+            background: var(--panel);
+            border-radius: var(--radius);
+            border: 1px solid #e6e8f0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: linear-gradient(135deg, #F73B20 0%, #ff5238 100%);
+        }
+
+        thead th {
+            padding: 18px 20px;
+            text-align: left;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #e6e8f0;
+            transition: all 0.2s ease;
+        }
+
+        tbody tr:hover {
+            background: var(--panel-2);
+        }
+
+        tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        tbody td {
+            padding: 18px 20px;
+            font-size: 0.88rem;
+            color: var(--text);
+        }
+
+        .group-cell {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .group-name {
+            font-weight: 700;
+            color: var(--text);
+            font-size: 1rem;
+        }
+
+        .group-members {
+            font-size: 0.75rem;
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .reporter-cell {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .username {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .report-date {
+            font-size: 0.75rem;
+            color: var(--muted);
+        }
+
+        .reason-cell {
+            max-width: 300px;
+        }
+
+        .reason-text {
+            color: var(--text);
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* ===== ACTION BUTTON ===== */
+        .action-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+            text-decoration: none;
+            color: white;
+            background: linear-gradient(135deg, #F73B20, #ff5238);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(247, 59, 32, 0.4);
+        }
+
+        /* ===== EMPTY STATE ===== */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: var(--muted);
+        }
+
+        .empty-state i {
+            font-size: 64px;
+            color: var(--theme-orange-20);
+            margin-bottom: 20px;
+        }
+
+        .empty-state h3 {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            color: var(--text);
+        }
+
+        /* ===== SUCCESS POPUP ===== */
+        .warn-popup {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #22c55e, #4ade80);
+            color: #ffffff;
+            padding: 14px 22px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            box-shadow: 0 8px 25px rgba(34, 197, 94, 0.35);
+            z-index: 9999;
+            animation: slideIn 0.4s ease-out;
+            display: none;
+        }
+
+        .warn-popup.show {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media(max-width: 768px) {
+            .container {
+                padding: 24px 16px;
+            }
+
+            .inbox-header {
+                padding: 18px 16px;
+            }
+
+            .inbox-title {
+                font-size: 20px;
+            }
+
+            .table-wrapper {
+                overflow-x: scroll;
+            }
+
+            table {
+                min-width: 800px;
+            }
+        }
+
+
+            /* popup warned*/
+        .warn-popup {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+
+    background: linear-gradient(135deg, #22c55e, #4ade80);
+    color: #ffffff;
+
+    padding: 14px 22px;
+    border-radius: 10px;
+
+    font-size: 15px;
+    font-weight: 600;
+
+    box-shadow: 0 8px 25px rgba(34, 197, 94, 0.35);
+
+    z-index: 9999;
+
+    animation: slideIn 0.4s ease-out;
+}
+
+/* Slide in animation */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="inbox-header">
+    <button class="back-btn" onclick="window.history.back();">
+        <i class="bi bi-arrow-left"></i>
+    </button>
+    <h1 class="inbox-title">
+        <i class="bi bi-exclamation-triangle"></i>
+        <span>Reported Groups</span>
+    </h1>
+</div>
+
+<div class="container">
+    <!-- Success Popup -->
+    <div id="successPopup" class="warn-popup">
+        Action completed successfully!
+    </div>
+
+    <!-- Table Container -->
+    <div class="table-container">
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                <tr>
+                    <th>Group Name</th>
+                    <th>Reported By</th>
+                    <th>Status</th>
+                    <th>Reason</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody id="reportsTableBody" th:each="list : ${groupReportList}">
+                <!-- Sample Data - Replace with your backend data -->
+                <tr>
+                    <td>
+                        <div class="group-cell">
+                            <span class="group-name" th:text="${list.groupMaster.groupName}">Tech Enthusiasts Hub</span>
+<!--                            <span class="group-members">-->
+<!--                                <i class="bi bi-people"></i>-->
+<!--                                245 members-->
+<!--                            </span>-->
+                        </div>
+                    </td>
+                    <td>
+                        <div class="reporter-cell">
+                            <span class="username" th:text="${list.reporter.username}">@sarah_mod</span>
+<!--                            <span class="report-date">-->
+<!--                                <i class="bi bi-clock"></i>-->
+<!--                                2 hours ago-->
+<!--                            </span>-->
+                        </div>
+                    </td>
+
+                    <td>
+                        <div class="reason-cell">
+                            <div class="reason-text" th:text="${list.status}">
+                                PENDING
+                            </div>
+                        </div>
+                    </td>
+
+                    <td>
+                        <div class="reason-cell">
+                            <div class="reason-text" th:text="${list.reason}">
+                                Inappropriate content being shared repeatedly. Multiple spam messages and offensive language towards other members.
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <a th:href="@{/user/review/group/report/{reportId}(reportId=${list.id})}" class="action-btn" onclick="handleReview(event, 1)">
+                            <i class="bi bi-clipboard-check"></i>
+                            Review
+                        </a>
+                    </td>
+                </tr>
+
+                </tbody>
+            </table>
+
+            <!-- Empty State (hidden by default, show when no data) -->
+            <div class="empty-state" style="display: none;">
+                <i class="bi bi-inbox"></i>
+                <h3>No Reports Found</h3>
+                <p>There are no group reports at this time.</p>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+
+
+<div id="warnPopup" class="warn-popup" th:if="${warned}">
+    Successfully Warned User.
+</div>
+
+<div id="rejectPopup" class="warn-popup" th:if="${rejected}">
+    Successfully Rejected User Report.
+</div>
+
+
+
+
+<!--warning popup-->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const popup = document.getElementById("warnPopup");
+
+        if (popup) {
+            setTimeout(() => {
+                popup.style.opacity = "0";
+                popup.style.transform = "translateX(30px)";
+
+                setTimeout(() => popup.remove(), 400);
+            }, 3000);
+        }
+    });
+</script>
+
+
+<!--reject report popup-->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const popup = document.getElementById("rejectPopup");
+
+        if (popup) {
+            setTimeout(() => {
+                popup.style.opacity = "0";
+                popup.style.transform = "translateX(30px)";
+
+                setTimeout(() => popup.remove(), 400);
+            }, 3000);
+        }
+    });
+</script>
+
+</body>
+</html>
